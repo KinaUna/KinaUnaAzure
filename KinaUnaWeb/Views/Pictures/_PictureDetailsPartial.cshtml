@@ -11,6 +11,9 @@
     string daysOldString = await LocaleManager.GetTranslation("days old.", PageNames.Pictures, Model.LanguageId);
     string olderString = await LocaleManager.GetTranslation("Older", PageNames.Pictures, Model.LanguageId);
     string newerString = await LocaleManager.GetTranslation("Newer", PageNames.Pictures, Model.LanguageId);
+    string yearsString = await LocaleManager.GetTranslation("years", PageNames.Home, Model.LanguageId);
+    string monthsString = await LocaleManager.GetTranslation("months", PageNames.Home, Model.LanguageId);
+    string daysString = await LocaleManager.GetTranslation("days", PageNames.Home, Model.LanguageId);
     string viewPrevText = olderString;
     string viewNextText = newerString;
     if (Model.SortBy == 1)
@@ -100,7 +103,7 @@
             {
                 <div style="font-size: 16px; line-height: 90%;">
                     <p>Photo taken: @Model.PicTime</p>
-                    <p>@Model.CurrentProgeny.NickName @wasString @Model.PicYears @await LocaleManager.GetTranslation("years old.", PageNames.Pictures, Model.LanguageId)</p>
+                    <p>@Model.CurrentProgeny.NickName @wasString @Model.PicYearsDataList[0] @yearsString @Model.PicYearsDataList[1] @monthsString @Model.PicYearsDataList[2] @daysString</p>
                     <p>@Model.CurrentProgeny.NickName @wasString @Model.PicMonths @await LocaleManager.GetTranslation("months old.", PageNames.Pictures, Model.LanguageId)</p>
                     <p>@Model.CurrentProgeny.NickName @wasString @Model.PicWeeks[0] @await LocaleManager.GetTranslation("weeks and", PageNames.Pictures, Model.LanguageId) @Model.PicWeeks[1] @daysOldString</p>
                     <p>@Model.CurrentProgeny.NickName @wasString @Model.PicDays @daysOldString</p>

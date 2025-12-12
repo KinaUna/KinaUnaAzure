@@ -21,7 +21,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public string VidTime { get; set; }
         public bool VidTimeValid { get; set; }
-        public string VidYears { get; set; }
+        public List<string> VidYearsDataList { get; set; }
         public string VidMonths { get; set; }
         public string[] VidWeeks { get; set; }
         public string VidDays { get; set; }
@@ -86,7 +86,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                     TimeZoneInfo.FindSystemTimeZoneById(CurrentProgeny.TimeZone));
                 VidTimeValid = true;
                 VidTime = Video.VideoTime.Value.ToString("dd MMMM yyyy HH:mm"); // Todo: Replace string format with global constant or user defined value
-                VidYears = picTime.CalcYears();
+                VidYearsDataList = picTime.CalcYears();
                 VidMonths = picTime.CalcMonths();
                 VidWeeks = picTime.CalcWeeks();
                 VidDays = picTime.CalcDays();

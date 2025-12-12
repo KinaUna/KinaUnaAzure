@@ -67,7 +67,7 @@
             {
                 <div style="font-size: 16px; line-height: 90%;">
                     <p>Photo taken: @Model.PicTime</p>
-                    <p>@Model.CurrentProgeny.NickName @wasString @Model.PicYears @await LocaleManager.GetTranslation("years old.", PageNames.Pictures, Model.LanguageId)</p>
+                    <p>@Model.CurrentProgeny.NickName @wasString @Model.PicYearsDataList @await LocaleManager.GetTranslation("years old.", PageNames.Pictures, Model.LanguageId)</p>
                     <p>@Model.CurrentProgeny.NickName @wasString @Model.PicMonths @await LocaleManager.GetTranslation("months old.", PageNames.Pictures, Model.LanguageId)</p>
                     <p>@Model.CurrentProgeny.NickName @wasString @Model.PicWeeks[0] @await LocaleManager.GetTranslation("weeks and", PageNames.Pictures, Model.LanguageId) @Model.PicWeeks[1] @daysOldString</p>
                     <p>@Model.CurrentProgeny.NickName @wasString @Model.PicDays @daysOldString</p>

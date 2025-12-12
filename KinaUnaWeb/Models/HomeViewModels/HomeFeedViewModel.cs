@@ -11,7 +11,7 @@ namespace KinaUnaWeb.Models.HomeViewModels
         public string ImageLink600 { get; set; }
         
         public string CurrentTime { get; set; }
-        public string Years { get; set; }
+        public List<string> YearsDataList { get; set; }
         public string Months { get; set; }
         public string[] Weeks { get; set; }
         public string Days { get; set; }
@@ -25,7 +25,7 @@ namespace KinaUnaWeb.Models.HomeViewModels
         public bool PicTimeValid { get; set; }
         
         public string PicTime { get; set; }
-        public string PicYears { get; set; }
+        public List<string> PicYearsDataList { get; set; }
         public string PicMonths { get; set; }
         public string[] PicWeeks { get; set; }
         public string PicDays { get; set; }
@@ -67,7 +67,7 @@ namespace KinaUnaWeb.Models.HomeViewModels
             }
 
             CurrentTime = progBirthTime.CurrentTime;
-            Years = progBirthTime.CalcYears();
+            YearsDataList = progBirthTime.CalcYears();
             Months = progBirthTime.CalcMonths();
             Weeks = progBirthTime.CalcWeeks();
             Days = progBirthTime.CalcDays();
@@ -97,7 +97,7 @@ namespace KinaUnaWeb.Models.HomeViewModels
         public void SetPictureTimeData()
         {
             PicTime = PictureTime.PictureDateTime;
-            PicYears = PictureTime.CalcYears();
+            PicYearsDataList = PictureTime.CalcYears();
             PicMonths = PictureTime.CalcMonths();
             PicWeeks = PictureTime.CalcWeeks();
             PicDays = PictureTime.CalcDays();

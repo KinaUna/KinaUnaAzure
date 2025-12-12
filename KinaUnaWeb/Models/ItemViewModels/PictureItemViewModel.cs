@@ -20,7 +20,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public int NextPicture { get; set; }
         public string PicTime { get; set; }
         public bool PicTimeValid { get; set; }
-        public string PicYears { get; set; }
+        public List<string> PicYearsDataList { get; set; }
         public string PicMonths { get; set; }
         public string[] PicWeeks { get; set; }
         public string PicDays { get; set; }
@@ -79,7 +79,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                     TimeZoneInfo.FindSystemTimeZoneById(CurrentProgeny.TimeZone));
                 PicTimeValid = true;
                 PicTime = Picture.PictureTime.Value.ToString("dd MMMM yyyy HH:mm"); // Todo: Replace format string with global constant or user defined value
-                PicYears = picTime.CalcYears();
+                PicYearsDataList = picTime.CalcYears();
                 PicMonths = picTime.CalcMonths();
                 PicWeeks = picTime.CalcWeeks();
                 PicDays = picTime.CalcDays();

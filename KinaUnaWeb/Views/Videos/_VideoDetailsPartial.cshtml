@@ -10,6 +10,9 @@
     string videoString = await LocaleManager.GetTranslation("video", PageNames.Videos, Model.LanguageId);
     string olderString = await LocaleManager.GetTranslation("Older", PageNames.Pictures, Model.LanguageId);
     string newerString = await LocaleManager.GetTranslation("Newer", PageNames.Pictures, Model.LanguageId);
+    string yearsString = await LocaleManager.GetTranslation("years", PageNames.Home, Model.LanguageId);
+    string monthsString = await LocaleManager.GetTranslation("months", PageNames.Home, Model.LanguageId);
+    string daysString = await LocaleManager.GetTranslation("days", PageNames.Home, Model.LanguageId);
     string viewPrevText = olderString;
     string viewNextText = newerString;
     if (Model.SortBy == 1)
@@ -124,7 +127,7 @@
     string daysOldString = await LocaleManager.GetTranslation("days old.", PageNames.Videos, Model.LanguageId);
     <div style="font-size: 16px; line-height: 90%;">
         <p>@await LocaleManager.GetTranslation("Video recorded:", PageNames.Videos, Model.LanguageId) @Model.VidTime</p>
-        <p>@Model.CurrentProgeny.NickName @wasString @Model.VidYears @await LocaleManager.GetTranslation("years old.", PageNames.Videos, Model.LanguageId)</p>
+                    <p>@Model.CurrentProgeny.NickName @wasString @Model.VidYearsDataList[0] @yearsString @Model.VidYearsDataList[1] @monthsString @Model.VidYearsDataList[2] @daysString</p>
         <p>@Model.CurrentProgeny.NickName @wasString @Model.VidMonths @await LocaleManager.GetTranslation("months old.", PageNames.Videos, Model.LanguageId)</p>
         <p>@Model.CurrentProgeny.NickName @wasString @Model.VidWeeks[0] @await LocaleManager.GetTranslation("weeks and", PageNames.Videos, Model.LanguageId) @Model.VidWeeks[1] @daysOldString</p>
         <p>@Model.CurrentProgeny.NickName @wasString @Model.VidDays @daysOldString</p>
