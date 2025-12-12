@@ -839,7 +839,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(allMeasurements);
 
             // Act
-            IActionResult result = await _controller.GetMeasurementsListPage(2, 1, TestProgenyId, 1);
+            IActionResult result = await _controller.GetMeasurementsListPage(2, 1, TestProgenyId);
 
             // Assert
             OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
@@ -860,7 +860,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync([]);
 
             // Act
-            IActionResult result = await _controller.GetMeasurementsListPage(8, 0, TestProgenyId, 1);
+            IActionResult result = await _controller.GetMeasurementsListPage(8, 0, TestProgenyId);
 
             // Assert
             OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
@@ -912,7 +912,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(allMeasurements);
 
             // Act
-            IActionResult result = await _controller.GetMeasurementsListPage(8, 1, TestProgenyId, 1);
+            IActionResult result = await _controller.GetMeasurementsListPage(8, 1, TestProgenyId);
 
             // Assert
             OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
@@ -938,7 +938,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(allMeasurements);
 
             // Act
-            IActionResult result = await _controller.GetMeasurementsListPage(8, 1, TestProgenyId, 1);
+            IActionResult result = await _controller.GetMeasurementsListPage(8, 1, TestProgenyId);
 
             // Assert
             OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
@@ -962,7 +962,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(allMeasurements);
 
             // Act
-            IActionResult result = await _controller.GetMeasurementsListPage(8, 2, TestProgenyId, 1);
+            IActionResult result = await _controller.GetMeasurementsListPage(8, 2, TestProgenyId);
 
             // Assert
             OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
@@ -986,7 +986,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(allMeasurements);
 
             // Act
-            IActionResult result = await _controller.GetMeasurementsListPage(8, 5, TestProgenyId, 1);
+            IActionResult result = await _controller.GetMeasurementsListPage(8, 5, TestProgenyId);
 
             // Assert
             OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
