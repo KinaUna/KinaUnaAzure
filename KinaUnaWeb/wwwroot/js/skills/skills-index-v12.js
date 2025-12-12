@@ -4,6 +4,7 @@ import { showPopupAtLoad } from '../item-details/items-display-v12.js';
 import { startTopMenuSpinner, stopTopMenuSpinner } from '../navigation-tools-v12.js';
 import { TimeLineType } from '../page-models-v12.js';
 import { getProgenySelector } from '../shared/progeny-selector-v12.js';
+import { popupSkillItem } from './skill-details-v12.js';
 async function getSkills(progenyId) {
     const skillsListTable = document.querySelector('#skills-container-div');
     if (skillsListTable) {
@@ -17,10 +18,24 @@ async function getSkills(progenyId) {
                 const skillsTableContent = await skillsTableResponse.text();
                 skillsListTable.innerHTML = skillsTableContent;
                 setupDataTable();
+                setDetailsButtonEventListeners();
                 setEditItemButtonEventListeners();
             }
         });
     }
+}
+function setDetailsButtonEventListeners() {
+    const detailsButtons = document.querySelectorAll('.skill-details-button');
+    detailsButtons.forEach((button) => {
+        function detailsButtonClicked() {
+            const itemId = button.getAttribute('data-skill-item-id');
+            if (itemId) {
+                popupSkillItem(itemId);
+            }
+        }
+        button.removeEventListener('click', detailsButtonClicked);
+        button.addEventListener('click', detailsButtonClicked);
+    });
 }
 function addProgenyChangedEventListener() {
     // Subscribe to the timelineChanged event to refresh the todos list when a todo is added, updated, or deleted.

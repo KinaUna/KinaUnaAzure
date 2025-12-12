@@ -5,6 +5,7 @@ import { startTopMenuSpinner, stopTopMenuSpinner } from "../navigation-tools-v12
 import { TimeLineType } from "../page-models-v12.js";
 import { getProgenySelector } from "../shared/progeny-selector-v12.js";
 import { getTranslation } from "../localization-v12.js";
+import { popupMeasurementItem } from "./measurement-details-v12.js";
 async function getMeasurements(progenyId) {
     const measurementsListTable = document.querySelector('#measurements-list-container-div');
     if (measurementsListTable) {
@@ -19,10 +20,24 @@ async function getMeasurements(progenyId) {
                 measurementsListTable.innerHTML = measurementsListHtml;
                 setupDataTable();
                 setEditItemButtonEventListeners();
+                setDetailsButtonEventListeners();
                 await renderMeasurementsChartData(progenyId);
             }
         });
     }
+}
+function setDetailsButtonEventListeners() {
+    const detailsButtons = document.querySelectorAll('.measurement-details-button');
+    detailsButtons.forEach((button) => {
+        function detailsButtonClicked() {
+            const itemId = button.getAttribute('data-measurement-item-id');
+            if (itemId) {
+                popupMeasurementItem(itemId);
+            }
+        }
+        button.removeEventListener('click', detailsButtonClicked);
+        button.addEventListener('click', detailsButtonClicked);
+    });
 }
 function setupDataTable() {
     setMomentLocale();

@@ -5,6 +5,7 @@ import { getTranslation } from '../localization-v12.js';
 import { startTopMenuSpinner, stopTopMenuSpinner } from '../navigation-tools-v12.js';
 import { TimeLineType } from '../page-models-v12.js';
 import { getProgenySelector } from '../shared/progeny-selector-v12.js';
+import { popupVocabularyItem } from './vocabulary-details-v12.js';
 async function getVocabulary(progenyId) {
     const vocabularyListTable = document.querySelector('#vocabulary-container-div');
     if (vocabularyListTable) {
@@ -14,10 +15,24 @@ async function getVocabulary(progenyId) {
                 vocabularyListTable.innerHTML = vocabularyTableContent;
                 setupVocabularyDataTable();
                 setEditItemButtonEventListeners();
+                setDetailsButtonEventListeners();
                 await setupVocabularyChart(progenyId);
             }
         });
     }
+}
+function setDetailsButtonEventListeners() {
+    const detailsButtons = document.querySelectorAll('.vocabulary-details-button');
+    detailsButtons.forEach((button) => {
+        function detailsButtonClicked() {
+            const itemId = button.getAttribute('data-vocabulary-item-id');
+            if (itemId) {
+                popupVocabularyItem(itemId);
+            }
+        }
+        button.removeEventListener('click', detailsButtonClicked);
+        button.addEventListener('click', detailsButtonClicked);
+    });
 }
 class VocabularyData {
     constructor() {

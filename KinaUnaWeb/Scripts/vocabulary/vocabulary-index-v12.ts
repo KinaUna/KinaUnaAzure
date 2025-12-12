@@ -5,6 +5,7 @@ import { getTranslation } from '../localization-v12.js';
 import { startTopMenuSpinner, stopTopMenuSpinner } from '../navigation-tools-v12.js';
 import { TimeLineType, VocabularyItem, WordDateCount } from '../page-models-v12.js';
 import { getProgenySelector } from '../shared/progeny-selector-v12.js';
+import { popupVocabularyItem } from './vocabulary-details-v12.js';
 
 declare global {
     interface WindowEventMap {
@@ -22,10 +23,25 @@ async function getVocabulary(progenyId: number): Promise<void> {
                 vocabularyListTable.innerHTML = vocabularyTableContent;
                 setupVocabularyDataTable();
                 setEditItemButtonEventListeners();
+                setDetailsButtonEventListeners();
                 await setupVocabularyChart(progenyId);
             }
         });
     }
+}
+
+function setDetailsButtonEventListeners(): void {
+    const detailsButtons = document.querySelectorAll<HTMLAnchorElement>('.vocabulary-details-button');
+    detailsButtons.forEach((button) => {
+        function detailsButtonClicked(): void {
+            const itemId = button.getAttribute('data-vocabulary-item-id');
+            if (itemId) {
+                popupVocabularyItem(itemId);
+            }
+        }
+        button.removeEventListener('click', detailsButtonClicked)
+        button.addEventListener('click', detailsButtonClicked);
+    });
 }
 
 class VocabularyData {

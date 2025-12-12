@@ -5,6 +5,7 @@ import { getTranslation } from '../localization-v12.js';
 import { startTopMenuSpinner, stopTopMenuSpinner } from '../navigation-tools-v12.js';
 import { SleepDataModel, TimeLineType } from '../page-models-v12.js';
 import { getProgenySelector } from '../shared/progeny-selector-v12.js';
+import { popupSleepItem } from './sleep-details-v12.js';
 let sleepChart;
 async function getSleepTable(progenyId) {
     const sleepListTable = document.querySelector('#sleep-list-container-div');
@@ -20,10 +21,24 @@ async function getSleepTable(progenyId) {
                 sleepListTable.innerHTML = sleepListHtml;
                 setupDataTable();
                 setEditItemButtonEventListeners();
+                setDetailsButtonEventListeners();
                 await renderSleepChartData(progenyId);
             }
         });
     }
+}
+function setDetailsButtonEventListeners() {
+    const detailsButtons = document.querySelectorAll('.sleep-details-button');
+    detailsButtons.forEach((button) => {
+        function detailsButtonClicked() {
+            const itemId = button.getAttribute('data-sleep-item-id');
+            if (itemId) {
+                popupSleepItem(itemId);
+            }
+        }
+        button.removeEventListener('click', detailsButtonClicked);
+        button.addEventListener('click', detailsButtonClicked);
+    });
 }
 /**
  * Formats a date string to a timestamp.

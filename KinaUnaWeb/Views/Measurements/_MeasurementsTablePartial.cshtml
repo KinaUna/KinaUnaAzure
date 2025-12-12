@@ -29,6 +29,7 @@ else
                     <th style="font-weight: bold">@await LocaleManager.GetTranslation("Head size", PageNames.Measurements, Model.LanguageId)</th>
                     <th style="font-weight: bold">@await LocaleManager.GetTranslation("Eye color", PageNames.Measurements, Model.LanguageId)</th>
                     <th style="font-weight: bold">@await LocaleManager.GetTranslation("Hair color", PageNames.Measurements, Model.LanguageId)</th>
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Details", PageNames.Home, Model.LanguageId)</th>
                     @if (Model.MeasurementsList.Any(m => m.ItemPerMission?.PermissionLevel >= PermissionLevel.Edit))
                     {
                         <th style="font-weight: bold">@await LocaleManager.GetTranslation("Action", PageNames.Measurements, Model.LanguageId)</th>
@@ -45,6 +46,11 @@ else
                         <td>@measurementItem.Circumference</td>
                         <td>@measurementItem.EyeColor</td>
                         <td>@measurementItem.HairColor</td>
+                        <td>
+                            <a data-measurement-item-id="@measurementItem.MeasurementId" class="btn btn-info btn-sm measurement-details-button">
+                                <i class="material-icons">article</i>
+                            </a>
+                        </td>
                         @if (measurementItem.ItemPerMission?.PermissionLevel >= PermissionLevel.Edit)
                         {
                             <td>

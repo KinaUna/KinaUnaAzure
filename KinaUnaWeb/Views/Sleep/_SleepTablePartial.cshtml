@@ -26,6 +26,7 @@ else
                     <th style="font-weight: bold">@await LocaleManager.GetTranslation("Duration", PageNames.Sleep, Model.LanguageId)</th>
                     <th style="font-weight: bold">@await LocaleManager.GetTranslation("Rating", PageNames.Sleep, Model.LanguageId)</th>
                     <th style="font-weight: bold">@await LocaleManager.GetTranslation("Notes", PageNames.Sleep, Model.LanguageId)</th>
+                    <th style="font-weight: bold">@await LocaleManager.GetTranslation("Details", PageNames.Home, Model.LanguageId)</th>
                     @if (Model.SleepList.Exists(s => s.ItemPerMission.PermissionLevel >= PermissionLevel.Edit))
                     {
                         <th style="font-weight: bold">@await LocaleManager.GetTranslation("Action", PageNames.Sleep, Model.LanguageId)</th>
@@ -45,6 +46,11 @@ else
                         <td>@sleepItem.SleepDuration</td>
                         <td>@sleepItem.SleepRating</td>
                         <td>@sleepItem.SleepNotes</td>
+                        <td>
+                            <a data-sleep-item-id="@sleepItem.SleepId" class="btn btn-info btn-sm sleep-details-button">
+                                <i class="material-icons">article</i>
+                            </a>
+                        </td>
                         @if (sleepItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
                         {
                             <td style="min-width: 120px;">

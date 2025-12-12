@@ -5,6 +5,7 @@ import { startTopMenuSpinner, stopTopMenuSpinner } from "../navigation-tools-v12
 import { Measurement, TimeLineType } from "../page-models-v12.js";
 import { getProgenySelector } from "../shared/progeny-selector-v12.js";
 import { getTranslation } from "../localization-v12.js";
+import { popupMeasurementItem } from "./measurement-details-v12.js";
 
 declare global {
     interface WindowEventMap {
@@ -27,11 +28,25 @@ async function getMeasurements(progenyId: number): Promise<void> {
                 measurementsListTable.innerHTML = measurementsListHtml;
                 setupDataTable();
                 setEditItemButtonEventListeners();
+                setDetailsButtonEventListeners();
                 await renderMeasurementsChartData(progenyId);
             }
         });
-    }
-    
+    }   
+}
+
+function setDetailsButtonEventListeners(): void {
+    const detailsButtons = document.querySelectorAll<HTMLAnchorElement>('.measurement-details-button');
+    detailsButtons.forEach((button) => {
+        function detailsButtonClicked(): void {
+            const itemId = button.getAttribute('data-measurement-item-id');
+            if (itemId) {
+                popupMeasurementItem(itemId);
+            }
+        }
+        button.removeEventListener('click', detailsButtonClicked)
+        button.addEventListener('click', detailsButtonClicked);
+    });
 }
 
 function setupDataTable(): void {

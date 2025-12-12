@@ -5,6 +5,7 @@ import { getTranslation } from '../localization-v12.js';
 import { startTopMenuSpinner, stopTopMenuSpinner } from '../navigation-tools-v12.js';
 import { Sleep, SleepDataModel, TimeLineType } from '../page-models-v12.js';
 import { getProgenySelector } from '../shared/progeny-selector-v12.js';
+import { popupSleepItem } from './sleep-details-v12.js';
 
 declare global {
     interface WindowEventMap {
@@ -31,11 +32,26 @@ async function getSleepTable(progenyId: number): Promise<void> {
                 sleepListTable.innerHTML = sleepListHtml;
                 setupDataTable();
                 setEditItemButtonEventListeners();
+                setDetailsButtonEventListeners();
                 await renderSleepChartData(progenyId);
             }
         });
     }
 
+}
+
+function setDetailsButtonEventListeners(): void {
+    const detailsButtons = document.querySelectorAll<HTMLAnchorElement>('.sleep-details-button');
+    detailsButtons.forEach((button) => {
+        function detailsButtonClicked(): void {
+            const itemId = button.getAttribute('data-sleep-item-id');
+            if (itemId) {
+                popupSleepItem(itemId);
+            }
+        }
+        button.removeEventListener('click', detailsButtonClicked)
+        button.addEventListener('click', detailsButtonClicked);
+    });
 }
 
 /**
