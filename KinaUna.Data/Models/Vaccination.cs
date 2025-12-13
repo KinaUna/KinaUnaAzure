@@ -57,7 +57,7 @@ namespace KinaUna.Data.Models
         /// The current user's permissions for this item.
         /// </summary>
         [NotMapped]
-        public TimelineItemPermission ItemPerMission { get; set; }
+        public TimelineItemPermission ItemPermission { get; set; }
 
         /// <summary>
         /// Gets or sets the list of item permissions associated with the current entity. For adding or updating item permissions.
