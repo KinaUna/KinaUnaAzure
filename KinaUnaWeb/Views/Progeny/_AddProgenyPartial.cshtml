@@ -1,7 +1,8 @@
 ﻿@using System.Globalization
-@using KinaUnaWeb.Services
 @using KinaUna.Data
-@model KinaUnaWeb.Models.FamilyViewModels.ProgenyViewModel
+@using KinaUnaWeb.Models.ProgeniesViewModels
+@using KinaUnaWeb.Services
+@model ProgenyViewModel
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Add family member", PageNames.Progeny, Model.LanguageId);
@@ -73,7 +74,7 @@
                 <div class="col-auto control-label"></div>
                 <div class="col-auto">
                     <button class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                    <a class="btn btn-danger leave-page" asp-controller="Family" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                    <a class="btn btn-danger leave-page" asp-controller="Families" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
                 </div>
             </div>
 

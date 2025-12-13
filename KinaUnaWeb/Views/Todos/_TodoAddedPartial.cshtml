@@ -1,6 +1,7 @@
 ﻿@using System.Web
 @using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.TodoViewModel
 @inject ILocaleManager LocaleManager
@@ -13,7 +14,14 @@
     <div class="timeline-card-body bg-todos item-details-content">
         <div class="row sticky-top m-0 item-details-header">
             <div class="col-12 bg-todos-header">
-                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture"/>
+                @if (Model.TodoItem.ProgenyId > 0)
+                {
+                    <img src="@Model.TodoItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                }
+                @if (Model.TodoItem.FamilyId > 0)
+                {
+                    <img src="@Model.TodoItem.Family.GetProfilePictureUrl()" class="item-details-title-picture" />
+                }
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
@@ -109,11 +117,14 @@
                 </div>
 
             </div>
-            @if (Model.IsCurrentUserProgenyAdmin)
+            @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
             {
                 <div class="col-12">
                     <a data-edit-item-type="todo" data-edit-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
-                    <a asp-controller="Todos" asp-action="DeleteTodo" asp-route-itemId="@Model.TodoItem.TodoItemId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
+                    {
+                        <a asp-controller="Todos" asp-action="DeleteTodo" asp-route-itemId="@Model.TodoItem.TodoItemId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    }
                 </div>
 
             }

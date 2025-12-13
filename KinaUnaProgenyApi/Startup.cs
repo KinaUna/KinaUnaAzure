@@ -4,7 +4,6 @@ using KinaUnaProgenyApi.AuthorizationHandlers;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.CalendarServices;
 using KinaUnaProgenyApi.Services.ScheduledTasks;
-using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -17,7 +16,8 @@ using System;
 using System.Security.Cryptography.X509Certificates;
 using KinaUna.Data.Utilities;
 using KinaUnaProgenyApi.Services.AccessManagementService;
-using KinaUnaProgenyApi.Services.FamilyServices;
+using KinaUnaProgenyApi.Services.CacheServices;
+using KinaUnaProgenyApi.Services.FamiliesServices;
 using KinaUnaProgenyApi.Services.KanbanServices;
 using KinaUnaProgenyApi.Services.TodosServices;
 
@@ -63,11 +63,9 @@ namespace KinaUnaProgenyApi
 
             services.AddDistributedMemoryCache();
             services.AddScoped<IImageStore, ImageStore>();
-            services.AddScoped<IAzureNotifications, AzureNotifications>();
             services.AddScoped<INotificationsService, NotificationsService>();
             services.AddScoped<IProgenyService, ProgenyService>();
             services.AddScoped<IUserInfoService, UserInfoService>();
-            services.AddScoped<IUserAccessService, UserAccessService>();
             services.AddScoped<ICalendarService, CalendarService>();
             services.AddScoped<IContactService, ContactService>();
             services.AddScoped<IFriendService, FriendService>();
@@ -98,17 +96,23 @@ namespace KinaUnaProgenyApi
             services.AddScoped<IKanbanItemsService, KanbanItemsService>();
             services.AddScoped<IKanbanBoardsService, KanbanBoardsService>();
             services.AddScoped<IAccessManagementService, AccessManagementService>();
-            services.AddScoped<IUserGroupService, UserGroupService>();
-            services.AddScoped<IUserGroupAuditLogService, UserGroupAuditLogService>();
-            services.AddScoped<IFamilyService, FamilyService>();
+            services.AddScoped<IUserGroupsService, UserGroupsService>();
+            services.AddScoped<IUserGroupAuditLogsService, UserGroupAuditLogsService>();
+            services.AddScoped<IFamiliesService, FamiliesService>();
             services.AddScoped<IFamilyMembersService, FamilyMembersService>();
-            services.AddScoped<IFamilyAuditLogService, FamilyAuditLogService>();
-            services.AddScoped<IPermissionAuditLogService, PermissionAuditLogService>();
+            services.AddScoped<IFamilyAuditLogsService, FamilyAuditLogsService>();
+            services.AddScoped<IPermissionAuditLogsService, PermissionAuditLogsService>();
+            services.AddScoped<IKinaUnaCacheService, KinaUnaInMemoryCacheService>();
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddHostedService<TimedSchedulerService>();
-            services.AddControllers().AddNewtonsoftJson();
-            
-            
+            services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+                options.JsonSerializerOptions.DictionaryKeyPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+                options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+            });
+
+
             // Register the OpenIddict services and configure them.
             string authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey) ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + " was not found in the configuration data.");
             

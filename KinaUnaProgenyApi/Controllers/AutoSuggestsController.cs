@@ -1,11 +1,8 @@
-﻿using KinaUna.Data;
-using KinaUna.Data.Extensions;
+﻿using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
-using KinaUna.Data.Models.DTOs;
 using KinaUna.Data.Utilities;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.CalendarServices;
-using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
@@ -19,7 +16,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// <summary>
     /// API endpoints for retrieving auto suggest lists.
     /// </summary>
-    /// <param name="userAccessService"></param>
     /// <param name="calendarService"></param>
     /// <param name="contactService"></param>
     /// <param name="friendService"></param>
@@ -34,7 +30,6 @@ namespace KinaUnaProgenyApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class AutoSuggestsController(
-        IUserAccessService userAccessService,
         ICalendarService calendarService,
         IContactService contactService,
         IFriendService friendService,
@@ -45,32 +40,28 @@ namespace KinaUnaProgenyApi.Controllers
         ILocationService locationService,
         IVocabularyService vocabularyService,
         ITodosService todosService,
-        IKanbanBoardsService kanbanBoardsService)
+        IKanbanBoardsService kanbanBoardsService,
+        IUserInfoService userInfoService)
         : ControllerBase
     {
         /// <summary>
         /// Provides a list of strings for category auto suggest inputs for a given Progeny.
         /// Only returns categories with an access level equal to or higher than the accessLevel parameter.
         /// </summary>
-        /// <param name="id">The id of the Progeny</param>
+        /// <param name="progenyId">The progenyId of the Progeny</param>
         /// <returns>List of string.</returns>
-        [Route("[action]/{id:int}")]
+        [Route("[action]/{progenyId:int}")]
         [HttpGet]
-        public async Task<IActionResult> GetCategoryAutoSuggestList(int id)
+        public async Task<IActionResult> GetCategoryAutoSuggestList(int progenyId)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
             AutoSuggestListBuilder autoSuggestListBuilder = new();
             
-            List<Note> allNotes = await noteService.GetNotesList(id, accessLevelResult.Value);
+            List<Note> allNotes = await noteService.GetNotesList(progenyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToCategoriesList(allNotes);
 
-            List<Skill> allSkills = await skillService.GetSkillsList(id, accessLevelResult.Value);
+            List<Skill> allSkills = await skillService.GetSkillsList(progenyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToCategoriesList(allSkills);
             
             List<string> autoSuggestList = autoSuggestListBuilder.GetCategoriesList(); 
@@ -83,34 +74,30 @@ namespace KinaUnaProgenyApi.Controllers
         /// Provides a list of strings for context auto suggest inputs for a given Progeny.
         /// Only returns contexts with an access level equal to or higher than the accessLevel parameter.
         /// </summary>
-        /// <param name="id">The id of the Progeny</param>
+        /// <param name="progenyId">The progenyId of the Progeny</param>
+        /// <param name="familyId">The progenyId of the Family, if any. Default is 0.</param>
         /// <returns>List of string</returns>
-        [Route("[action]/{id:int}")]
+        [Route("[action]/{progenyId:int}/{familyId:int}")]
         [HttpGet]
-        public async Task<IActionResult> GetContextAutoSuggestList(int id)
+        public async Task<IActionResult> GetContextAutoSuggestList(int progenyId, int familyId)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
             AutoSuggestListBuilder autoSuggestListBuilder = new();
 
-            List<Friend> allFriends = await friendService.GetFriendsList(id, accessLevelResult.Value);
+            List<Friend> allFriends = await friendService.GetFriendsList(progenyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToContextsList(allFriends);
             
-            List<CalendarItem> allCalendarItems = await calendarService.GetCalendarList(id, accessLevelResult.Value);
+            List<CalendarItem> allCalendarItems = await calendarService.GetCalendarList(progenyId, familyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToContextsList(allCalendarItems);
 
-            List<Contact> allContacts = await contactService.GetContactsList(id, accessLevelResult.Value);
+            List<Contact> allContacts = await contactService.GetContactsList(progenyId, familyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToContextsList(allContacts);
 
-            List<TodoItem> allTodos = await todosService.GetTodosList(id, accessLevelResult.Value);
+            List<TodoItem> allTodos = await todosService.GetTodosList(progenyId, familyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToContextsList(allTodos);
             
-            List<KanbanBoard> allKanbanBoards = await kanbanBoardsService.GetKanbanBoardsList(id, accessLevelResult.Value);
+            List<KanbanBoard> allKanbanBoards = await kanbanBoardsService.GetKanbanBoardsListForProgenyOrFamily(progenyId, familyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToContextsList(allKanbanBoards);
             
             List<string> autoSuggestList = autoSuggestListBuilder.GetContextsList();
@@ -123,35 +110,31 @@ namespace KinaUnaProgenyApi.Controllers
         /// Returns a list of strings for location auto suggest inputs for a given Progeny.
         /// Only returns locations with an access level equal to or higher than the accessLevel parameter.
         /// </summary>
-        /// <param name="id">The id of the Progeny.</param>
+        /// <param name="progenyId">The progenyId of the Progeny.</param>
+        /// <param name="familyId">The progenyId of the Family, if any. Default is 0.</param>
         /// <returns>List of string.</returns>
-        [Route("[action]/{id:int}")]
+        [Route("[action]/{progenyId:int}/{familyId:int}")]
         [HttpGet]
-        public async Task<IActionResult> GetLocationAutoSuggestList(int id)
+        public async Task<IActionResult> GetLocationAutoSuggestList(int progenyId, int familyId)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
             AutoSuggestListBuilder autoSuggestListBuilder = new();
-
-            List<Picture> allPictures = await picturesService.GetPicturesList(id, accessLevelResult.Value); 
-            autoSuggestListBuilder.AddItemsToLocationsList(allPictures);
             
-            List<Video> allVideos = await videosService.GetVideosList(id, accessLevelResult.Value);
-            autoSuggestListBuilder.AddItemsToLocationsList(allVideos);
-
-            List<CalendarItem> allCalendarItems = await calendarService.GetCalendarList(id, accessLevelResult.Value);
+            List<CalendarItem> allCalendarItems = await calendarService.GetCalendarList(progenyId, familyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToLocationsList(allCalendarItems);
 
-            List<Location> allLocations = await locationService.GetLocationsList(id, accessLevelResult.Value);
+            List<Location> allLocations = await locationService.GetLocationsList(progenyId, familyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToLocationsList(allLocations);
 
-            List<TodoItem> allTodoItems = await todosService.GetTodosList(id, accessLevelResult.Value);
+            List<TodoItem> allTodoItems = await todosService.GetTodosList(progenyId, familyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToLocationsList(allTodoItems);
+
+            List<Picture> allPictures = await picturesService.GetPicturesList(progenyId, currentUserInfo);
+            autoSuggestListBuilder.AddItemsToLocationsList(allPictures);
+
+            List<Video> allVideos = await videosService.GetVideosList(progenyId, currentUserInfo);
+            autoSuggestListBuilder.AddItemsToLocationsList(allVideos);
 
             List<string> autoSuggestList = autoSuggestListBuilder.GetLocationsList();
             autoSuggestList.Sort();
@@ -163,41 +146,37 @@ namespace KinaUnaProgenyApi.Controllers
         /// Returns a list of strings for tag auto suggest inputs for a given Progeny.
         /// Only returns tags with an access level equal to or higher than the accessLevel parameter.
         /// </summary>
-        /// <param name="id">The id of the Progeny.</param>
+        /// <param name="progenyId">The progenyId of the Progeny.</param>
+        /// <param name="familyId"></param>
         /// <returns>List of string.</returns>
-        [Route("[action]/{id:int}")]
+        [Route("[action]/{progenyId:int}/{familyId:int}")]
         [HttpGet]
-        public async Task<IActionResult> GetTagsAutoSuggestList(int id)
+        public async Task<IActionResult> GetTagsAutoSuggestList(int progenyId, int familyId)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
             AutoSuggestListBuilder autoSuggestListBuilder = new();
-
-            List<Picture> allPictures = await picturesService.GetPicturesList(id, accessLevelResult.Value);
-            autoSuggestListBuilder.AddItemsToTagsList(allPictures);
-
-            List<Video> allVideos = await videosService.GetVideosList(id, accessLevelResult.Value);
-            autoSuggestListBuilder.AddItemsToTagsList(allVideos);
-
-            List<Location> allLocations = await locationService.GetLocationsList(id, accessLevelResult.Value);
+            
+            List<Location> allLocations = await locationService.GetLocationsList(progenyId, familyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToTagsList(allLocations);
 
-            List<Friend> allFriends = await friendService.GetFriendsList(id, accessLevelResult.Value);
+            List<Friend> allFriends = await friendService.GetFriendsList(progenyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToTagsList(allFriends);
 
-            List<Contact> allContacts = await contactService.GetContactsList(id, accessLevelResult.Value);
+            List<Contact> allContacts = await contactService.GetContactsList(progenyId, familyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToTagsList(allContacts);
 
-            List<TodoItem> allTodoItems = await todosService.GetTodosList(id, accessLevelResult.Value);
+            List<TodoItem> allTodoItems = await todosService.GetTodosList(progenyId, familyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToTagsList(allTodoItems);
 
-            List<KanbanBoard> allKanbanBoards = await kanbanBoardsService.GetKanbanBoardsList(id, accessLevelResult.Value);
+            List<KanbanBoard> allKanbanBoards = await kanbanBoardsService.GetKanbanBoardsListForProgenyOrFamily(progenyId, familyId, currentUserInfo);
             autoSuggestListBuilder.AddItemsToTagsList(allKanbanBoards);
+            
+            List<Picture> allPictures = await picturesService.GetPicturesList(progenyId, currentUserInfo);
+            autoSuggestListBuilder.AddItemsToTagsList(allPictures);
+
+            List<Video> allVideos = await videosService.GetVideosList(progenyId, currentUserInfo);
+            autoSuggestListBuilder.AddItemsToTagsList(allVideos);
 
             List<string> autoSuggestList = autoSuggestListBuilder.GetTagsList();
             autoSuggestList.Sort();
@@ -209,20 +188,15 @@ namespace KinaUnaProgenyApi.Controllers
         /// Returns a list of strings for language auto suggest inputs when adding or editing a VocabularyItem for a given Progeny.
         /// Only returns languages with an access level equal to or higher than the accessLevel parameter.
         /// </summary>
-        /// <param name="id">The id of the Progeny.</param>
+        /// <param name="progenyId">The progenyId of the Progeny.</param>
         /// <returns>List of string.</returns>
-        [Route("[action]/{id:int}")]
+        [Route("[action]/{progenyId:int}")]
         [HttpGet]
-        public async Task<IActionResult> GetVocabularyLanguagesSuggestList(int id)
+        public async Task<IActionResult> GetVocabularyLanguagesSuggestList(int progenyId)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
-            List<VocabularyItem> allVocabularyItems = await vocabularyService.GetVocabularyList(id, accessLevelResult.Value);
+            List<VocabularyItem> allVocabularyItems = await vocabularyService.GetVocabularyList(progenyId, currentUserInfo);
             
             List<string> autoSuggestList = [];
             foreach (VocabularyItem vocabularyItem in allVocabularyItems)

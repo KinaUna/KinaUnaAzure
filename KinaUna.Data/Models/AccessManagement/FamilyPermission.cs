@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models.AccessManagement
 {
@@ -22,19 +23,7 @@ namespace KinaUna.Data.Models.AccessManagement
         /// Gets or sets the unique identifier for the family.
         /// </summary>
         public int FamilyId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the unique identifier for the user.
-        /// </summary>
-        [MaxLength(256)]
-        public string UserId { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the email address associated with the user.
-        /// </summary>
-        [MaxLength(256)]
-        public string Email { get; set; } = string.Empty; // Fallback for UserId, in case we want to invite a user by email.
-
+        
         /// <summary>
         /// Gets or sets the group identifier if the permission is granted to a group.
         /// </summary>
@@ -65,5 +54,8 @@ namespace KinaUna.Data.Models.AccessManagement
         /// </summary>
         [MaxLength(256)]
         public string ModifiedBy { get; set; } = string.Empty;
+
+        [NotMapped]
+        public UserInfo UserInfo { get; set; } = new();
     }
 }

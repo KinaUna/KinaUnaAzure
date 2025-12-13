@@ -1,5 +1,6 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
+@using KinaUna.Data.Models.AccessManagement
 @model KinaUnaWeb.Models.ItemViewModels.VaccinationViewModel
 @inject ILocaleManager LocaleManager
 @{
@@ -32,11 +33,14 @@
                             <div class="col-12">@await LocaleManager.GetTranslation("Language", PageNames.Vocabulary, Model.LanguageId): @Model.VaccinationItem.Notes</div>
                         }
                     </div>
-                    @if (Model.IsCurrentUserProgenyAdmin)
+                    @if (Model.VaccinationItem.ItemPermission.PermissionLevel >= PermissionLevel.Edit)
                     {
                         <div class="col-12">
                             <a asp-controller="Vaccinations" asp-action="EditVaccination" asp-route-itemId="@Model.VaccinationItem.VaccinationId" class="btn btn-info item-details-edit-button"><i class="fas fa-pencil-alt"></i></a>
-                            <a asp-controller="Vaccinations" asp-action="DeleteVaccination" asp-route-itemId="@Model.VaccinationItem.VaccinationId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                            @if (Model.VaccinationItem.ItemPermission.PermissionLevel >= PermissionLevel.Admin)
+                            {
+                                <a asp-controller="Vaccinations" asp-action="DeleteVaccination" asp-route-itemId="@Model.VaccinationItem.VaccinationId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                            }
                         </div>
 
                     }

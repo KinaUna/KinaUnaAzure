@@ -2,11 +2,21 @@
 @using KinaUnaWeb.Services
 @using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
 @model KinaUnaWeb.Models.ItemViewModels.CalendarItemViewModel
 @inject ILocaleManager LocaleManager
 @{
     int languageId = LocaleManager.GetLanguageId(Context.Request);
-    string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Events", PageNames.Calendar, Model.LanguageId);
+    string title = "";
+    if (Model.CalendarItem.ProgenyId > 0)
+    {
+        title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Events", PageNames.Calendar, Model.LanguageId);
+    }
+    if (Model.CalendarItem.FamilyId > 0)
+    {
+        title = Model.CurrentFamily.Name + " : " + await LocaleManager.GetTranslation("Events", PageNames.Calendar, Model.LanguageId);
+    }
+    
     Model.CalendarItem.StartTime ??= DateTime.MinValue;
     Model.CalendarItem.EndTime ??= DateTime.MinValue;
     string startDateString = Model.CalendarItem.StartTime.Value.ToString("dd MMM yyyy");
@@ -34,7 +44,14 @@
     <div class="timeline-card-body bg-calendar item-details-content">
         <div class="row sticky-top m-0 item-details-header">
             <div class="col-12 bg-calendar-header">
-                <img src="@Model.CalendarItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture"/>
+                @if (Model.CalendarItem.ProgenyId > 0)
+                {
+                    <img src="@Model.CalendarItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                }
+                @if (Model.CalendarItem.FamilyId > 0)
+                {
+                    <img src="@Model.CalendarItem.Family.GetProfilePictureUrl()" class="item-details-title-picture" />
+                }
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
@@ -155,13 +172,16 @@
             </div>
         </div>
         <div class="row m-0">    
-            @if (Model.IsCurrentUserProgenyAdmin)
+            @if (Model.CalendarItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
             {
-                
                 <div class="col-12">
                     <div class="space-20"></div>
                     <a data-edit-item-type="calendar" data-edit-item-item-id="@Model.CalendarItem.EventId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
-                    <a asp-controller="Calendar" asp-action="DeleteEvent" asp-route-itemId="@Model.CalendarItem.EventId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    @if (Model.CalendarItem.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
+                    {
+                        <a asp-controller="Calendar" asp-action="DeleteEvent" asp-route-itemId="@Model.CalendarItem.EventId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    }
+                    
                 </div>
             }
         </div>

@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using KinaUna.Data;
-using KinaUna.Data.Extensions;
+﻿using KinaUna.Data;
+using KinaUna.Data.Models.Family;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Collections.Generic;
 
 namespace KinaUnaWeb.Models;
 
@@ -11,57 +11,15 @@ namespace KinaUnaWeb.Models;
 public class BaseItemsViewModel : BaseViewModel
 {
     public int CurrentProgenyId { get; set; }
-    public int CurrentAccessLevel { get; private set; } = (int)AccessLevel.NoAccess;
+    public int CurrentFamilyId { get; set; }
     public Progeny CurrentProgeny { get; set; }
-    public List<UserAccess> CurrentProgenyAccessList { get; set; }
-    public bool IsCurrentUserProgenyAdmin { get; set; }
-    public string Tags { get; set; }
-    public string TagsList { get; set; }
-
-    /// <summary>
-    /// Set the current Progeny Id.
-    /// If the Progeny Id is 0 and the CurrentUser has a ViewChild set, the ViewChild Id is used.
-    /// Else the DefaultChildId is used.
-    /// </summary>
-    /// <param name="progenyId">The Id of the Progeny.</param>
-    public void SetCurrentProgenyId(int progenyId)
-    {
-        CurrentProgenyId = progenyId;
-
-        if (progenyId == 0 && CurrentUser.ViewChild > 0)
-        {
-            CurrentProgenyId = CurrentUser.ViewChild;
-        }
-
-        if (CurrentProgenyId == 0)
-        {
-            CurrentProgenyId = Constants.DefaultChildId;
-        }
-    }
-
-    /// <summary>
-    /// Set the current users access level for the current Progeny and determines if the current user is an admin for the progeny.
-    /// </summary>
-    public void SetCurrentUsersAccessLevel()
-    {
-        CurrentAccessLevel = (int)AccessLevel.NoAccess;
-        if (CurrentUser == null || CurrentProgeny == null) return;
-
-        if (CurrentProgenyAccessList.Count != 0)
-        {
-            UserAccess userAccess = CurrentProgenyAccessList.SingleOrDefault(u => u.UserId.Equals(CurrentUser.UserEmail, System.StringComparison.CurrentCultureIgnoreCase));
-            if (userAccess != null)
-            {
-                CurrentAccessLevel = userAccess.AccessLevel;
-            }
-        }
-
-        if (!CurrentProgeny.IsInAdminList(CurrentUser.UserEmail)) return;
-
-        IsCurrentUserProgenyAdmin = true;
-        CurrentAccessLevel = (int)AccessLevel.Private;
-    }
-
+    public Family CurrentFamily { get; set; }
+    public List<SelectListItem> ProgenyList { get; set; }
+    public List<SelectListItem> FamilyList { get; set; }
+    public string Tags { get; set; } = string.Empty;
+    public string TagsList { get; set; } = "[]";
+    public string ItemPermissionsListAsString { get; set; } = "";
+    public bool InheritPermissions { get; set; }
     /// <summary>
     /// Sets the base properties for the ViewModel, used by classes inheriting from this class.
     /// </summary>
@@ -70,11 +28,23 @@ public class BaseItemsViewModel : BaseViewModel
     {
         LanguageId = baseItemsViewModel.LanguageId;
         CurrentUser = baseItemsViewModel.CurrentUser;
-        CurrentProgenyId = baseItemsViewModel.CurrentProgenyId;
-        CurrentAccessLevel = baseItemsViewModel.CurrentAccessLevel;
+        CurrentProgenyId = baseItemsViewModel.CurrentProgeny?.Id ?? 0;
+        CurrentFamilyId = baseItemsViewModel.CurrentFamily?.FamilyId ?? 0;
         CurrentProgeny = baseItemsViewModel.CurrentProgeny;
-        CurrentProgenyAccessList = baseItemsViewModel.CurrentProgenyAccessList;
-        IsCurrentUserProgenyAdmin = baseItemsViewModel.IsCurrentUserProgenyAdmin;
+        CurrentFamily = baseItemsViewModel.CurrentFamily;
+    }
+
+    public void UseCurrentViewChildOrDefault()
+    {
+        if (CurrentProgenyId == 0 && CurrentUser.ViewChild > 0)
+        {
+            CurrentProgenyId = CurrentUser.ViewChild;
+        }
+
+        if (CurrentProgenyId == 0)
+        {
+            CurrentProgenyId = Constants.DefaultChildId;
+        }
     }
 
     /// <summary>

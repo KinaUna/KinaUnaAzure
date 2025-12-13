@@ -1,20 +1,22 @@
-﻿using KinaUnaWeb.Models;
+﻿using KinaUna.Data;
+using KinaUna.Data.Extensions;
+using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.HomeViewModels;
+using KinaUnaWeb.Models.TypeScriptModels;
 using KinaUnaWeb.Services;
+using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Diagnostics;
-using System.Threading.Tasks;
-using KinaUna.Data;
-using KinaUna.Data.Extensions;
-using KinaUnaWeb.Models.TypeScriptModels;
-using KinaUnaWeb.Services.HttpClients;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Hosting;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using KinaUna.Data.Models.DTOs;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -22,6 +24,7 @@ namespace KinaUnaWeb.Controllers
         IMediaHttpClient mediaHttpClient,
         IWebHostEnvironment env,
         IUserInfosHttpClient userInfosHttpClient,
+        IProgenyHttpClient progenyHttpClient,
         ILanguagesHttpClient languagesHttpClient,
         IViewModelSetupService viewModelSetupService,
         IDistributedCache cache)
@@ -31,26 +34,77 @@ namespace KinaUnaWeb.Controllers
         /// The Home Index page.
         /// </summary>
         /// <param name="childId">The Id of the Progeny to view data for.</param>
+        /// <param name="familyId">The Id of the Family to view data for.</param>
         /// <returns>View with HomeFeedViewModel.</returns>
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int childId = 0)
+        public async Task<IActionResult> Index(int childId = 0, int familyId = 0)
         {
-            
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId);
             HomeFeedViewModel model = new(baseModel);
-           if (model.CurrentProgeny.Name == "401")
+
+            return View(model);
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> ProgenyTrivia([FromBody] TimelineRequest request)
+        {
+            List<int> allowedProgenies = [];
+            if (request.Progenies.Count > 0)
             {
-                return RedirectToAction("LogOut", "Account");
+                foreach (int progenyId in request.Progenies)
+                {
+                    Progeny progeny = await progenyHttpClient.GetProgeny(progenyId);
+                    if (progeny != null && progeny.Id > 0)
+                    {
+                        allowedProgenies.Add(progeny.Id);
+                    }
+                }
+
+                request.Progenies = allowedProgenies;
             }
 
+            if (User.Identity == null || !User.Identity.IsAuthenticated)
+            {
+                request.ProgenyId = Constants.DefaultChildId;
+            }
+            else
+            {
+                if (request.ProgenyId == 0)
+                {
+                    // Select a random Progeny if none is selected.
+                    if (request.Progenies.Count > 0)
+                    {
+                        Random rand = new();
+                        request.ProgenyId = request.Progenies[rand.Next(request.Progenies.Count)];
+                    }
+                    else
+                    {
+                        request.ProgenyId = Constants.DefaultChildId;
+                    }
+                }
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), request.ProgenyId, 0, false);
+            HomeFeedViewModel model = new(baseModel);
+            model.ProgenyList = [];
+            if (request.Progenies.Count > 0)
+            {
+                foreach (int requestProgenyId in request.Progenies)
+                {
+                    Progeny progeny = await progenyHttpClient.GetProgeny(requestProgenyId);
+                    if (progeny != null && progeny.Id > 0)
+                    {
+                        model.TriviaProgenies.Add(progeny);
+                    }
+                }
+            }
             model.SetBirthTimeData();
-            
-            if (model.CurrentAccessLevel < (int)AccessLevel.Public)
-            {
-                model.DisplayPicture = await mediaHttpClient.GetRandomPicture(model.CurrentProgeny.Id, model.CurrentUser.Timezone);
-            }
 
-            if (model.CurrentAccessLevel == (int)AccessLevel.Public || model.DisplayPicture == null)
+            model.DisplayPicture = await mediaHttpClient.GetRandomPicture(model.CurrentProgeny.Id, model.CurrentUser.Timezone);
+
+            if (model.DisplayPicture == null)
             {
                 model.DisplayPicture = await mediaHttpClient.GetRandomPicture(Constants.DefaultChildId, model.CurrentUser.Timezone) ?? model.CreateTempPicture($"https://{Request.Host}{Request.PathBase}");
 
@@ -67,10 +121,10 @@ namespace KinaUnaWeb.Controllers
 
             model.DisplayPicture.PictureLink600 = model.DisplayPicture.GetPictureUrl(600);
             model.SetDisplayPictureData();
-            
+
             model.SetPictureTimeData();
-            
-            return View(model);
+
+            return PartialView("_ProgenyTriviaPartial", model);
         }
 
         /// <summary>
@@ -102,7 +156,7 @@ namespace KinaUnaWeb.Controllers
                 model.LanguageId = languageId;
                 Response.SetLanguageCookie(languageId.ToString());
             }
-            model.CurrentUser = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            model.CurrentUser = await userInfosHttpClient.GetSimpleUserInfoByUserId(User.GetUserId());
             
             return View(model);
         }
@@ -126,7 +180,7 @@ namespace KinaUnaWeb.Controllers
                 Response.SetLanguageCookie(languageId.ToString());
             }
 
-            model.CurrentUser = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            model.CurrentUser = await userInfosHttpClient.GetSimpleUserInfoByUserId(User.GetUserId());
 
             return View(model);
         }
@@ -151,7 +205,7 @@ namespace KinaUnaWeb.Controllers
                 Response.SetLanguageCookie(languageId.ToString());
             }
 
-            model.CurrentUser = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            model.CurrentUser = await userInfosHttpClient.GetSimpleUserInfoByUserId(User.GetUserId());
 
             return View(model);
         }

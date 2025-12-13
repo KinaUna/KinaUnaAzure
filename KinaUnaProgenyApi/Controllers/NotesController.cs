@@ -1,10 +1,8 @@
 ﻿using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
-using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Models;
 using KinaUnaProgenyApi.Services;
-using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -17,10 +15,8 @@ namespace KinaUnaProgenyApi.Controllers
     /// <summary>
     /// API endpoints for Notes.
     /// </summary>
-    /// <param name="azureNotifications"></param>
     /// <param name="imageStore"></param>
     /// <param name="userInfoService"></param>
-    /// <param name="userAccessService"></param>
     /// <param name="timelineService"></param>
     /// <param name="noteService"></param>
     /// <param name="progenyService"></param>
@@ -30,10 +26,8 @@ namespace KinaUnaProgenyApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class NotesController(
-        IAzureNotifications azureNotifications,
         IImageStore imageStore,
         IUserInfoService userInfoService,
-        IUserAccessService userAccessService,
         ITimelineService timelineService,
         INoteService noteService,
         IProgenyService progenyService,
@@ -49,14 +43,9 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id:int}")]
         public async Task<IActionResult> Progeny(int id)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-
-            List<Note> notesList = await noteService.GetNotesList(id, accessLevelResult.Value);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            
+            List<Note> notesList = await noteService.GetNotesList(id, currentUserInfo);
             
             foreach (Note note in notesList)
             {
@@ -75,16 +64,10 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetNoteItem(int id)
         {
-            Note note = await noteService.GetNote(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Note note = await noteService.GetNote(id, currentUserInfo);
             if (note == null) return NotFound();
-
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(note.ProgenyId, userEmail, note.AccessLevel);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-
+            
             note.Content = imageStore.UpdateBlobLinks(note.Content, note.NoteId);
             return Ok(note);
 
@@ -101,34 +84,28 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Note value)
         {
-            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
-            {
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
-            }
-            else
-            {
-                return NotFound();
-            }
-
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId, currentUserInfo);
+            
             value.Owner = User.GetUserId();
 
-            Note noteItem = await noteService.AddNote(value);
+            value.CreatedBy = User.GetUserId();
+            value.ModifiedBy = User.GetUserId();
+
+            Note noteItem = await noteService.AddNote(value, currentUserInfo);
+            if (noteItem == null)
+            {
+                return Unauthorized();
+            }
 
             TimeLineItem timeLineItem = new();
             timeLineItem.CopyNotePropertiesForAdd(noteItem);
-            _ = await timelineService.AddTimeLineItem(timeLineItem);
-
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-
+            _ = await timelineService.AddTimeLineItem(timeLineItem, currentUserInfo);
+            
             string notificationTitle = "Note added for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " added a new note for " + progeny.NickName;
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendNoteNotification(noteItem, userInfo, notificationTitle);
+            await webNotificationsService.SendNoteNotification(noteItem, currentUserInfo, notificationTitle);
+
+            noteItem = await noteService.GetNote(noteItem.NoteId, currentUserInfo);
 
             return Ok(noteItem);
         }
@@ -144,33 +121,29 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Note value)
         {
-            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
-            {
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
-            }
-            else
-            {
-                return NotFound();
-            }
-
-            Note noteItem = await noteService.GetNote(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            
+            Note noteItem = await noteService.GetNote(id, currentUserInfo);
             if (noteItem == null)
             {
                 return NotFound();
             }
 
-            noteItem = await noteService.UpdateNote(value);
+            value.ModifiedBy = User.GetUserId();
 
-            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(noteItem.NoteId.ToString(), (int)KinaUnaTypes.TimeLineType.Note);
+            noteItem = await noteService.UpdateNote(value, currentUserInfo);
+            if (noteItem == null)
+            {
+                return Unauthorized();
+            }
+
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(noteItem.NoteId.ToString(), (int)KinaUnaTypes.TimeLineType.Note, currentUserInfo);
             if (timeLineItem == null) return Ok(noteItem);
 
             timeLineItem.CopyNotePropertiesForUpdate(noteItem);
-            _ = await timelineService.UpdateTimeLineItem(timeLineItem);
+            _ = await timelineService.UpdateTimeLineItem(timeLineItem, currentUserInfo);
+
+            noteItem = await noteService.GetNote(noteItem.NoteId, currentUserInfo);
 
             return Ok(noteItem);
         }
@@ -184,44 +157,35 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            Note noteItem = await noteService.GetNote(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Note noteItem = await noteService.GetNote(id, currentUserInfo);
             if (noteItem == null) return NotFound();
 
-            Progeny progeny = await progenyService.GetProgeny(noteItem.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
+            Progeny progeny = await progenyService.GetProgeny(noteItem.ProgenyId, currentUserInfo);
+            
+
+            
+
+            noteItem.ModifiedBy = User.GetUserId();
+
+            Note deletedNote = await noteService.DeleteNote(noteItem, currentUserInfo);
+            if (deletedNote == null)
             {
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
-            }
-            else
-            {
-                return NotFound();
+                return Unauthorized();
             }
 
-            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(noteItem.NoteId.ToString(), (int)KinaUnaTypes.TimeLineType.Note);
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(noteItem.NoteId.ToString(), (int)KinaUnaTypes.TimeLineType.Note, currentUserInfo);
             if (timeLineItem != null)
             {
-                _ = await timelineService.DeleteTimeLineItem(timeLineItem);
+                _ = await timelineService.DeleteTimeLineItem(timeLineItem, currentUserInfo);
             }
-
-            _ = await noteService.DeleteNote(noteItem);
-
             if (timeLineItem == null) return NoContent();
-
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-
+            
             string notificationTitle = "Note deleted for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " deleted a note for " + progeny.NickName + ". Note: " + noteItem.Title;
-
-            noteItem.AccessLevel = timeLineItem.AccessLevel = 0;
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendNoteNotification(noteItem, userInfo, notificationTitle);
+            
+            await webNotificationsService.SendNoteNotification(noteItem, currentUserInfo, notificationTitle);
 
             return NoContent();
-
         }
         
         /// <summary>
@@ -234,20 +198,15 @@ namespace KinaUnaProgenyApi.Controllers
         /// <returns>List of Measurement items.</returns>
         [HttpGet("[action]")]
         public async Task<IActionResult> GetNotesListPage([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] int sortBy = 1)
-        { 
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            
             if (pageIndex < 1)
             {
                 pageIndex = 1;
             }
 
-            List<Note> allItems = await noteService.GetNotesList(progenyId, accessLevelResult.Value);
+            List<Note> allItems = await noteService.GetNotesList(progenyId, currentUserInfo);
             allItems = [.. allItems.OrderBy(v => v.CreatedDate)];
 
             if (sortBy == 1)

@@ -1,20 +1,20 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using KinaUna.Data.Extensions;
+using KinaUna.Data.Models.DTOs;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
-using KinaUna.Data.Extensions;
+using System.Text.Json;
+using KinaUnaWeb.Models.TypeScriptModels.Sleep;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class SleepViewModel: BaseItemsViewModel
     {
-        public List<SelectListItem> ProgenyList { get; set; }
         public List<SelectListItem> RatingList { get; set; }
         public List<Sleep> SleepList { get; set; }
         public List<Sleep> ChartList { get; set; }
-        public List<SelectListItem> AccessLevelListEn { get; set; }
-        public List<SelectListItem> AccessLevelListDa { get; set; }
-        public List<SelectListItem> AccessLevelListDe { get; set; }
         public TimeSpan SleepTotal { get; set; }
         public TimeSpan TotalAverage { get; set; }
         public TimeSpan SleepLastMonth { get; set; }
@@ -25,13 +25,12 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public Sleep SleepItem { get; set; } = new();
         public int SleepId { get; set; }
 
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
         public SleepViewModel()
         {
             ProgenyList = [];
-            AccessLevelList aclList = new();
-            AccessLevelListEn = aclList.AccessLevelListEn;
-            AccessLevelListDa = aclList.AccessLevelListDa;
-            AccessLevelListDe = aclList.AccessLevelListDe;
         }
 
         public SleepViewModel(BaseItemsViewModel baseItemsViewModel)
@@ -54,29 +53,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 }
             }
         }
-
-        public void SetAccessLevelList()
-        {
-            AccessLevelList accessLevelList = new();
-            AccessLevelListEn = accessLevelList.AccessLevelListEn;
-            AccessLevelListDa = accessLevelList.AccessLevelListDa;
-            AccessLevelListDe = accessLevelList.AccessLevelListDe;
-
-            AccessLevelListEn[SleepItem.AccessLevel].Selected = true;
-            AccessLevelListDa[SleepItem.AccessLevel].Selected = true;
-            AccessLevelListDe[SleepItem.AccessLevel].Selected = true;
-
-            if (LanguageId == 2)
-            {
-                AccessLevelListEn = AccessLevelListDe;
-            }
-
-            if (LanguageId == 3)
-            {
-                AccessLevelListEn = AccessLevelListDa;
-            }
-        }
-
+        
         public void SetRatingList()
         {
             RatingList = [];
@@ -122,7 +99,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 CreatedDate = SleepItem.CreatedDate,
                 SleepStart = TimeZoneInfo.ConvertTimeToUtc(SleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)),
                 SleepEnd = TimeZoneInfo.ConvertTimeToUtc(SleepItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)),
-                SleepRating = SleepItem.SleepRating
+                SleepRating = SleepItem.SleepRating,
+                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString, JsonSerializerOptions.Web)
             };
 
             if (sleep.SleepRating == 0)
@@ -131,7 +109,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
             }
 
             sleep.SleepNotes = SleepItem.SleepNotes;
-            sleep.AccessLevel = SleepItem.AccessLevel;
             sleep.Author = SleepItem.Author;
 
             return sleep;
@@ -142,7 +119,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             SleepItem.ProgenyId = sleep.ProgenyId;
             SleepItem.Progeny = CurrentProgeny;
             SleepItem.SleepId = sleep.SleepId;
-            SleepItem.AccessLevel = sleep.AccessLevel;
+            SleepItem.ItemPerMission = sleep.ItemPerMission;
             SleepItem.Author = sleep.Author;
             SleepItem.CreatedDate = sleep.CreatedDate;
             SleepItem.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(sleep.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
@@ -172,8 +149,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
             foreach (Sleep sleep in sleepList)
             {
-                if (sleep.AccessLevel < CurrentAccessLevel) continue;
-
                 // Calculate average sleep.
                 bool isLessThanYear = sleep.SleepEnd > yearAgo;
                 bool isLessThanMonth = sleep.SleepEnd > monthAgo;
@@ -274,8 +249,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
             foreach (Sleep sleep in sleepList)
             {
-                if (sleep.AccessLevel < CurrentAccessLevel) continue;
-
                 sleep.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(sleep.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
                 sleep.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(sleep.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
                 sleep.SleepDuration = sleep.SleepEnd - sleep.SleepStart;
@@ -285,6 +258,30 @@ namespace KinaUnaWeb.Models.ItemViewModels
             }
 
             SleepList = [.. SleepList.OrderBy(s => s.SleepStart)];
+        }
+
+        public SleepDataModel GetSleepDataModel()
+        {
+            SleepDataModel sleepDataModel = new()
+            {
+                ChartList = ChartList,
+                SleepTotal = SleepTotal.ToString(),
+                SleepTotalHours = SleepTotal.TotalHours.ToString("0.000"),
+                SleepAveragePerDay = TotalAverage.ToString(),
+                SleepLastYear = SleepLastYear.ToString(),
+                SleepAveragePerDayLastYear = LastYearAverage.ToString(),
+                SleepLastMonth = SleepLastMonth.ToString(),
+                SleepAveragePerDayLastMonth = LastMonthAverage.ToString(),
+                SliderStart = ChartList.First().SleepStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                SliderEnd = ChartList.Last().SleepStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)
+            };
+
+            foreach (Sleep sleep in sleepDataModel.ChartList)
+            {
+                sleep.SleepDurationHours = sleep.SleepDuration.TotalHours;
+            }
+
+            return sleepDataModel;
         }
     }
 }

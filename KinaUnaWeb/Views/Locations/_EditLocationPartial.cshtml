@@ -5,11 +5,15 @@
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Edit location", PageNames.Locations, Model.LanguageId);
+    string locationForString = await LocaleManager.GetTranslation("Location for", PageNames.Locations, Model.LanguageId);
     const string longDateTimeFormat = "dd-MMMM-yyyy";
     const string zebraDateTimeFormat = "d-F-Y";
     bool allowHereMaps = Context.Request.HereMapsCookieSet();
     const int changedItemTypeLocation = (int)KinaUnaTypes.TimeLineType.Location;
+    int permissionsDataType = (int)KinaUnaTypes.TimeLineType.Location;
 }
+<div class="d-none" id="item-progeny-id-div" data-progeny-id="@Model.LocationItem.ProgenyId"></div>
+<div class="d-none" id="item-family-id-div" data-family-id="@Model.LocationItem.FamilyId"></div>
 <div class="timeline-update-data-div d-none" data-changed-item-type="@changedItemTypeLocation" data-changed-item-item-id="@Model.LocationItem.LocationId"></div>
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="add-location-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
@@ -22,6 +26,32 @@
             </div>
         </div>
         <form id="save-item-form" asp-action="EditLocation" asp-controller="Locations" role="form" method="post" enctype="multipart/form-data">
+            <div class="space-20"></div>
+            <div class="form-group d-none">
+                <label class="col-auto control-label">@locationForString</label>
+                <div class="col-auto">
+                    <button id="add-item-for-individual-button" class="btn btn-primary" type="button">Individual</button>
+                    <button id="add-item-for-family-button" class="btn btn-outline-primary" type="button">Family</button>
+                </div>
+            </div>
+            @if (Model.ProgenyList.Count > 0)
+            {
+                <div id="individual-select-from-group" class="form-group">
+                    <label asp-for="LocationItem.ProgenyId" class="col-auto control-label">@locationForString </label>
+                    <div class="col-auto">
+                        <select id="item-progeny-id-select" disabled="disabled" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="LocationItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
+                    </div>
+                </div>
+            }
+            @if (Model.FamilyList.Count > 0)
+            {
+                <div id="family-select-from-group" class="form-group d-none">
+                    <label asp-for="LocationItem.FamilyId" class="col-auto control-label">@locationForString </label>
+                    <div class="col-auto">
+                        <select id="item-family-id-select" disabled="disabled" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.FamilyList.Count" asp-for="LocationItem.FamilyId" asp-items="@Model.FamilyList"></select>
+                    </div>
+                </div>
+            }
             <div class="space-20"></div>
             <div class="form-group">
                 <label asp-for="LocationItem.Name" class="col-auto control-label">@await LocaleManager.GetTranslation("Name or label", PageNames.Locations, Model.LanguageId)</label>
@@ -116,17 +146,15 @@
                     <input id="tag-list" type="text" asp-for="LocationItem.Tags" value="@Model.LocationItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Locations, Model.LanguageId)" class="form-control"/>
                 </div>
             </div>
-            <div class="form-group">
-                <label asp-for="LocationItem.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-                <div class="col-auto">
-                    <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="LocationItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
-                </div>
-            </div>
+            <div id="item-permissions-editor-div" class="d-none" data-item-type="@permissionsDataType" data-item-id="@Model.LocationItem.LocationId"></div>
+            <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
+            <input id="inherit-permissions-input" asp-for="InheritPermissions" value="@Model.InheritPermissions" type="hidden"/>
             <div class="space-20"></div>
             <div>
                 <div class="form-group">
                     <input asp-for="LocationItem.LocationId" type="text" value="@Model.LocationItem.LocationId" hidden="hidden"/>
                     <input asp-for="LocationItem.ProgenyId" value="@Model.LocationItem.ProgenyId" hidden="hidden"/>
+                    <input asp-for="LocationItem.FamilyId" value="@Model.LocationItem.FamilyId" hidden="hidden"/>
                     <div class="col-auto control-label"></div>
                     <div class="col-auto">
                         <button class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>

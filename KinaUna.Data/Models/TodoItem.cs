@@ -1,7 +1,10 @@
 ﻿using KinaUna.Data.Models.ItemInterfaces;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.DTOs;
 
 namespace KinaUna.Data.Models
 {
@@ -22,10 +25,17 @@ namespace KinaUna.Data.Models
         /// Gets or sets the global identifier for this task, which can be used as a reference for copies and when importing/exporting TodoItems.
         /// </summary>
         [MaxLength(128)] public string UId { get; set; } = string.Empty;
+
         /// <summary>
-        /// Gets or sets the unique identifier for the progeny this task is assigned to.
+        /// Gets or sets the unique identifier for the progeny this task is assigned to. A value of 0 indicates that the entity is assigned to a family.
         /// </summary>
-        public int ProgenyId { get; set; } // Assigned to.
+        public int ProgenyId { get; set; } = 0; // Assigned to. 0 if assigned to a family.
+
+        /// <summary>
+        /// Gets or sets the unique identifier for the family.  A value of 0 indicates that the entity is assigned to a
+        /// progeny.
+        /// </summary>
+        public int FamilyId { get; set; } = 0; // 0 if assigned to a progeny.
         /// <summary>
         /// Gets or sets the title associated with the task.
         /// </summary>
@@ -58,10 +68,7 @@ namespace KinaUna.Data.Models
         /// </summary>
         [MaxLength(4096)]
         public string Notes { get; set; } = string.Empty;
-        /// <summary>
-        /// Gets or sets the access level required to view this task.
-        /// </summary>
-        public int AccessLevel { get; set; }
+        
         /// <summary>
         /// Gets or sets a comma-separated list of tags associated with the task.
         /// </summary>
@@ -110,13 +117,31 @@ namespace KinaUna.Data.Models
         /// Gets or sets the associated progeny data for the current entity.
         /// </summary>
         [NotMapped]
-        public Progeny Progeny { get; set; } = new Progeny();
+        public Progeny Progeny { get; set; } = new();
 
+        [NotMapped]
+        public Family.Family Family { get; set; } = new();
         [NotMapped]
         public int SubtaskCount { get; set; } = 0;
         [NotMapped]
         public int CompletedSubtaskCount { get; set; } = 0;
 
+        /// <summary>
+        /// The current user's permissions for this item.
+        /// </summary>
+        [NotMapped]
+        public TimelineItemPermission ItemPerMission { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of item permissions associated with the current entity. For adding or updating item permissions.
+        /// </summary>
+        [NotMapped]
+        public List<ItemPermissionDto> ItemPermissionsDtoList { get; set; } = [];
+
+        /// <summary>
+        /// Gets or sets the list of permissions to be copied when creating a deep copy of the item.
+        /// </summary>
+        [NotMapped] public List<TimelineItemPermission> ItemPermissionsListToCopy { get; set; } = [];
         public string GetLocationString()
         {
             return Location;

@@ -11,13 +11,13 @@ namespace KinaUnaProgenyApi.Tests.Helpers
         {
             List<TimeLineItem> timeLineItems =
             [
-                new TimeLineItem { ItemType = (int)KinaUnaTypes.TimeLineType.Calendar },
-                new TimeLineItem { ItemType = (int)KinaUnaTypes.TimeLineType.Contact },
-                new TimeLineItem { ItemType = (int)KinaUnaTypes.TimeLineType.Photo },
-                new TimeLineItem { ItemType = (int)KinaUnaTypes.TimeLineType.Note },
-                new TimeLineItem { ItemType = (int)KinaUnaTypes.TimeLineType.Photo },
-                new TimeLineItem { ItemType = (int)KinaUnaTypes.TimeLineType.Sleep },
-                new TimeLineItem { ItemType = (int)KinaUnaTypes.TimeLineType.Video }
+                new() { ItemType = (int)KinaUnaTypes.TimeLineType.Calendar },
+                new() { ItemType = (int)KinaUnaTypes.TimeLineType.Contact },
+                new() { ItemType = (int)KinaUnaTypes.TimeLineType.Photo },
+                new() { ItemType = (int)KinaUnaTypes.TimeLineType.Note },
+                new() { ItemType = (int)KinaUnaTypes.TimeLineType.Photo },
+                new() { ItemType = (int)KinaUnaTypes.TimeLineType.Sleep },
+                new() { ItemType = (int)KinaUnaTypes.TimeLineType.Video }
             ];
 
             List<KinaUnaTypes.TimeLineType> timeLineTypes = [];
@@ -31,13 +31,13 @@ namespace KinaUnaProgenyApi.Tests.Helpers
         {
             List<TimeLineItem> timeLineItems =
             [
-                new TimeLineItem { ItemType = (int)KinaUnaTypes.TimeLineType.Calendar },
-                new TimeLineItem { ItemType = (int)KinaUnaTypes.TimeLineType.Contact },
-                new TimeLineItem { ItemType = (int)KinaUnaTypes.TimeLineType.Photo },
-                new TimeLineItem { ItemType = (int)KinaUnaTypes.TimeLineType.Note },
-                new TimeLineItem { ItemType = (int)KinaUnaTypes.TimeLineType.Photo },
-                new TimeLineItem { ItemType = (int)KinaUnaTypes.TimeLineType.Sleep },
-                new TimeLineItem { ItemType = (int)KinaUnaTypes.TimeLineType.Video }
+                new() { ItemType = (int)KinaUnaTypes.TimeLineType.Calendar },
+                new() { ItemType = (int)KinaUnaTypes.TimeLineType.Contact },
+                new() { ItemType = (int)KinaUnaTypes.TimeLineType.Photo },
+                new() { ItemType = (int)KinaUnaTypes.TimeLineType.Note },
+                new() { ItemType = (int)KinaUnaTypes.TimeLineType.Photo },
+                new() { ItemType = (int)KinaUnaTypes.TimeLineType.Sleep },
+                new() { ItemType = (int)KinaUnaTypes.TimeLineType.Video }
             ];
 
             List<KinaUnaTypes.TimeLineType> timeLineTypes =
@@ -56,13 +56,13 @@ namespace KinaUnaProgenyApi.Tests.Helpers
         {
             List<TimeLineItem> timeLineItems =
             [
-                new TimeLineItem { ItemType = (int)KinaUnaTypes.TimeLineType.Photo },
-                new TimeLineItem { ItemType = (int)KinaUnaTypes.TimeLineType.Video },
-                new TimeLineItem { ItemType = (int)KinaUnaTypes.TimeLineType.Photo },
-                new TimeLineItem { ItemType = (int)KinaUnaTypes.TimeLineType.Video },
-                new TimeLineItem { ItemType = (int)KinaUnaTypes.TimeLineType.Photo },
-                new TimeLineItem { ItemType = (int)KinaUnaTypes.TimeLineType.Video },
-                new TimeLineItem { ItemType = (int)KinaUnaTypes.TimeLineType.Sleep }
+                new() { ItemType = (int)KinaUnaTypes.TimeLineType.Photo },
+                new() { ItemType = (int)KinaUnaTypes.TimeLineType.Video },
+                new() { ItemType = (int)KinaUnaTypes.TimeLineType.Photo },
+                new() { ItemType = (int)KinaUnaTypes.TimeLineType.Video },
+                new() { ItemType = (int)KinaUnaTypes.TimeLineType.Photo },
+                new() { ItemType = (int)KinaUnaTypes.TimeLineType.Video },
+                new() { ItemType = (int)KinaUnaTypes.TimeLineType.Sleep }
             ];
 
             List<KinaUnaTypes.TimeLineType> timeLineTypes =
@@ -82,13 +82,13 @@ namespace KinaUnaProgenyApi.Tests.Helpers
         {
             List<TimeLineItem> timeLineItems =
             [
-                new TimeLineItem { ProgenyTime = DateTime.UtcNow.AddDays(-1) },
-                new TimeLineItem { ProgenyTime = DateTime.UtcNow.AddDays(-2) },
-                new TimeLineItem { ProgenyTime = DateTime.UtcNow.AddDays(-3) },
-                new TimeLineItem { ProgenyTime = DateTime.UtcNow.AddDays(-4) },
-                new TimeLineItem { ProgenyTime = DateTime.UtcNow.AddDays(-5) },
-                new TimeLineItem { ProgenyTime = DateTime.UtcNow.AddDays(-6) },
-                new TimeLineItem { ProgenyTime = DateTime.UtcNow.AddDays(-7) }
+                new() { ProgenyTime = DateTime.UtcNow.AddDays(-1) },
+                new() { ProgenyTime = DateTime.UtcNow.AddDays(-2) },
+                new() { ProgenyTime = DateTime.UtcNow.AddDays(-3) },
+                new() { ProgenyTime = DateTime.UtcNow.AddDays(-4) },
+                new() { ProgenyTime = DateTime.UtcNow.AddDays(-5) },
+                new() { ProgenyTime = DateTime.UtcNow.AddDays(-6) },
+                new() { ProgenyTime = DateTime.UtcNow.AddDays(-7) }
             ];
 
             OnThisDayRequest onThisDayRequest = new()
@@ -110,10 +110,10 @@ namespace KinaUnaProgenyApi.Tests.Helpers
             DateTime sampleDateTime = new(2000, 1, 1);
             List<TimeLineItem> timeLineItems =
             [
-                new TimeLineItem { ProgenyTime = sampleDateTime.AddMonths(-1) },
-                new TimeLineItem { ProgenyTime = sampleDateTime.AddDays(-2) },
-                new TimeLineItem { ProgenyTime = sampleDateTime.AddDays(-14) },
-                new TimeLineItem { ProgenyTime = sampleDateTime.AddDays(-30) },
+                new() { ProgenyTime = sampleDateTime.AddMonths(-1) },
+                new() { ProgenyTime = sampleDateTime.AddDays(-2) },
+                new() { ProgenyTime = sampleDateTime.AddDays(-14) },
+                new() { ProgenyTime = sampleDateTime.AddDays(-30) },
             ];
 
             OnThisDayRequest onThisDayRequest = new()
@@ -135,13 +135,13 @@ namespace KinaUnaProgenyApi.Tests.Helpers
             DateTime sampleDateTime = new(2000, 1, 1);
             List<TimeLineItem> timeLineItems =
             [
-                new TimeLineItem { ProgenyTime = sampleDateTime.AddMonths(-12) },
-                new TimeLineItem { ProgenyTime = sampleDateTime.AddMonths(-3) },
-                new TimeLineItem { ProgenyTime = sampleDateTime.AddMonths(-6) },
-                new TimeLineItem { ProgenyTime = sampleDateTime.AddMonths(-9) },
-                new TimeLineItem { ProgenyTime = sampleDateTime.AddDays(-2) },
-                new TimeLineItem { ProgenyTime = sampleDateTime.AddDays(-14) },
-                new TimeLineItem { ProgenyTime = sampleDateTime.AddDays(-30) },
+                new() { ProgenyTime = sampleDateTime.AddMonths(-12) },
+                new() { ProgenyTime = sampleDateTime.AddMonths(-3) },
+                new() { ProgenyTime = sampleDateTime.AddMonths(-6) },
+                new() { ProgenyTime = sampleDateTime.AddMonths(-9) },
+                new() { ProgenyTime = sampleDateTime.AddDays(-2) },
+                new() { ProgenyTime = sampleDateTime.AddDays(-14) },
+                new() { ProgenyTime = sampleDateTime.AddDays(-30) },
             ];
 
             OnThisDayRequest onThisDayRequest = new()
@@ -164,13 +164,13 @@ namespace KinaUnaProgenyApi.Tests.Helpers
 
             List<TimeLineItem> timeLineItems =
             [
-                new TimeLineItem { ProgenyTime = sampleDateTime.AddMonths(-12) },
-                new TimeLineItem { ProgenyTime = sampleDateTime.AddMonths(-24) },
-                new TimeLineItem { ProgenyTime = sampleDateTime.AddMonths(-6) },
-                new TimeLineItem { ProgenyTime = sampleDateTime.AddMonths(-9) },
-                new TimeLineItem { ProgenyTime = sampleDateTime.AddDays(-2) },
-                new TimeLineItem { ProgenyTime = sampleDateTime.AddDays(-14) },
-                new TimeLineItem { ProgenyTime = sampleDateTime.AddDays(-30) },
+                new() { ProgenyTime = sampleDateTime.AddMonths(-12) },
+                new() { ProgenyTime = sampleDateTime.AddMonths(-24) },
+                new() { ProgenyTime = sampleDateTime.AddMonths(-6) },
+                new() { ProgenyTime = sampleDateTime.AddMonths(-9) },
+                new() { ProgenyTime = sampleDateTime.AddDays(-2) },
+                new() { ProgenyTime = sampleDateTime.AddDays(-14) },
+                new() { ProgenyTime = sampleDateTime.AddDays(-30) },
             ];
 
             OnThisDayRequest onThisDayRequest = new()

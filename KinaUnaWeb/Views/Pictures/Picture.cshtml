@@ -1,6 +1,7 @@
 ﻿@using System.Globalization
 @using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.PictureItemViewModel
 @inject ILocaleManager LocaleManager
@@ -22,8 +23,9 @@
     string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
     string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
+    int permissionsDataType = (int)KinaUnaTypes.TimeLineType.Photo;
 }
-
+<div class="d-none" id="item-progeny-id-div" data-progeny-id="@Model.Picture.ProgenyId"></div>
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
@@ -65,7 +67,7 @@
             {
                 <div style="font-size: 16px; line-height: 90%;">
                     <p>Photo taken: @Model.PicTime</p>
-                    <p>@Model.CurrentProgeny.NickName @wasString @Model.PicYears @await LocaleManager.GetTranslation("years old.", PageNames.Pictures, Model.LanguageId)</p>
+                    <p>@Model.CurrentProgeny.NickName @wasString @Model.PicYearsDataList @await LocaleManager.GetTranslation("years old.", PageNames.Pictures, Model.LanguageId)</p>
                     <p>@Model.CurrentProgeny.NickName @wasString @Model.PicMonths @await LocaleManager.GetTranslation("months old.", PageNames.Pictures, Model.LanguageId)</p>
                     <p>@Model.CurrentProgeny.NickName @wasString @Model.PicWeeks[0] @await LocaleManager.GetTranslation("weeks and", PageNames.Pictures, Model.LanguageId) @Model.PicWeeks[1] @daysOldString</p>
                     <p>@Model.CurrentProgeny.NickName @wasString @Model.PicDays @daysOldString</p>
@@ -253,7 +255,7 @@
             </form>
         }
         <div class="space-20"></div>
-        @if (Model.IsCurrentUserProgenyAdmin)
+        @if (Model.Picture.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
         {
             <div class="col-sm-3" style="margin-top: 35px;"></div>
             <div class="col-md-8">
@@ -266,12 +268,6 @@
                         <label asp-for="Picture.Tags" class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Pictures, Model.LanguageId)</label>
                         <div class="col-auto">
                             <input id="tag-list" type="text" asp-for="Picture.Tags" value="@Model.Picture.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Pictures, Model.LanguageId)" class="form-control"/>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label asp-for="Picture.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-                        <div class="col-auto">
-                            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="Picture.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
                         </div>
                     </div>
                     <div class="form-group">
@@ -325,6 +321,9 @@
                             </div>
                         </div>
                     }
+                    <div id="item-permissions-editor-div" class="d-none" data-item-type="@permissionsDataType" data-item-id="@Model.Picture.PictureId"></div>
+                    <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
+                    <input id="inherit-permissions-input" asp-for="InheritPermissions" value="@Model.InheritPermissions" type="hidden"/>
                     <div class="space-20"></div>
                     <input asp-for="Picture.PictureId" class="form-control" value="@Model.Picture.PictureId" type="hidden" />
                     <input asp-for="Picture.ProgenyId" class="form-control" value="@Model.Picture.ProgenyId" type="hidden" />
@@ -341,17 +340,20 @@
                         </div>
                     </div>
                 </form>
-                <form asp-controller="Pictures" asp-action="DeletePicture" role="form" method="get">
-                    <div class="form-group">
-                        <label class="col-auto control-label">@await LocaleManager.GetTranslation("Remove this picture:", PageNames.Pictures, Model.LanguageId)</label>
-                        <div class="col-auto">
-                            <button class="btn btn-danger leave-page" type="submit">@await LocaleManager.GetTranslation("Delete picture", PageNames.Pictures, Model.LanguageId)</button>
+                @if (Model.Picture.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
+                {
+                    <form asp-controller="Pictures" asp-action="DeletePicture" role="form" method="get">
+                        <div class="form-group">
+                            <label class="col-auto control-label">@await LocaleManager.GetTranslation("Remove this picture:", PageNames.Pictures, Model.LanguageId)</label>
+                            <div class="col-auto">
+                                <button class="btn btn-danger leave-page" type="submit">@await LocaleManager.GetTranslation("Delete picture", PageNames.Pictures, Model.LanguageId)</button>
+                            </div>
                         </div>
-                    </div>
-                    <input name="pictureId" class="form-control" value="@Model.Picture.PictureId" type="hidden" />
-                </form>
+                        <input name="pictureId" class="form-control" value="@Model.Picture.PictureId" type="hidden"/>
+                    </form>
+                }
             </div>
-            <script src="/js/pictures/add-edit-picture.js" type="module" asp-append-version="true"></script>
+            <script src="/js/pictures/add-edit-picture-v12.js" type="module" asp-append-version="true"></script>
         }
         @if (User.Identity != null && User.Identity.IsAuthenticated)
         {

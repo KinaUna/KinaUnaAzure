@@ -4,10 +4,10 @@ using KinaUna.Data.Models.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -47,11 +47,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string kanbanBoardsApiPath = "/api/KanbanBoards/";
-            HttpResponseMessage kanbanBoardsResponse = await _httpClient.PostAsJsonAsync(kanbanBoardsApiPath, kanbanBoard).ConfigureAwait(false);
+            HttpResponseMessage kanbanBoardsResponse = await _httpClient.PostAsJsonAsync(kanbanBoardsApiPath, kanbanBoard);
             if (!kanbanBoardsResponse.IsSuccessStatusCode) return kanbanBoard;
 
-            string kanbanBoardAsString = await kanbanBoardsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-            kanbanBoard = JsonConvert.DeserializeObject<KanbanBoard>(kanbanBoardAsString);
+            string kanbanBoardAsString = await kanbanBoardsResponse.Content.ReadAsStringAsync();
+            kanbanBoard = JsonSerializer.Deserialize<KanbanBoard>(kanbanBoardAsString, JsonSerializerOptions.Web);
 
             return kanbanBoard;
         }
@@ -63,11 +63,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string kanbanBoardsApiPath = "/api/KanbanBoards/" + kanbanBoard.KanbanBoardId + "?hardDelete=" + hardDelete;
-            HttpResponseMessage kanbanBoardsResponse = await _httpClient.DeleteAsync(kanbanBoardsApiPath).ConfigureAwait(false);
+            HttpResponseMessage kanbanBoardsResponse = await _httpClient.DeleteAsync(kanbanBoardsApiPath);
             if (!kanbanBoardsResponse.IsSuccessStatusCode) return kanbanBoard;
 
-            string kanbanBoardAsString = await kanbanBoardsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-            kanbanBoard = JsonConvert.DeserializeObject<KanbanBoard>(kanbanBoardAsString);
+            string kanbanBoardAsString = await kanbanBoardsResponse.Content.ReadAsStringAsync();
+            kanbanBoard = JsonSerializer.Deserialize<KanbanBoard>(kanbanBoardAsString, JsonSerializerOptions.Web);
 
             return kanbanBoard;
         }
@@ -80,28 +80,28 @@ namespace KinaUnaWeb.Services.HttpClients
 
             KanbanBoard kanbanBoard = new();
             string kanbanBoardsApiPath = "/api/KanbanBoards/GetKanbanBoard/" + kanbanBoardId;
-            HttpResponseMessage kanbanBoardsResponse = await _httpClient.GetAsync(kanbanBoardsApiPath).ConfigureAwait(false);
+            HttpResponseMessage kanbanBoardsResponse = await _httpClient.GetAsync(kanbanBoardsApiPath);
             if (!kanbanBoardsResponse.IsSuccessStatusCode) return kanbanBoard;
 
-            string kanbanBoardAsString = await kanbanBoardsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-            kanbanBoard = JsonConvert.DeserializeObject<KanbanBoard>(kanbanBoardAsString);
+            string kanbanBoardAsString = await kanbanBoardsResponse.Content.ReadAsStringAsync();
+            kanbanBoard = JsonSerializer.Deserialize<KanbanBoard>(kanbanBoardAsString, JsonSerializerOptions.Web);
 
             return kanbanBoard;
         }
 
-        public async Task<KanbanBoardsResponse> GetProgeniesKanbanBoardsList(KanbanBoardsRequest kanbanBoardsRequest)
+        public async Task<KanbanBoardsResponse> GetKanbanBoardsList(KanbanBoardsRequest kanbanBoardsRequest)
         {
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             KanbanBoardsResponse kanbanBoardsResponse = new();
-            string kanbanBoardsApiPath = "/api/KanbanBoards/GetProgeniesKanbanBoardsList";
-            HttpResponseMessage kanbanBoardsListResponse = await _httpClient.PostAsJsonAsync(kanbanBoardsApiPath, kanbanBoardsRequest).ConfigureAwait(false);
+            string kanbanBoardsApiPath = "/api/KanbanBoards/GetKanbanBoardsList";
+            HttpResponseMessage kanbanBoardsListResponse = await _httpClient.PostAsJsonAsync(kanbanBoardsApiPath, kanbanBoardsRequest);
             if (!kanbanBoardsListResponse.IsSuccessStatusCode) return kanbanBoardsResponse;
             
-            string kanbanBoardsListAsString = await kanbanBoardsListResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-            kanbanBoardsResponse = JsonConvert.DeserializeObject<KanbanBoardsResponse>(kanbanBoardsListAsString);
+            string kanbanBoardsListAsString = await kanbanBoardsListResponse.Content.ReadAsStringAsync();
+            kanbanBoardsResponse = JsonSerializer.Deserialize<KanbanBoardsResponse>(kanbanBoardsListAsString, JsonSerializerOptions.Web);
 
             return kanbanBoardsResponse;
         }
@@ -113,11 +113,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string kanbanBoardsApiPath = "/api/KanbanBoards/" + kanbanBoard.KanbanBoardId;
-            HttpResponseMessage kanbanBoardsResponse = await _httpClient.PutAsJsonAsync(kanbanBoardsApiPath, kanbanBoard).ConfigureAwait(false);
+            HttpResponseMessage kanbanBoardsResponse = await _httpClient.PutAsJsonAsync(kanbanBoardsApiPath, kanbanBoard);
             if (!kanbanBoardsResponse.IsSuccessStatusCode) return kanbanBoard;
             
-            string kanbanBoardAsString = await kanbanBoardsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-            kanbanBoard = JsonConvert.DeserializeObject<KanbanBoard>(kanbanBoardAsString);
+            string kanbanBoardAsString = await kanbanBoardsResponse.Content.ReadAsStringAsync();
+            kanbanBoard = JsonSerializer.Deserialize<KanbanBoard>(kanbanBoardAsString, JsonSerializerOptions.Web);
 
             return kanbanBoard;
         }

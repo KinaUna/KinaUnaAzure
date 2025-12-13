@@ -4,25 +4,24 @@ using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Models.ViewModels;
 using KinaUnaProgenyApi.Services;
-using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUnaProgenyApi.Services.AccessManagementService;
 
 namespace KinaUnaProgenyApi.Controllers
 {
     /// <summary>
     /// API endpoints for Videos.
     /// </summary>
-    /// <param name="azureNotifications"></param>
     /// <param name="videosService"></param>
     /// <param name="commentsService"></param>
     /// <param name="progenyService"></param>
     /// <param name="userInfoService"></param>
-    /// <param name="userAccessService"></param>
     /// <param name="webNotificationsService"></param>
     /// <param name="timelineService"></param>
     [Authorize(Policy = "UserOrClient")]
@@ -30,14 +29,13 @@ namespace KinaUnaProgenyApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class VideosController(
-        IAzureNotifications azureNotifications,
         IVideosService videosService,
         ICommentsService commentsService,
         IProgenyService progenyService,
         IUserInfoService userInfoService,
-        IUserAccessService userAccessService,
         IWebNotificationsService webNotificationsService,
-        ITimelineService timelineService)
+        ITimelineService timelineService,
+        IAccessManagementService accessManagementService)
         : ControllerBase
     {
         /// <summary>
@@ -53,14 +51,8 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]")]
         public async Task<IActionResult> Page([FromQuery] int pageSize = 8, [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId, [FromQuery] string tagFilter = "", [FromQuery] int sortBy = 1)
         {
-            // Check if user should be allowed access.
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            
             if (pageIndex < 1)
             {
                 pageIndex = 1;
@@ -69,12 +61,12 @@ namespace KinaUnaProgenyApi.Controllers
             List<Video> allItems;
             if (!string.IsNullOrEmpty(tagFilter))
             {
-                allItems = await videosService.GetVideosList(progenyId, accessLevelResult.Value);
+                allItems = await videosService.GetVideosList(progenyId, currentUserInfo);
                 allItems = [.. allItems.Where(p => p.Tags != null && p.Tags.Contains(tagFilter, StringComparison.CurrentCultureIgnoreCase)).OrderBy(p => p.VideoTime)];
             }
             else
             {
-                allItems = await videosService.GetVideosList(progenyId, accessLevelResult.Value);
+                allItems = await videosService.GetVideosList(progenyId, currentUserInfo);
                 allItems = [.. allItems.OrderBy(p => p.VideoTime)];
             }
 
@@ -159,7 +151,8 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]")]
         public async Task<IActionResult> VideoViewModel([FromBody] VideoViewModelRequest request)
         {
-            Video video = await videosService.GetVideo(request.VideoId);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Video video = await videosService.GetVideo(request.VideoId, currentUserInfo);
             
             if (video == null) return NotFound();
 
@@ -167,14 +160,7 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 request.Progenies = [video.ProgenyId];
             }
-
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(video.ProgenyId, userEmail, video.AccessLevel);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-
+            
             VideoViewModel model = new()
             {
                 VideoId = video.VideoId,
@@ -185,12 +171,9 @@ namespace KinaUnaProgenyApi.Controllers
                 Owners = video.Owners,
                 VideoLink = video.VideoLink,
                 ThumbLink = video.ThumbLink,
-                AccessLevel = video.AccessLevel,
-                Author = video.Author
+                Author = video.Author,
+                ItemPerMission = video.ItemPermission
             };
-            model.AccessLevelListEn[video.AccessLevel].Selected = true;
-            model.AccessLevelListDa[video.AccessLevel].Selected = true;
-            model.AccessLevelListDe[video.AccessLevel].Selected = true;
             model.CommentThreadNumber = video.CommentThreadNumber;
             model.Tags = video.Tags;
             model.VideoNumber = 1;
@@ -207,13 +190,7 @@ namespace KinaUnaProgenyApi.Controllers
             List<Video> videosList = [];
             foreach (int progenyId in request.Progenies)
             {
-                CustomResult<int> accessLevelResultForProgeny = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
-                if (!accessLevelResult.IsSuccess)
-                {
-                    continue;
-                }
-
-                List<Video> tempList = await videosService.GetVideosList(progenyId, accessLevelResultForProgeny.Value);
+                List<Video> tempList = await videosService.GetVideosList(progenyId, currentUserInfo);
 
                 if (progenyId == video.ProgenyId)
                 {
@@ -294,9 +271,9 @@ namespace KinaUnaProgenyApi.Controllers
             string tagItems = "[";
             if (tagsList.Count != 0)
             {
-                foreach (string tagstring in tagsList)
+                foreach (string tagString in tagsList)
                 {
-                    tagItems = tagItems + "'" + tagstring + "',";
+                    tagItems = tagItems + "'" + tagString + "',";
                 }
 
                 tagItems = tagItems[..^1];
@@ -305,6 +282,47 @@ namespace KinaUnaProgenyApi.Controllers
 
             model.TagsList = tagItems;
 
+            return Ok(model);
+
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> TimelineVideoViewModel([FromBody] VideoViewModelRequest request)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Video video = await videosService.GetVideo(request.VideoId, currentUserInfo);
+
+            if (video == null) return NotFound();
+
+            if (request.Progenies == null || request.Progenies.Count == 0)
+            {
+                request.Progenies = [video.ProgenyId];
+            }
+
+            VideoViewModel model = new()
+            {
+                VideoId = video.VideoId,
+                VideoType = video.VideoType,
+                VideoTime = video.VideoTime,
+                Duration = video.Duration,
+                ProgenyId = video.ProgenyId,
+                Owners = video.Owners,
+                VideoLink = video.VideoLink,
+                ThumbLink = video.ThumbLink,
+                Author = video.Author
+            };
+            model.CommentThreadNumber = video.CommentThreadNumber;
+            model.Tags = video.Tags;
+            model.VideoNumber = 1;
+            model.VideoCount = 1;
+            model.CommentsList = await commentsService.GetCommentsList(video.CommentThreadNumber);
+            model.Location = video.Location;
+            model.Longtitude = video.Longtitude;
+            model.Latitude = video.Latitude;
+            model.Altitude = video.Latitude;
+            model.TagsList = "";
+            
             return Ok(model);
 
         }
@@ -318,18 +336,11 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id:int}")]
         public async Task<IActionResult> VideoElement(int id)
         {
-            Video video = await videosService.GetVideo(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Video video = await videosService.GetVideo(id, currentUserInfo);
 
             if (video == null) return NotFound();
-
-            // Check if user should be allowed access.
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(video.ProgenyId, userEmail, video.AccessLevel);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-
+            
             VideoViewModel model = new();
             model.SetVideoPropertiesFromVideoItem(video);
             model.VideoNumber = 0;
@@ -351,15 +362,9 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id:int}")]
         public async Task<IActionResult> Progeny(int id)
         {
-            // Check if user should be allowed access.
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-
-            List<Video> videosList = await videosService.GetVideosList(id, accessLevelResult.Value);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            
+            List<Video> videosList = await videosService.GetVideosList(id, currentUserInfo);
             
             if (videosList.Count == 0) return Ok(videosList);
 
@@ -381,19 +386,14 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id:int}")]
         public async Task<IActionResult> ProgenyVideosList(int id)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-
-            List<Video> videosList = await videosService.GetVideosList(id, accessLevelResult.Value);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            
+            List<Video> videosList = await videosService.GetVideosList(id, currentUserInfo);
 
             if (videosList.Count != 0) return Ok(videosList);
-            Video tempPicture = new();
+            Video tempVideo = new();
 
-            videosList.Add(tempPicture);
+            videosList.Add(tempVideo);
 
             return Ok(videosList);
         }
@@ -408,17 +408,10 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetVideo(int id)
         {
-            Video video = await videosService.GetVideo(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Video video = await videosService.GetVideo(id, currentUserInfo);
             if (video == null) return NotFound();
-
-            // Check if user should be allowed access.
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(video.ProgenyId, userEmail, video.AccessLevel);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-
+            
             return Ok(video);
 
         }
@@ -432,17 +425,10 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{videoLink}/{progenyId:int}")]
         public async Task<IActionResult> ByLink(string videoLink, int progenyId)
         {
-            Video video = await videosService.GetVideoByLink(videoLink, progenyId);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Video video = await videosService.GetVideoByLink(videoLink, progenyId, currentUserInfo);
             if (video == null) return NotFound();
-
-            // Check if user should be allowed access.
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(video.ProgenyId, userEmail, video.AccessLevel);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-
+            
             return Ok(video);
 
         }
@@ -451,40 +437,44 @@ namespace KinaUnaProgenyApi.Controllers
         /// Adds a new Video to the database.
         /// Also adds a new CommentThread for the Video, a corresponding TimeLineItem and sends Notifications to users.
         /// </summary>
-        /// <param name="model">The Video to add.</param>
+        /// <param name="value">The Video to add.</param>
         /// <returns>The added Video.</returns>
         // POST api/videos
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] Video model)
+        public async Task<IActionResult> Post([FromBody] Video value)
         {
-            // Check if user should be allowed access.
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(model.ProgenyId, userEmail);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
-            if (userAccess == null || userAccess.AccessLevel > 0)
+            if (!await accessManagementService.HasProgenyPermission(value.ProgenyId, currentUserInfo, PermissionLevel.Add))
             {
                 return Unauthorized();
             }
-            
+
             CommentThread commentThread = await commentsService.AddCommentThread();
-            model.CommentThreadNumber = commentThread.Id;
+            value.CommentThreadNumber = commentThread.Id;
+            value.CreatedBy = User.GetUserId();
+            value.CreatedTime = DateTime.UtcNow;
+            value.ModifiedBy = User.GetUserId();
+            value.ModifiedTime = DateTime.UtcNow;
 
-            model = await videosService.AddVideo(model);
-            await videosService.SetVideoInCache(model.VideoId);
-            await commentsService.SetCommentsList(model.CommentThreadNumber);
+            value = await videosService.AddVideo(value, currentUserInfo);
+            await videosService.SetVideoInCache(value.VideoId);
+            await commentsService.SetCommentsList(value.CommentThreadNumber);
 
-            Progeny progeny = await progenyService.GetProgeny(model.ProgenyId);
+            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId, currentUserInfo);
             UserInfo userInfo = await userInfoService.GetUserInfoByEmail(User.GetEmail());
             string notificationTitle = "New Video added for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " added a new video for " + progeny.NickName;
-
+            
             TimeLineItem timeLineItem = new();
-            timeLineItem.CopyVideoPropertiesForAdd(model);
-            _ = await timelineService.AddTimeLineItem(timeLineItem);
+            timeLineItem.CopyVideoPropertiesForAdd(value);
+            _ = await timelineService.AddTimeLineItem(timeLineItem, currentUserInfo);
 
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendVideoNotification(model, userInfo, notificationTitle);
-            return Ok(model);
+            await webNotificationsService.SendVideoNotification(value, userInfo, notificationTitle);
+
+            value = await videosService.GetVideo(value.VideoId, currentUserInfo);
+            value.Comments = await commentsService.GetCommentsList(value.CommentThreadNumber);
+
+            return Ok(value);
         }
 
         /// <summary>
@@ -498,25 +488,16 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Video value)
         {
-            Video video = await videosService.GetVideo(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Video video = await videosService.GetVideo(id, currentUserInfo);
 
             // Todo: more validation of the values
             if (video == null)
             {
                 return NotFound();
             }
-
-            // Check if user should be allowed access.
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(value.ProgenyId, userEmail);
-
-            if (userAccess == null || userAccess.AccessLevel > 0)
-            {
-                return Unauthorized();
-            }
-
+            
             video.Tags = value.Tags;
-            video.AccessLevel = value.AccessLevel;
             video.Author = value.Author;
             video.VideoTime = value.VideoTime;
             video.Duration = value.Duration;
@@ -524,8 +505,14 @@ namespace KinaUnaProgenyApi.Controllers
             video.Longtitude = value.Longtitude;
             video.Latitude = value.Latitude;
             video.Altitude = value.Altitude;
-
-            video = await videosService.UpdateVideo(video);
+            video.ModifiedBy = User.GetUserId();
+            video.ModifiedTime = DateTime.UtcNow;
+            video.ItemPermissionsDtoList = value.ItemPermissionsDtoList;
+            video = await videosService.UpdateVideo(video, currentUserInfo);
+            if (video == null)
+            {
+                return Unauthorized();
+            }
 
             await videosService.SetVideoInCache(video.VideoId);
             await commentsService.SetCommentsList(video.CommentThreadNumber);
@@ -533,7 +520,10 @@ namespace KinaUnaProgenyApi.Controllers
             
             TimeLineItem timeLineItem = new();
             timeLineItem.CopyVideoPropertiesForUpdate(video);
-            _ = await timelineService.UpdateTimeLineItem(timeLineItem);
+            _ = await timelineService.UpdateTimeLineItem(timeLineItem, currentUserInfo);
+
+            video = await videosService.GetVideo(video.VideoId, currentUserInfo);
+            video.Comments = await commentsService.GetCommentsList(video.CommentThreadNumber);
 
             return Ok(video);
         }
@@ -549,17 +539,20 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            Video video = await videosService.GetVideo(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Video video = await videosService.GetVideo(id, currentUserInfo);
             if (video == null) return NotFound();
+            
+            video.ModifiedBy = User.GetUserId();
+            video.ModifiedTime = DateTime.UtcNow;
 
-            // Check if user should be allowed access.
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(video.ProgenyId, userEmail);
-
-            if (userAccess == null || userAccess.AccessLevel > 0)
+            Video deletedVideo = await videosService.DeleteVideo(video, currentUserInfo);
+            if (deletedVideo == null)
             {
                 return Unauthorized();
             }
+
+            await videosService.RemoveVideoFromCache(video.VideoId, video.ProgenyId);
 
             List<Comment> comments = await commentsService.GetCommentsList(video.CommentThreadNumber);
             if (comments.Count != 0)
@@ -577,29 +570,16 @@ namespace KinaUnaProgenyApi.Controllers
                 await commentsService.RemoveCommentsList(video.CommentThreadNumber);
             }
 
-            TimeLineItem existingTimeLineItem = await timelineService.GetTimeLineItemByItemId(video.VideoId.ToString(), (int)KinaUnaTypes.TimeLineType.Video);
+            TimeLineItem existingTimeLineItem = await timelineService.GetTimeLineItemByItemId(video.VideoId.ToString(), (int)KinaUnaTypes.TimeLineType.Video, currentUserInfo);
             if (existingTimeLineItem != null)
             {
-                _ = await timelineService.DeleteTimeLineItem(existingTimeLineItem);
+                _ = await timelineService.DeleteTimeLineItem(existingTimeLineItem, currentUserInfo);
             }
 
-            _ = await videosService.DeleteVideo(video);
-            await videosService.RemoveVideoFromCache(video.VideoId, video.ProgenyId);
-
-            Progeny progeny = await progenyService.GetProgeny(video.ProgenyId);
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(User.GetEmail());
+            Progeny progeny = await progenyService.GetProgeny(video.ProgenyId, currentUserInfo);
             string notificationTitle = "Video deleted for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " deleted a video for " + progeny.NickName;
-            TimeLineItem timeLineItem = new()
-            {
-                ProgenyId = video.ProgenyId,
-                ItemId = video.VideoId.ToString(),
-                ItemType = (int)KinaUnaTypes.TimeLineType.Video,
-                AccessLevel = 0
-            };
-
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendVideoNotification(video, userInfo, notificationTitle);
+            
+            await webNotificationsService.SendVideoNotification(video, currentUserInfo, notificationTitle);
 
             return NoContent();
 

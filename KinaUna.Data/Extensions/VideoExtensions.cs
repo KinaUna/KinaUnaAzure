@@ -46,7 +46,6 @@ namespace KinaUna.Data.Extensions
         /// <param name="parseDuration">If set to true the duration will be obtained from the string values in DurationHours, DurationMinutes, and DurationSeconds.</param>
         public static void CopyPropertiesForUpdate(this Video currentVideo, Video otherVideo, bool parseDuration = false)
         {
-            currentVideo.AccessLevel = otherVideo.AccessLevel;
             currentVideo.ProgenyId = otherVideo.ProgenyId;
             currentVideo.CommentThreadNumber = otherVideo.CommentThreadNumber;
             currentVideo.Duration = otherVideo.Duration;
@@ -63,7 +62,7 @@ namespace KinaUna.Data.Extensions
             currentVideo.VideoType = otherVideo.VideoType;
             currentVideo.Progeny = otherVideo.Progeny;
             currentVideo.Comments = otherVideo.Comments;
-
+            currentVideo.ItemPermissionsDtoList = otherVideo.ItemPermissionsDtoList;
             if (parseDuration)
             {
                 bool durationHoursParsed = int.TryParse(otherVideo.DurationHours, out int durHours);
@@ -113,7 +112,6 @@ namespace KinaUna.Data.Extensions
         public static void CopyPropertiesForCopy(this Video currentVideo, Video otherVideo, string ownerEmail, Progeny progeny, bool parseDuration = false)
         {
             currentVideo.VideoId = 0;
-            currentVideo.AccessLevel = otherVideo.AccessLevel;
             currentVideo.ProgenyId = otherVideo.ProgenyId;
             currentVideo.CommentThreadNumber = 0;
             currentVideo.Duration = otherVideo.Duration;
@@ -124,7 +122,8 @@ namespace KinaUna.Data.Extensions
             currentVideo.VideoNumber = otherVideo.VideoNumber;
             currentVideo.VideoTime = otherVideo.VideoTime;
             currentVideo.Progeny = progeny;
-            
+            currentVideo.ItemPermissionsDtoList = otherVideo.ItemPermissionsDtoList;
+
             if (parseDuration)
             {
                 bool durationHoursParsed = int.TryParse(otherVideo.DurationHours, out int durHours);

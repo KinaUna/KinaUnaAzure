@@ -1,40 +1,73 @@
-﻿using KinaUna.Data.Models;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System;
-using System.Linq;
-using KinaUna.Data.Contexts;
+﻿using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
+using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.CacheManagement;
+using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.CacheServices;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Services.CalendarServices
 {
-    public class CalendarRecurrencesService(ProgenyDbContext context) : ICalendarRecurrencesService
+    public class CalendarRecurrencesService(ProgenyDbContext context, IAccessManagementService accessManagementService, IKinaUnaCacheService kinaUnaCacheService) : ICalendarRecurrencesService
     {
         /// <summary>
         /// Gets a list of CalendarItems generated from recurring events for a Progeny.
         /// </summary>
         /// <param name="progenyId"></param>
+        /// <param name="familyId"></param>
         /// <param name="start">DateTime with the start date. Results include this day.</param>
         /// <param name="end">DateTime with the end date. Results include this day.</param>
         /// <param name="includeOriginal">Include the original event in the list.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>List of CalendarItems</returns>
-        public async Task<List<CalendarItem>> GetRecurringEventsForProgeny(int progenyId, DateTime start, DateTime end, bool includeOriginal)
+        public async Task<List<CalendarItem>> GetRecurringEventsForProgenyOrFamily(int progenyId, int familyId, DateTime start, DateTime end, bool includeOriginal, UserInfo currentUserInfo)
         {
             List<CalendarItem> recurringEvents = [];
-            List<RecurrenceRule> recurrenceRules = await context.RecurrenceRulesDb.AsNoTracking().Where(r => r.ProgenyId == progenyId).ToListAsync();
-            if (recurrenceRules.Count == 0) return recurringEvents;
+            if (progenyId == 0 && familyId == 0) return recurringEvents;
+
+            RecurrenceRule[] recurrenceRules = await GetRecurrenceRulesForProgenyOrFamily(progenyId, familyId, currentUserInfo);
+            if (recurrenceRules.Length == 0) return recurringEvents;
 
             end = new DateTime(end.Year, end.Month, end.Day, 23, 59, 59, DateTimeKind.Utc);
+            
             foreach (RecurrenceRule recurrenceRule in recurrenceRules)
             {
-                recurringEvents.AddRange(await GetCalendarItemsForRecurrenceRule(recurrenceRule, start, end, includeOriginal));
+                recurringEvents.AddRange(await GetCalendarItemsForRecurrenceRule(recurrenceRule, start, end, includeOriginal, currentUserInfo));
             }
 
             return recurringEvents;
         }
 
-        public async Task<List<CalendarItem>> GetCalendarItemsForRecurrenceRule(RecurrenceRule recurrenceRule, DateTime start, DateTime end, bool includeOriginal)
+        private async Task<RecurrenceRule[]> GetRecurrenceRulesForProgenyOrFamily(int progenyId, int familyId, UserInfo currentUserInfo)
+        {
+            RecurrenceRule[] recurrenceRules = [];
+            RecurrenceRulesListCacheEntry cacheEntry = await kinaUnaCacheService.GetRecurrenceRulesListCache(currentUserInfo.UserId, progenyId, familyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = await kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, familyId, KinaUnaTypes.TimeLineType.Calendar);
+            bool cachedDataAvailable = false;
+            if (cacheEntry != null && timelineUpdatedCacheEntry != null)
+            {
+                if (cacheEntry.UpdateTime > timelineUpdatedCacheEntry.UpdateTime)
+                {
+                    recurrenceRules = cacheEntry.RecurrenceRulesList;
+                    cachedDataAvailable = true;
+                }
+            }
+
+            if (!cachedDataAvailable)
+            {
+                recurrenceRules = await context.RecurrenceRulesDb.AsNoTracking().Where(r => r.ProgenyId == progenyId && r.FamilyId == familyId).ToArrayAsync();
+                await kinaUnaCacheService.SetRecurrenceRulesListCache(currentUserInfo.UserId, progenyId, familyId, recurrenceRules);
+            }
+
+            return recurrenceRules;
+        }
+
+        public async Task<List<CalendarItem>> GetCalendarItemsForRecurrenceRule(RecurrenceRule recurrenceRule, DateTime start, DateTime end, bool includeOriginal, UserInfo currentUserInfo)
         {
             List<CalendarItem> recurringEvents = [];
             if (recurrenceRule == null) return recurringEvents;
@@ -53,30 +86,47 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
 
             recurringEvents = recurrenceRule.Frequency switch
             {
-                1 => await GetDailyRecurrences(recurrenceRule, start, end, includeOriginal),
-                2 => await GetWeeklyRecurrences(recurrenceRule, start, end, includeOriginal),
-                3 => await GetMonthlyByDayRecurrences(recurrenceRule, start, end, includeOriginal),
-                4 => await GetMonthlyByDateRecurrences(recurrenceRule, start, end, includeOriginal),
-                5 => await GetYearlyByDayRecurrences(recurrenceRule, start, end, includeOriginal),
-                6 => await GetYearlyByDateRecurrences(recurrenceRule, start, end, includeOriginal),
+                1 => await GetDailyRecurrences(recurrenceRule, start, end, includeOriginal, currentUserInfo),
+                2 => await GetWeeklyRecurrences(recurrenceRule, start, end, includeOriginal, currentUserInfo),
+                3 => await GetMonthlyByDayRecurrences(recurrenceRule, start, end, includeOriginal, currentUserInfo),
+                4 => await GetMonthlyByDateRecurrences(recurrenceRule, start, end, includeOriginal, currentUserInfo),
+                5 => await GetYearlyByDayRecurrences(recurrenceRule, start, end, includeOriginal, currentUserInfo),
+                6 => await GetYearlyByDateRecurrences(recurrenceRule, start, end, includeOriginal, currentUserInfo),
                 _ => recurringEvents
             };
 
             return recurringEvents;
         }
 
-        private async Task<List<CalendarItem>> GetDailyRecurrences(RecurrenceRule recurrenceRule, DateTime start, DateTime end, bool includeOriginal)
+        /// <summary>
+        /// Gets daily recurrences for a recurrence rule.
+        /// </summary>
+        /// <param name="recurrenceRule">The recurrence rule to get recurrences for.</param>
+        /// <param name="start">The start date for the range to get recurrences for.</param>
+        /// <param name="end">The end date for the range to get recurrences for.</param>
+        /// <param name="includeOriginal">Should the original event be included in the list, even if it is not within the start-end range.</param>
+        /// <param name="currentUserInfo">The current user info.</param>
+        /// <returns></returns>
+        private async Task<List<CalendarItem>> GetDailyRecurrences(RecurrenceRule recurrenceRule, DateTime start, DateTime end, bool includeOriginal, UserInfo currentUserInfo)
         {
             List<CalendarItem> recurringEvents = [];
 
             CalendarItem calendarItem = await context.CalendarDb.AsNoTracking()
-                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
+                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.FamilyId == recurrenceRule.FamilyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
+            if (calendarItem == null) {
+                return recurringEvents;
+            }
 
-            if (!calendarItem.StartTime.HasValue)
+            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, currentUserInfo, PermissionLevel.View))
             {
                 return recurringEvents;
             }
 
+            if (!calendarItem.StartTime.HasValue || !calendarItem.EndTime.HasValue)
+            {
+                return recurringEvents;
+            }
+            
             int recurrenceInstancesCount = 0;
 
             DateTime nextDate = start.Date;
@@ -85,8 +135,10 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 nextDate = calendarItem.StartTime.Value.Date;
             }
 
+            // Loop through the dates from start to end, adding the interval each time.
             while (nextDate <= end && recurrenceRule.IsBeforeEnd(nextDate, recurrenceInstancesCount))
             {
+                // If the next date is after the start date, or if the recurrence rule has no end date, add the event.
                 if (nextDate >= start || recurrenceRule.EndOption == 2)
                 {
                     CalendarItem calendarItemToAdd = new();
@@ -96,21 +148,23 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                         continue;
                     }
 
+                    // Set the start and end time for the new event.
                     TimeSpan calendarItemToAddDuration = calendarItemToAdd.EndTime.Value - calendarItemToAdd.StartTime.Value;
                     calendarItemToAdd.StartTime = new DateTime(nextDate.Year, nextDate.Month, nextDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0, DateTimeKind.Utc);
                     calendarItemToAdd.EndTime = calendarItemToAdd.StartTime.Value + calendarItemToAddDuration;
 
+                    // If the new event is before the end date, and after the original event's start date, add it to the list.
+                    // Also check that we are still before the end condition of the recurrence rule.
                     if (recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount))
                     {
                         if (calendarItemToAdd.StartTime >= calendarItem.StartTime)
                         {
-                            recurrenceInstancesCount++;
-
                             if (calendarItemToAdd.StartTime <= end && calendarItemToAdd.StartTime >= start)
                             {
-                                // Don't add original CalendarItem as it is already included.
-                                if (includeOriginal || calendarItemToAdd.StartTime != calendarItem.StartTime)
+                                // Don't add original CalendarItem unless specified, or it is within the range.
+                                if (includeOriginal || calendarItemToAdd.StartTime.Value.Date != calendarItem.StartTime.Value.Date || (calendarItem.StartTime >= start && calendarItem.StartTime <= end))
                                 {
+                                    recurrenceInstancesCount++;
                                     recurringEvents.Add(calendarItemToAdd);
                                 }
                             }
@@ -121,15 +175,24 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 nextDate = nextDate.AddDays(recurrenceRule.Interval);
             }
 
+            // If includeOriginal is true, and the original event hasn't been added to the list.
+            if (includeOriginal && recurringEvents.All(e => e.StartTime.HasValue && e.StartTime.Value.Date != calendarItem.StartTime.Value.Date))
+            {
+                recurringEvents.Add(calendarItem);
+            }
             return recurringEvents;
         }
 
-        private async Task<List<CalendarItem>> GetWeeklyRecurrences(RecurrenceRule recurrenceRule, DateTime start, DateTime end, bool includeOriginal)
+        private async Task<List<CalendarItem>> GetWeeklyRecurrences(RecurrenceRule recurrenceRule, DateTime start, DateTime end, bool includeOriginal, UserInfo currentUserInfo)
         {
             List<CalendarItem> recurringEvents = [];
 
             CalendarItem calendarItem = await context.CalendarDb.AsNoTracking()
-                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
+                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.FamilyId == recurrenceRule.FamilyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
+            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, currentUserInfo, PermissionLevel.View))
+            {
+                return recurringEvents;
+            }
 
             if (!calendarItem.StartTime.HasValue)
             {
@@ -165,13 +228,14 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
 
                             if (!recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount)) continue;
                             if (!(calendarItemToAdd.StartTime > calendarItem.StartTime)) continue;
-                            recurrenceInstancesCount++;
+                            
 
                             if (!(calendarItemToAdd.StartTime <= end) || !(calendarItemToAdd.StartTime >= start)) continue;
 
-                            // Don't add original CalendarItem as it is already included.
-                            if (includeOriginal || calendarItemToAdd.StartTime != calendarItem.StartTime)
+                            // Don't add original CalendarItem unless specified, or it is within the start and end range.
+                            if (includeOriginal || calendarItemToAdd.StartTime.Value.Date != calendarItem.StartTime.Value.Date || (calendarItem.StartTime >= start && calendarItem.StartTime <= end))
                             {
+                                recurrenceInstancesCount++;
                                 recurringEvents.Add(calendarItemToAdd);
                             }
                         }
@@ -181,15 +245,25 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 nextDate = nextDate.AddDays(recurrenceRule.Interval * 7);
             }
 
+            // If includeOriginal is true, and the original event hasn't been added to the list.
+            if (includeOriginal && recurringEvents.All(e => e.StartTime.HasValue && e.StartTime.Value.Date != calendarItem.StartTime.Value.Date))
+            {
+                recurringEvents.Add(calendarItem);
+            }
+
             return recurringEvents;
         }
 
-        private async Task<List<CalendarItem>> GetMonthlyByDayRecurrences(RecurrenceRule recurrenceRule, DateTime start, DateTime end, bool includeOriginal)
+        private async Task<List<CalendarItem>> GetMonthlyByDayRecurrences(RecurrenceRule recurrenceRule, DateTime start, DateTime end, bool includeOriginal, UserInfo currentUserInfo)
         {
             List<CalendarItem> recurringEvents = [];
 
             CalendarItem calendarItem = await context.CalendarDb.AsNoTracking()
-                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
+                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.FamilyId == recurrenceRule.FamilyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
+            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, currentUserInfo, PermissionLevel.View))
+            {
+                return recurringEvents;
+            }
 
             if (!calendarItem.StartTime.HasValue)
             {
@@ -241,13 +315,12 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                                     {
                                         if (calendarItemToAdd.StartTime > calendarItem.StartTime)
                                         {
-                                            recurrenceInstancesCount++;
-
                                             if (calendarItemToAdd.StartTime <= end && calendarItemToAdd.StartTime >= start)
                                             {
-                                                // Don't add original CalendarItem as it is already included.
-                                                if (includeOriginal || calendarItemToAdd.StartTime != calendarItem.StartTime)
+                                                // Don't add original CalendarItem unless specified, or it is within the start and end range.
+                                                if (includeOriginal || calendarItemToAdd.StartTime.Value.Date != calendarItem.StartTime.Value.Date || (calendarItem.StartTime >= start && calendarItem.StartTime <= end))
                                                 {
+                                                    recurrenceInstancesCount++;
                                                     recurringEvents.Add(calendarItemToAdd);
                                                 }
                                             }
@@ -276,13 +349,13 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
 
                                 if (!recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount)) continue;
                                 if (!(calendarItemToAdd.StartTime > calendarItem.StartTime)) continue;
-                                recurrenceInstancesCount++;
-
+                                
                                 if (!(calendarItemToAdd.StartTime <= end) || !(calendarItemToAdd.StartTime >= start)) continue;
 
-                                // Don't add original CalendarItem as it is already included.
-                                if (includeOriginal || calendarItemToAdd.StartTime != calendarItem.StartTime)
+                                // Don't add original CalendarItem unless specified, or it is within the start and end range.
+                                if (includeOriginal || calendarItemToAdd.StartTime.Value.Date != calendarItem.StartTime.Value.Date || (calendarItem.StartTime >= start && calendarItem.StartTime <= end))
                                 {
+                                    recurrenceInstancesCount++;
                                     recurringEvents.Add(calendarItemToAdd);
                                 }
                             }
@@ -293,15 +366,25 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 nextDate = nextDate.AddMonths(recurrenceRule.Interval);
             }
 
+            // If includeOriginal is true, and the original event hasn't been added to the list.
+            if (includeOriginal && recurringEvents.All(e => e.StartTime.HasValue && calendarItem.StartTime != null && e.StartTime.Value.Date != calendarItem.StartTime.Value.Date))
+            {
+                recurringEvents.Add(calendarItem);
+            }
+
             return recurringEvents;
         }
 
-        private async Task<List<CalendarItem>> GetMonthlyByDateRecurrences(RecurrenceRule recurrenceRule, DateTime start, DateTime end, bool includeOriginal)
+        private async Task<List<CalendarItem>> GetMonthlyByDateRecurrences(RecurrenceRule recurrenceRule, DateTime start, DateTime end, bool includeOriginal, UserInfo currentUserInfo)
         {
             List<CalendarItem> recurringEvents = [];
 
             CalendarItem calendarItem = await context.CalendarDb.AsNoTracking()
-                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
+                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.FamilyId == recurrenceRule.FamilyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
+            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, currentUserInfo, PermissionLevel.View))
+            {
+                return recurringEvents;
+            }
 
             if (!calendarItem.StartTime.HasValue)
             {
@@ -336,13 +419,13 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
 
                             if (!recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount)) continue;
                             if (calendarItemToAdd.StartTime < calendarItem.StartTime) continue;
-                            recurrenceInstancesCount++;
-
+                            
                             if (!(calendarItemToAdd.StartTime <= end) || !(calendarItemToAdd.StartTime >= start)) continue;
 
-                            // Don't add original CalendarItem as it is already included.
-                            if (includeOriginal || calendarItemToAdd.StartTime != calendarItem.StartTime)
+                            // Don't add original CalendarItem unless specified, or it is within the start and end range.
+                            if (includeOriginal || calendarItemToAdd.StartTime.Value.Date != calendarItem.StartTime.Value.Date || (calendarItem.StartTime >= start && calendarItem.StartTime <= end))
                             {
+                                recurrenceInstancesCount++;
                                 recurringEvents.Add(calendarItemToAdd);
                             }
                         }
@@ -352,15 +435,25 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 nextDate = nextDate.AddMonths(recurrenceRule.Interval);
             }
 
+            // If includeOriginal is true, and the original event hasn't been added to the list.
+            if (includeOriginal && recurringEvents.All(e => e.StartTime.HasValue && e.StartTime.Value.Date != calendarItem.StartTime.Value.Date))
+            {
+                recurringEvents.Add(calendarItem);
+            }
+
             return recurringEvents;
         }
 
-        private async Task<List<CalendarItem>> GetYearlyByDayRecurrences(RecurrenceRule recurrenceRule, DateTime start, DateTime end, bool includeOriginal)
+        private async Task<List<CalendarItem>> GetYearlyByDayRecurrences(RecurrenceRule recurrenceRule, DateTime start, DateTime end, bool includeOriginal, UserInfo currentUserInfo)
         {
             List<CalendarItem> recurringEvents = [];
 
             CalendarItem calendarItem = await context.CalendarDb.AsNoTracking()
-                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
+                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.FamilyId == recurrenceRule.FamilyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
+            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, currentUserInfo, PermissionLevel.View))
+            {
+                return recurringEvents;
+            }
 
             if (!calendarItem.StartTime.HasValue)
             {
@@ -419,13 +512,13 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
 
                                         if (!recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount)) continue;
                                         if (calendarItemToAdd.StartTime < calendarItem.StartTime) continue;
-                                        recurrenceInstancesCount++;
-
+                                        
                                         if (calendarItemToAdd.StartTime <= end && calendarItemToAdd.StartTime >= start)
                                         {
-                                            // Don't add original CalendarItem as it is already included.
-                                            if (includeOriginal || calendarItemToAdd.StartTime != calendarItem.StartTime)
+                                            // Don't add original CalendarItem unless specified, or it is within the start and end range.
+                                            if (includeOriginal || calendarItemToAdd.StartTime.Value.Date != calendarItem.StartTime.Value.Date || (calendarItem.StartTime >= start && calendarItem.StartTime <= end))
                                             {
+                                                recurrenceInstancesCount++;
                                                 recurringEvents.Add(calendarItemToAdd);
                                             }
                                         }
@@ -449,13 +542,13 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
 
                                         if (!recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount)) continue;
                                         if (calendarItemToAdd.StartTime < calendarItem.StartTime) continue;
-                                        recurrenceInstancesCount++;
-
+                                        
                                         if (!(calendarItemToAdd.StartTime <= end) || !(calendarItemToAdd.StartTime >= start)) continue;
 
-                                        // Don't add original CalendarItem as it is already included.
-                                        if (includeOriginal || calendarItemToAdd.StartTime != calendarItem.StartTime)
+                                        // Don't add original CalendarItem unless specified, or it is within the start and end range.
+                                        if (includeOriginal || calendarItemToAdd.StartTime.Value.Date != calendarItem.StartTime.Value.Date || (calendarItem.StartTime >= start && calendarItem.StartTime <= end))
                                         {
+                                            recurrenceInstancesCount++;
                                             recurringEvents.Add(calendarItemToAdd);
                                         }
                                     }
@@ -471,15 +564,25 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 nextDate = nextDate.AddYears(recurrenceRule.Interval);
             }
 
+            // If includeOriginal is true, and the original event hasn't been added to the list.
+            if (includeOriginal && recurringEvents.All(e => e.StartTime.HasValue && calendarItem.StartTime != null && e.StartTime.Value.Date != calendarItem.StartTime.Value.Date))
+            {
+                recurringEvents.Add(calendarItem);
+            }
+
             return recurringEvents;
         }
 
-        private async Task<List<CalendarItem>> GetYearlyByDateRecurrences(RecurrenceRule recurrenceRule, DateTime start, DateTime end, bool includeOriginal)
+        private async Task<List<CalendarItem>> GetYearlyByDateRecurrences(RecurrenceRule recurrenceRule, DateTime start, DateTime end, bool includeOriginal, UserInfo currentUserInfo)
         {
             List<CalendarItem> recurringEvents = [];
 
             CalendarItem calendarItem = await context.CalendarDb.AsNoTracking()
-                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
+                .FirstOrDefaultAsync(c => c.ProgenyId == recurrenceRule.ProgenyId && c.FamilyId == recurrenceRule.FamilyId && c.RecurrenceRuleId == recurrenceRule.RecurrenceRuleId);
+            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Calendar, calendarItem.EventId, currentUserInfo, PermissionLevel.View))
+            {
+                return recurringEvents;
+            }
 
             if (!calendarItem.StartTime.HasValue)
             {
@@ -520,15 +623,16 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                                 calendarItemToAdd.StartTime = new DateTime(tempDate.Year, tempDate.Month, tempDate.Day, calendarItem.StartTime.Value.Hour, calendarItem.StartTime.Value.Minute, 0, DateTimeKind.Utc);
                                 calendarItemToAdd.EndTime = calendarItemToAdd.StartTime + calendarItemToAddDuration;
 
-                                recurrenceInstancesCount++;
+                                
                                 if (!recurrenceRule.IsBeforeEnd(calendarItemToAdd.StartTime.Value, recurrenceInstancesCount)) continue;
                                 if (calendarItemToAdd.StartTime < calendarItem.StartTime) continue;
 
                                 if (!(calendarItemToAdd.StartTime <= end) || !(calendarItemToAdd.StartTime >= start)) continue;
 
-                                // Don't add original CalendarItem as it is already included.
-                                if (includeOriginal || calendarItemToAdd.StartTime != calendarItem.StartTime)
+                                // Don't add original CalendarItem unless specified, or it is within the start and end range.
+                                if (includeOriginal || calendarItemToAdd.StartTime.Value.Date != calendarItem.StartTime.Value.Date || (calendarItem.StartTime >= start && calendarItem.StartTime <= end))
                                 {
+                                    recurrenceInstancesCount++;
                                     recurringEvents.Add(calendarItemToAdd);
                                 }
                             }
@@ -537,6 +641,12 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                 }
 
                 nextDate = nextDate.AddYears(recurrenceRule.Interval);
+            }
+
+            // If includeOriginal is true, and the original event hasn't been added to the list.
+            if (includeOriginal && recurringEvents.All(e => e.StartTime.HasValue && e.StartTime.Value.Date != calendarItem.StartTime.Value.Date))
+            {
+                recurringEvents.Add(calendarItem);
             }
 
             return recurringEvents;

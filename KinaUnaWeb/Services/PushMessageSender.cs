@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using WebPush;
 
 namespace KinaUnaWeb.Services
@@ -33,7 +33,7 @@ namespace KinaUnaWeb.Services
                 Link = link,
                 Tag = tag
             };
-            string payload = JsonConvert.SerializeObject(notification);
+            string payload = JsonSerializer.Serialize(notification, JsonSerializerOptions.Web);
             string vapidPublicKey = configuration["VapidPublicKey"];
             string vapidPrivateKey = configuration["VapidPrivateKey"];
 
@@ -42,7 +42,7 @@ namespace KinaUnaWeb.Services
             {
                 foreach (PushDevices dev in deviceList)
                 {
-                    PushSubscription pushSubscription = new(dev.PushEndpoint, dev.PushP256DH, dev.PushAuth);
+                    PushSubscription pushSubscription = new(dev.PushEndpoint, dev.PushP256Dh, dev.PushAuth);
                     VapidDetails vapidDetails = new("mailto:" + Constants.SupportEmail, vapidPublicKey, vapidPrivateKey);
                     if (string.IsNullOrEmpty(dev.PushAuth) || string.IsNullOrEmpty(dev.PushEndpoint))
                     {

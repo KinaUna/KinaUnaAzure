@@ -1,18 +1,19 @@
-﻿using KinaUnaWeb.Models.ItemViewModels;
+﻿using KinaUna.Data.Extensions;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUnaWeb.Models;
+using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
+using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using KinaUna.Data.Extensions;
-using KinaUnaWeb.Models;
-using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class SkillsController(ISkillsHttpClient skillsHttpClient, IViewModelSetupService viewModelSetupService) : Controller
+    public class SkillsController(ISkillsHttpClient skillsHttpClient, IViewModelSetupService viewModelSetupService, IProgenyHttpClient progenyHttpClient) : Controller
     {
         /// <summary>
         /// Skills Index page. Shows a list of all skills for a progeny.
@@ -26,45 +27,34 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             SkillsListViewModel model = new(baseModel);
             
-            List<Skill> skillsList = await skillsHttpClient.GetSkillsList(model.CurrentProgenyId);
-            
-            if (skillsList.Count != 0)
-            {
-                skillsList = [.. skillsList.OrderBy(s => s.SkillFirstObservation)];
-                
-                foreach (Skill skill in skillsList)
-                {
-                    if (skill.AccessLevel < model.CurrentAccessLevel) continue;
-
-                    SkillViewModel skillViewModel = new(baseModel);
-                    skillViewModel.SetPropertiesFromSkillItem(skill, model.IsCurrentUserProgenyAdmin);
-                    model.SkillsList.Add(skillViewModel);
-
-                }
-            }
-            else
-            {
-                SkillViewModel skillViewModel = new()
-                {
-                    SkillItem =
-                    {
-                        ProgenyId = childId,
-                        AccessLevel = (int)AccessLevel.Public,
-                        Description = "The skills list is empty.",
-                        Category = "",
-                        Name = "No items",
-                        SkillFirstObservation = DateTime.UtcNow
-                    },
-                    IsCurrentUserProgenyAdmin = model.IsCurrentUserProgenyAdmin
-                };
-
-                model.SkillsList.Add(skillViewModel);
-            }
-
             model.SkillId = skillId;
 
             return View(model);
 
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> SkillsTable(int progenyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
+            SkillsListViewModel model = new(baseModel);
+
+            List<Skill> skillsList = await skillsHttpClient.GetSkillsList(model.CurrentProgenyId);
+
+            if (skillsList.Count != 0)
+            {
+                skillsList = [.. skillsList.OrderBy(s => s.SkillFirstObservation)];
+
+                foreach (Skill skill in skillsList)
+                {
+                    SkillViewModel skillViewModel = new(baseModel);
+                    skillViewModel.SetPropertiesFromSkillItem(skill);
+                    model.SkillsList.Add(skillViewModel);
+
+                }
+            }
+            
+            return PartialView("_SkillsTablePartial", model);
         }
 
         /// <summary>
@@ -77,15 +67,18 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> ViewSkill(int skillId, bool partialView = false)
         {
             Skill skill = await skillsHttpClient.GetSkill(skillId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), skill.ProgenyId);
-            SkillViewModel model = new(baseModel);
-
-            if (skill.AccessLevel < model.CurrentAccessLevel)
+            if (skill == null || skill.SkillId == 0)
             {
+                if (partialView)
+                {
+                    return PartialView("_NotFoundPartial");
+                }
                 return RedirectToAction("Index");
             }
-
-            model.SetPropertiesFromSkillItem(skill, model.IsCurrentUserProgenyAdmin);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), skill.ProgenyId, 0, false);
+            SkillViewModel model = new(baseModel);
+            
+            model.SetPropertiesFromSkillItem(skill);
             model.SkillItem.Progeny = model.CurrentProgeny;
             model.SkillItem.Progeny.PictureLink = model.SkillItem.Progeny.GetProfilePictureUrl();
 
@@ -104,19 +97,13 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> AddSkill()
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0, false);
             SkillViewModel model = new(baseModel);
+            
 
-            if (model.CurrentUser == null)
-            {
-                return PartialView("_AccessDeniedPartial");
-            }
-
-
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
-            model.SetAccessLevelList();
-
+            
             return PartialView("_AddSkillPartial", model);
         }
 
@@ -129,12 +116,23 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddSkill(SkillViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.SkillItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.SkillItem.ProgenyId, 0, false);
             model.SetBaseProperties(baseModel);
 
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            bool canUserAdd = false;
+            if (model.SkillItem.ProgenyId > 0)
             {
-                return PartialView("_AccessDeniedPartial");
+                List<Progeny> progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Add);
+                if (progenies.Exists(p => p.Id == model.SkillItem.ProgenyId))
+                {
+                    canUserAdd = true;
+                }
+            }
+
+            if (!canUserAdd)
+            {
+                // Todo: Show that no entities are available to add skill for.
+                return RedirectToAction("Index");
             }
 
             Skill skillItem = model.CreateSkill();
@@ -145,6 +143,8 @@ namespace KinaUnaWeb.Controllers
             {
                 model.SkillItem.SkillFirstObservation = TimeZoneInfo.ConvertTimeFromUtc(model.SkillItem.SkillFirstObservation.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
+
+            model.SkillItem.Progeny = await progenyHttpClient.GetProgeny(model.SkillItem.ProgenyId);
 
             return PartialView("_SkillAddedPartial", model);
         }
@@ -158,20 +158,26 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditSkill(int itemId)
         {
             Skill skill = await skillsHttpClient.GetSkill(itemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), skill.ProgenyId);
-            SkillViewModel model = new(baseModel);
-            
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (skill == null || skill.SkillId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+
+            if (skill.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
             {
                 return PartialView("_AccessDeniedPartial");
             }
 
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), skill.ProgenyId, 0, false);
+            SkillViewModel model = new(baseModel);
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(skill.ProgenyId);
+            model.SetProgenyList();
+
             skill.SkillFirstObservation ??= DateTime.UtcNow;
 
-            model.SetPropertiesFromSkillItem(skill, model.IsCurrentUserProgenyAdmin);
+            model.SetPropertiesFromSkillItem(skill);
             
-            model.SetAccessLevelList();
-
             return PartialView("_EditSkillPartial", model);
         }
 
@@ -184,14 +190,19 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditSkill(SkillViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.SkillItem.ProgenyId);
-            model.SetBaseProperties(baseModel);
-
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            Skill existingSkill = await skillsHttpClient.GetSkill(model.SkillItem.SkillId);
+            if (existingSkill == null || existingSkill.SkillId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (existingSkill.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
             {
                 return PartialView("_AccessDeniedPartial");
             }
 
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.SkillItem.ProgenyId, 0, false);
+            model.SetBaseProperties(baseModel);
+            
             Skill editedSkill = model.CreateSkill();
 
             model.SkillItem = await skillsHttpClient.UpdateSkill(editedSkill);
@@ -200,6 +211,8 @@ namespace KinaUnaWeb.Controllers
             {
                 model.SkillItem.SkillFirstObservation = TimeZoneInfo.ConvertTimeFromUtc(model.SkillItem.SkillFirstObservation.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
+
+            model.SkillItem.Progeny = await progenyHttpClient.GetProgeny(model.SkillItem.ProgenyId);
 
             return PartialView("_SkillUpdatedPartial", model);
         }
@@ -213,10 +226,19 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteSkill(int itemId)
         {
             Skill skill = await skillsHttpClient.GetSkill(itemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), skill.ProgenyId);
+            if (skill == null || skill.SkillId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (skill.ItemPerMission.PermissionLevel < PermissionLevel.Admin)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), skill.ProgenyId, 0, false);
             SkillViewModel model = new(baseModel);
             
-            model.SetPropertiesFromSkillItem(skill, model.IsCurrentUserProgenyAdmin);
+            model.SetPropertiesFromSkillItem(skill);
 
             if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
             {
@@ -236,14 +258,18 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteSkill(SkillViewModel model)
         {
             Skill skill = await skillsHttpClient.GetSkill(model.SkillItem.SkillId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), skill.ProgenyId);
-            model.SetBaseProperties(baseModel);
-            
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (skill == null || skill.SkillId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (skill.ItemPerMission.PermissionLevel < PermissionLevel.Admin)
             {
                 return PartialView("_AccessDeniedPartial");
             }
 
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), skill.ProgenyId, 0, false);
+            model.SetBaseProperties(baseModel);
+            
             _ = await skillsHttpClient.DeleteSkill(skill.SkillId);
 
             return RedirectToAction("Index", "Skills");
@@ -258,22 +284,20 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> CopySkill(int itemId)
         {
             Skill skill = await skillsHttpClient.GetSkill(itemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), skill.ProgenyId);
-            SkillViewModel model = new(baseModel);
-
-            if (model.CurrentAccessLevel > skill.AccessLevel)
+            if (skill == null || skill.SkillId == 0)
             {
-                return PartialView("_AccessDeniedPartial");
+                return PartialView("_NotFoundPartial");
             }
 
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), skill.ProgenyId);
+            SkillViewModel model = new(baseModel);
+            
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
             
             skill.SkillFirstObservation ??= DateTime.UtcNow;
 
-            model.SetPropertiesFromSkillItem(skill, model.IsCurrentUserProgenyAdmin);
-
-            model.SetAccessLevelList();
+            model.SetPropertiesFromSkillItem(skill);
 
             return PartialView("_CopySkillPartial", model);
         }
@@ -290,9 +314,20 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.SkillItem.ProgenyId);
             model.SetBaseProperties(baseModel);
 
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            bool canUserAdd = false;
+            if (model.SkillItem.ProgenyId > 0)
             {
-                return PartialView("_AccessDeniedPartial");
+                List<Progeny> progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Add);
+                if (progenies.Exists(p => p.Id == model.SkillItem.ProgenyId))
+                {
+                    canUserAdd = true;
+                }
+            }
+
+            if (!canUserAdd)
+            {
+                // Todo: Show that no entities are available to add skill for.
+                return RedirectToAction("Index");
             }
 
             Skill editedSkill = model.CreateSkill();
@@ -304,6 +339,8 @@ namespace KinaUnaWeb.Controllers
                 model.SkillItem.SkillFirstObservation = TimeZoneInfo.ConvertTimeFromUtc(model.SkillItem.SkillFirstObservation.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
 
+            model.SkillItem.Progeny = await progenyHttpClient.GetProgeny(model.SkillItem.ProgenyId);
+            
             return PartialView("_SkillCopiedPartial", model);
         }
     }

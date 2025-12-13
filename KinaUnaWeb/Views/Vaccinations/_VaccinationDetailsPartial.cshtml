@@ -1,5 +1,6 @@
 ﻿@using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.VaccinationViewModel
 @inject ILocaleManager LocaleManager
@@ -56,12 +57,15 @@
                     }
                 </div>
             </div>
-            @if (Model.IsCurrentUserProgenyAdmin)
+            @if (Model.VaccinationItem.ItemPermission.PermissionLevel >= PermissionLevel.Edit)
             {
                 <div class="space-20"></div>
                 <div class="col-12">
                     <a data-edit-item-type="vaccination" data-edit-item-item-id="@Model.VaccinationItem.VaccinationId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
-                    <a asp-controller="Vaccinations" asp-action="DeleteVaccination" asp-route-itemId="@Model.VaccinationItem.VaccinationId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    @if (Model.VaccinationItem.ItemPermission.PermissionLevel >= PermissionLevel.Admin)
+                    {
+                        <a asp-controller="Vaccinations" asp-action="DeleteVaccination" asp-route-itemId="@Model.VaccinationItem.VaccinationId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    }
                 </div>
             }
         </div>

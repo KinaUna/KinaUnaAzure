@@ -4,13 +4,14 @@ using KinaUna.Data.Models.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using KinaUna.Data.Models.Timeline;
+using System.Text.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -63,7 +64,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!timeLineResponse.IsSuccessStatusCode) return new TimeLineItem();
 
             string timeLineItemAsString = await timeLineResponse.Content.ReadAsStringAsync();
-            TimeLineItem timeLineItem = JsonConvert.DeserializeObject<TimeLineItem>(timeLineItemAsString);
+            TimeLineItem timeLineItem = JsonSerializer.Deserialize<TimeLineItem>(timeLineItemAsString, JsonSerializerOptions.Web);
             return timeLineItem ?? new TimeLineItem();
         }
 
@@ -79,11 +80,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string timeLineApiPath = "/api/Timeline/";
-            HttpResponseMessage timelineResponse = await _httpClient.PostAsync(timeLineApiPath, new StringContent(JsonConvert.SerializeObject(timeLineItem), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage timelineResponse = await _httpClient.PostAsync(timeLineApiPath, new StringContent(JsonSerializer.Serialize(timeLineItem, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!timelineResponse.IsSuccessStatusCode) return new TimeLineItem();
 
             string timelineLineItemAsString = await timelineResponse.Content.ReadAsStringAsync();
-            timeLineItem = JsonConvert.DeserializeObject<TimeLineItem>(timelineLineItemAsString);
+            timeLineItem = JsonSerializer.Deserialize<TimeLineItem>(timelineLineItemAsString, JsonSerializerOptions.Web);
             return timeLineItem ?? new TimeLineItem();
         }
 
@@ -99,11 +100,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateTimeLineApiPath = "/api/Timeline/" + timeLineItem.TimeLineId;
-            HttpResponseMessage timelineResponse = await _httpClient.PutAsync(updateTimeLineApiPath, new StringContent(JsonConvert.SerializeObject(timeLineItem), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage timelineResponse = await _httpClient.PutAsync(updateTimeLineApiPath, new StringContent(JsonSerializer.Serialize(timeLineItem, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!timelineResponse.IsSuccessStatusCode) return new TimeLineItem();
 
             string timeLineItemAsString = await timelineResponse.Content.ReadAsStringAsync();
-            timeLineItem = JsonConvert.DeserializeObject<TimeLineItem>(timeLineItemAsString);
+            timeLineItem = JsonSerializer.Deserialize<TimeLineItem>(timeLineItemAsString, JsonSerializerOptions.Web);
             return timeLineItem ?? new TimeLineItem();
         }
 
@@ -124,7 +125,7 @@ namespace KinaUnaWeb.Services.HttpClients
         }
 
         /// <summary>
-        /// Gets a list of all TimeLineItems for a Progeny that a user has access to.
+        /// Gets a list of all TimeLineItems for  progenies that a user has access to.
         /// </summary>
         /// <param name="progeniesList">The list of Ids of the progenies to get TimeLineItems for.</param>
         /// <param name="order">Sort order: 0 for ascending, 1 for descending</param>
@@ -138,11 +139,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string timelineApiPath = "/api/Timeline/Progenies/";
-            HttpResponseMessage timelineResponse = await _httpClient.PostAsync(timelineApiPath, new StringContent(JsonConvert.SerializeObject(progeniesList), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage timelineResponse = await _httpClient.PostAsync(timelineApiPath, new StringContent(JsonSerializer.Serialize(progeniesList, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!timelineResponse.IsSuccessStatusCode) return progenyTimeline;
 
             string timelineAsString = await timelineResponse.Content.ReadAsStringAsync();
-            progenyTimeline = JsonConvert.DeserializeObject<List<TimeLineItem>>(timelineAsString);
+            progenyTimeline = JsonSerializer.Deserialize<List<TimeLineItem>>(timelineAsString, JsonSerializerOptions.Web);
             if (order == 1)
             {
                 progenyTimeline = [.. progenyTimeline.OrderByDescending(t => t.ProgenyTime)];
@@ -155,6 +156,54 @@ namespace KinaUnaWeb.Services.HttpClients
             return progenyTimeline;
         }
 
+        /// <summary>
+        /// Gets a list of all TimeLineItems for families that a user has access to.
+        /// </summary>
+        /// <param name="familiesList">The list of Ids of the progenies to get TimeLineItems for.</param>
+        /// <param name="order">Sort order: 0 for ascending, 1 for descending</param>
+        /// <returns>List of TimeLineItem objects.</returns>
+        public async Task<List<TimeLineItem>> GetFamiliesTimeline(List<int> familiesList, int order)
+        {
+            List<TimeLineItem> familyTimeline = [];
+
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            const string timelineApiPath = "/api/Timeline/Families/";
+            HttpResponseMessage timelineResponse = await _httpClient.PostAsync(timelineApiPath, new StringContent(JsonSerializer.Serialize(familiesList, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
+            if (!timelineResponse.IsSuccessStatusCode) return familyTimeline;
+
+            string timelineAsString = await timelineResponse.Content.ReadAsStringAsync();
+            familyTimeline = JsonSerializer.Deserialize<List<TimeLineItem>>(timelineAsString, JsonSerializerOptions.Web);
+            if (order == 1)
+            {
+                familyTimeline = [.. familyTimeline.OrderByDescending(t => t.ProgenyTime)];
+            }
+            else
+            {
+                familyTimeline = [.. familyTimeline.OrderBy(t => t.ProgenyTime)];
+            }
+
+            return familyTimeline;
+        }
+
+        public async Task<TimelineList> GetTimelineList(TimelineListRequest request)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            const string timelineApiPath = "/api/Timeline/TimelineList/";
+            HttpResponseMessage timelineResponse = await _httpClient.PostAsync(timelineApiPath, new StringContent(JsonSerializer.Serialize(request, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
+            if (!timelineResponse.IsSuccessStatusCode) return new TimelineList();
+
+            string timelineListAsString = await timelineResponse.Content.ReadAsStringAsync();
+            TimelineList timelineList = JsonSerializer.Deserialize<TimelineList>(timelineListAsString, JsonSerializerOptions.Web);
+
+            return timelineList ?? new TimelineList();
+        }
+
         public async Task<OnThisDayResponse> GetOnThisDayTimeLineItems(OnThisDayRequest onThisDayRequest)
         {
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
@@ -162,11 +211,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string onThisDayApiPath = "/api/Timeline/GetOnThisDayTimeLineItems";
-            HttpResponseMessage onThisDayResponse = await _httpClient.PostAsync(onThisDayApiPath, new StringContent(JsonConvert.SerializeObject(onThisDayRequest), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage onThisDayResponse = await _httpClient.PostAsync(onThisDayApiPath, new StringContent(JsonSerializer.Serialize(onThisDayRequest, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!onThisDayResponse.IsSuccessStatusCode) return new OnThisDayResponse();
 
             string onThisDayResponseAsString = await onThisDayResponse.Content.ReadAsStringAsync();
-            OnThisDayResponse onThisDayResponseObject = JsonConvert.DeserializeObject<OnThisDayResponse>(onThisDayResponseAsString);
+            OnThisDayResponse onThisDayResponseObject = JsonSerializer.Deserialize<OnThisDayResponse>(onThisDayResponseAsString, JsonSerializerOptions.Web);
             return onThisDayResponseObject ?? new OnThisDayResponse();
         }
 
@@ -177,12 +226,58 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string timelineDataApiPath = "/api/Timeline/GetTimeLineRequestData";
-            HttpResponseMessage timelineResponseMessage = await _httpClient.PostAsync(timelineDataApiPath, new StringContent(JsonConvert.SerializeObject(timelineRequest), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage timelineResponseMessage = await _httpClient.PostAsync(timelineDataApiPath, new StringContent(JsonSerializer.Serialize(timelineRequest, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!timelineResponseMessage.IsSuccessStatusCode) return new TimelineResponse();
 
             string timelineResponseAsString = await timelineResponseMessage.Content.ReadAsStringAsync();
-            TimelineResponse timelineResponse = JsonConvert.DeserializeObject<TimelineResponse>(timelineResponseAsString);
+            TimelineResponse timelineResponse = JsonSerializer.Deserialize<TimelineResponse>(timelineResponseAsString, JsonSerializerOptions.Web);
             return timelineResponse ?? new TimelineResponse();
+        }
+
+        /// <summary>
+        /// Gets the list of TimeLineItems that happened on this data for the given Progenies.
+        /// </summary>
+        /// <param name="progeniesList">List of Ids for the progenies to get timeline items for.</param>
+        /// <returns>List of TimeLineItem objects.</returns>
+        public async Task<List<TimeLineItem>> GetProgeniesYearAgo(List<int> progeniesList)
+        {
+            List<TimeLineItem> yearAgoPosts = [];
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string yearAgoApiPath = "/api/Timeline/ProgeniesYearAgo/";
+            HttpResponseMessage yearAgoResponse = await _httpClient.PostAsync(yearAgoApiPath, new StringContent(JsonSerializer.Serialize(progeniesList, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
+            if (!yearAgoResponse.IsSuccessStatusCode) return yearAgoPosts;
+
+            string yearAgoAsString = await yearAgoResponse.Content.ReadAsStringAsync();
+
+            yearAgoPosts = JsonSerializer.Deserialize<List<TimeLineItem>>(yearAgoAsString, JsonSerializerOptions.Web);
+
+            return yearAgoPosts;
+        }
+
+        /// <summary>
+        /// Gets the list of TimeLineItems that happened on this data for the given families.
+        /// </summary>
+        /// <param name="familiesList">List of Ids for the families to get timeline items for.</param>
+        /// <returns>List of TimeLineItem objects.</returns>
+        public async Task<List<TimeLineItem>> GetFamiliesYearAgo(List<int> familiesList)
+        {
+            List<TimeLineItem> yearAgoPosts = [];
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string yearAgoApiPath = "/api/Timeline/FamiliesYearAgo/";
+            HttpResponseMessage yearAgoResponse = await _httpClient.PostAsync(yearAgoApiPath, new StringContent(JsonSerializer.Serialize(familiesList, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
+            if (!yearAgoResponse.IsSuccessStatusCode) return yearAgoPosts;
+
+            string yearAgoAsString = await yearAgoResponse.Content.ReadAsStringAsync();
+
+            yearAgoPosts = JsonSerializer.Deserialize<List<TimeLineItem>>(yearAgoAsString, JsonSerializerOptions.Web);
+
+            return yearAgoPosts;
         }
     }
 }

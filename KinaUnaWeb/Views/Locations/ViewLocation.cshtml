@@ -1,9 +1,20 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
+@using KinaUna.Data.Models.AccessManagement
 @model KinaUnaWeb.Models.ItemViewModels.LocationViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Location:", PageNames.Locations, Model.LanguageId) + Model.LocationItem.Name;
+    string title = "";
+    if (Model.LocationItem.ProgenyId > 0)
+    {
+        title = Model.LocationItem.Progeny.NickName + " - " + await LocaleManager.GetTranslation("Location:", PageNames.Locations, Model.LanguageId) + Model.LocationItem.Name;
+    }
+    if (Model.LocationItem.FamilyId > 0)
+    {
+        title = Model.LocationItem.Family.Name + " - " + await LocaleManager.GetTranslation("Location:", PageNames.Locations, Model.LanguageId) + Model.LocationItem.Name;
+    }
+
+    ViewData["Title"] = title;
     Model.LocationItem.Date ??= DateTime.MinValue;
 }
 <div class="ml-xl-auto mr-xl-auto col-xxl-11 col-xxxl-10">
@@ -73,20 +84,22 @@
                                         List<string> tagsList = Model.LocationItem.Tags.Split(',').ToList();
                                         foreach (string tagString in tagsList)
                                         {
-                                            <a asp-action="Index" asp-route-childId="@Model.LocationItem.ProgenyId" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
+                                            <a asp-action="Index" asp-route-childId="@Model.LocationItem.ProgenyId" asp-route-familyId="@Model.LocationItem.FamilyId" asp-route-tagFilter="@tagString" class="btn tag-item leave-page">@tagString</a>
                                         }
                                     }
                                 }
                             </div>
                         </div>
                     </div>
-                    @if (Model.IsCurrentUserProgenyAdmin)
+                    @if (Model.LocationItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
                     {
-
                         <div class="col-12">
                             <div class="space-20"></div>
                             <a asp-controller="Locations" asp-action="EditLocation" asp-route-itemId="@Model.LocationItem.LocationId" class="btn btn-info item-details-edit-button"><i class="fas fa-pencil-alt"></i></a>
-                            <a asp-controller="Locations" asp-action="DeleteLocation" asp-route-itemId="@Model.LocationItem.LocationId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                            @if (Model.LocationItem.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
+                            {
+                                <a asp-controller="Locations" asp-action="DeleteLocation" asp-route-itemId="@Model.LocationItem.LocationId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                            }
                         </div>
                     }
                 </div>

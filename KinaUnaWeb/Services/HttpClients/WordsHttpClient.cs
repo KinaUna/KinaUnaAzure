@@ -3,11 +3,11 @@ using KinaUna.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -60,7 +60,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!wordResponse.IsSuccessStatusCode) return new VocabularyItem();
 
             string wordAsString = await wordResponse.Content.ReadAsStringAsync();
-            VocabularyItem wordItem = JsonConvert.DeserializeObject<VocabularyItem>(wordAsString);
+            VocabularyItem wordItem = JsonSerializer.Deserialize<VocabularyItem>(wordAsString, JsonSerializerOptions.Web);
             return wordItem ?? new VocabularyItem();
         }
 
@@ -76,11 +76,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string vocabularyApiPath = "/api/Vocabulary/";
-            HttpResponseMessage vocabularyResponse = await _httpClient.PostAsync(vocabularyApiPath, new StringContent(JsonConvert.SerializeObject(word), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage vocabularyResponse = await _httpClient.PostAsync(vocabularyApiPath, new StringContent(JsonSerializer.Serialize(word, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!vocabularyResponse.IsSuccessStatusCode) return new VocabularyItem();
 
             string wordAsString = await vocabularyResponse.Content.ReadAsStringAsync();
-            word = JsonConvert.DeserializeObject<VocabularyItem>(wordAsString);
+            word = JsonSerializer.Deserialize<VocabularyItem>(wordAsString, JsonSerializerOptions.Web);
             return word ?? new VocabularyItem();
         }
 
@@ -96,11 +96,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateVocabularyApiPath = "/api/Vocabulary/" + word.WordId;
-            HttpResponseMessage vocabularyResponse = await _httpClient.PutAsync(updateVocabularyApiPath, new StringContent(JsonConvert.SerializeObject(word), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage vocabularyResponse = await _httpClient.PutAsync(updateVocabularyApiPath, new StringContent(JsonSerializer.Serialize(word, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!vocabularyResponse.IsSuccessStatusCode) return new VocabularyItem();
 
             string wordAsString = await vocabularyResponse.Content.ReadAsStringAsync();
-            word = JsonConvert.DeserializeObject<VocabularyItem>(wordAsString);
+            word = JsonSerializer.Deserialize<VocabularyItem>(wordAsString, JsonSerializerOptions.Web);
             return word ?? new VocabularyItem();
         }
 
@@ -137,7 +137,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!wordsResponse.IsSuccessStatusCode) return progenyWordsList;
 
             string wordsAsString = await wordsResponse.Content.ReadAsStringAsync();
-            progenyWordsList = JsonConvert.DeserializeObject<List<VocabularyItem>>(wordsAsString);
+            progenyWordsList = JsonSerializer.Deserialize<List<VocabularyItem>>(wordsAsString, JsonSerializerOptions.Web);
             return progenyWordsList;
         }
     }

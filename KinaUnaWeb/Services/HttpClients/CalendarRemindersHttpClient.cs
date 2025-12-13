@@ -4,11 +4,11 @@ using KinaUna.Data.Models.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -50,12 +50,12 @@ namespace KinaUnaWeb.Services.HttpClients
 
             CalendarReminder calendarReminder = new();
             string calendarApiPath = "/api/CalendarReminders/GetCalendarReminder/" + reminderId;
-            HttpResponseMessage calendarResponse = await _httpClient.GetAsync(calendarApiPath).ConfigureAwait(false);
+            HttpResponseMessage calendarResponse = await _httpClient.GetAsync(calendarApiPath);
             if (!calendarResponse.IsSuccessStatusCode) return calendarReminder;
 
-            string calendarAsString = await calendarResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string calendarAsString = await calendarResponse.Content.ReadAsStringAsync();
 
-            calendarReminder = JsonConvert.DeserializeObject<CalendarReminder>(calendarAsString);
+            calendarReminder = JsonSerializer.Deserialize<CalendarReminder>(calendarAsString, JsonSerializerOptions.Web);
 
             return calendarReminder;
         }
@@ -67,12 +67,12 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string calendarRemindersApiPath = "/api/CalendarReminders/AddCalendarReminder";
-            HttpResponseMessage calendarRemindersResponse = await _httpClient.PostAsync(calendarRemindersApiPath, new StringContent(JsonConvert.SerializeObject(calendarReminder), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage calendarRemindersResponse = await _httpClient.PostAsync(calendarRemindersApiPath, new StringContent(JsonSerializer.Serialize(calendarReminder, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!calendarRemindersResponse.IsSuccessStatusCode) return new CalendarReminder();
 
             string calendarReminderAsString = await calendarRemindersResponse.Content.ReadAsStringAsync();
 
-            return JsonConvert.DeserializeObject<CalendarReminder>(calendarReminderAsString);
+            return JsonSerializer.Deserialize<CalendarReminder>(calendarReminderAsString, JsonSerializerOptions.Web);
         }
 
         public async Task<CalendarReminder> UpdateCalendarReminder(CalendarReminder calendarReminder)
@@ -82,12 +82,12 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string calendarRemindersApiPath = "/api/CalendarReminders/UpdateCalendarReminder";
-            HttpResponseMessage calendarRemindersResponse = await _httpClient.PutAsync(calendarRemindersApiPath, new StringContent(JsonConvert.SerializeObject(calendarReminder), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage calendarRemindersResponse = await _httpClient.PutAsync(calendarRemindersApiPath, new StringContent(JsonSerializer.Serialize(calendarReminder, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!calendarRemindersResponse.IsSuccessStatusCode) return new CalendarReminder();
 
             string calendarReminderAsString = await calendarRemindersResponse.Content.ReadAsStringAsync();
 
-            return JsonConvert.DeserializeObject<CalendarReminder>(calendarReminderAsString);
+            return JsonSerializer.Deserialize<CalendarReminder>(calendarReminderAsString, JsonSerializerOptions.Web);
         }
 
         public async Task<CalendarReminder> DeleteCalendarReminder(CalendarReminder calendarReminder)
@@ -102,7 +102,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string calendarReminderAsString = await calendarRemindersResponse.Content.ReadAsStringAsync();
 
-            return JsonConvert.DeserializeObject<CalendarReminder>(calendarReminderAsString);
+            return JsonSerializer.Deserialize<CalendarReminder>(calendarReminderAsString, JsonSerializerOptions.Web);
         }
 
         public async Task<List<CalendarReminder>> GetCalendarRemindersForUser(string userId, bool filterNotified)
@@ -118,12 +118,12 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string calendarRemindersApiPath = "/api/CalendarReminders/GetCalendarRemindersForUser";
-            HttpResponseMessage calendarRemindersResponse = await _httpClient.PostAsync(calendarRemindersApiPath, new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage calendarRemindersResponse = await _httpClient.PostAsync(calendarRemindersApiPath, new StringContent(JsonSerializer.Serialize(request, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!calendarRemindersResponse.IsSuccessStatusCode) return [];
 
             string calendarRemindersAsString = await calendarRemindersResponse.Content.ReadAsStringAsync();
 
-            return JsonConvert.DeserializeObject<List<CalendarReminder>>(calendarRemindersAsString);
+            return JsonSerializer.Deserialize<List<CalendarReminder>>(calendarRemindersAsString, JsonSerializerOptions.Web);
         }
 
         public async Task<List<CalendarReminder>> GetUsersCalendarRemindersForEvent(int eventId, string userId)
@@ -139,12 +139,12 @@ namespace KinaUnaWeb.Services.HttpClients
             };
 
             string calendarRemindersApiPath = "/api/CalendarReminders/GetUsersCalendarRemindersForEvent/";
-            HttpResponseMessage calendarRemindersResponse = await _httpClient.PostAsync(calendarRemindersApiPath, new StringContent(JsonConvert.SerializeObject(request), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage calendarRemindersResponse = await _httpClient.PostAsync(calendarRemindersApiPath, new StringContent(JsonSerializer.Serialize(request, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!calendarRemindersResponse.IsSuccessStatusCode) return [];
 
             string calendarRemindersAsString = await calendarRemindersResponse.Content.ReadAsStringAsync();
 
-            return JsonConvert.DeserializeObject<List<CalendarReminder>>(calendarRemindersAsString);
+            return JsonSerializer.Deserialize<List<CalendarReminder>>(calendarRemindersAsString, JsonSerializerOptions.Web);
         }
     }
 }

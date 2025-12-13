@@ -1,29 +1,28 @@
-﻿using System.Collections.Generic;
+﻿using KinaUna.Data.Models.DTOs;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Collections.Generic;
+using System.Text.Json;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class MeasurementViewModel: BaseItemsViewModel
     {
-        public List<SelectListItem> ProgenyList { get; set; }
         public List<Measurement> MeasurementsList { get; set; }
-        public List<SelectListItem> AccessLevelListEn { get; set; }
-        public List<SelectListItem> AccessLevelListDa { get; set; }
-        public List<SelectListItem> AccessLevelListDe { get; set; }
         public Measurement MeasurementItem { get; set; } = new();
         public int MeasurementId { get; set; }
 
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
         public MeasurementViewModel()
         {
             ProgenyList = [];
-            SetAccessLevelList();
         }
 
         public MeasurementViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             ProgenyList = [];
             SetBaseProperties(baseItemsViewModel);
-            SetAccessLevelList();
         }
 
         public void SetProgenyList()
@@ -41,29 +40,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 }
             }
         }
-
-        public void SetAccessLevelList()
-        {
-            AccessLevelList accessLevelList = new();
-            AccessLevelListEn = accessLevelList.AccessLevelListEn;
-            AccessLevelListDa = accessLevelList.AccessLevelListDa;
-            AccessLevelListDe = accessLevelList.AccessLevelListDe;
-
-            AccessLevelListEn[MeasurementItem.AccessLevel].Selected = true;
-            AccessLevelListDa[MeasurementItem.AccessLevel].Selected = true;
-            AccessLevelListDe[MeasurementItem.AccessLevel].Selected = true;
-
-            if (LanguageId == 2)
-            {
-                AccessLevelListEn = AccessLevelListDe;
-            }
-
-            if (LanguageId == 3)
-            {
-                AccessLevelListEn = AccessLevelListDa;
-            }
-        }
-
+        
         public Measurement CreateMeasurement()
         {
             Measurement measurement = new()
@@ -77,18 +54,17 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 Circumference = MeasurementItem.Circumference,
                 HairColor = MeasurementItem.HairColor,
                 EyeColor = MeasurementItem.EyeColor,
-                AccessLevel = MeasurementItem.AccessLevel,
-                Author = MeasurementItem.Author
+                Author = MeasurementItem.Author,
+                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString, JsonSerializerOptions.Web)
             };
 
             return measurement;
         }
 
-        public void SetPropertiesFromMeasurement(Measurement measurement, bool isAdmin)
+        public void SetPropertiesFromMeasurement(Measurement measurement)
         {
             MeasurementItem.ProgenyId = measurement.ProgenyId;
             MeasurementItem.MeasurementId = measurement.MeasurementId;
-            MeasurementItem.AccessLevel = measurement.AccessLevel;
             MeasurementItem.Author = measurement.Author;
             MeasurementItem.CreatedDate = measurement.CreatedDate;
             MeasurementItem.Date = measurement.Date;
@@ -97,8 +73,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             MeasurementItem.Circumference = measurement.Circumference;
             MeasurementItem.HairColor = measurement.HairColor;
             MeasurementItem.EyeColor = measurement.EyeColor;
-
-            IsCurrentUserProgenyAdmin = isAdmin;
+            MeasurementItem.ItemPerMission = measurement.ItemPerMission;
         }
     }
 }

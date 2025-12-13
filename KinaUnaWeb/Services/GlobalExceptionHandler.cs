@@ -35,13 +35,16 @@ namespace KinaUnaWeb.Services
 
     internal sealed class AuthenticationExceptionHandler(ILogger<AuthenticationExceptionHandler> logger) : IExceptionHandler
     {
-        public ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
+        public ValueTask<bool> TryHandleAsync(HttpContext httpContext,
+            Exception exception,
+            CancellationToken cancellationToken)
         {
             logger.LogError(
                 exception, "Exception occurred: {Message}", exception.Message);
 
             logger.LogError(
                 exception, "Exception occurred: {Message}", exception.Message);
+
 
             // Redirect to the login page if an authentication exception occurs
             httpContext.Response.Redirect("/login");

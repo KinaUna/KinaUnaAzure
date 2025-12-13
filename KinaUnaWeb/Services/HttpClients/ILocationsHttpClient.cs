@@ -47,9 +47,10 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of Locations for a progeny that a user has access to with a given tag.
         /// </summary>
         /// <param name="progenyId">The Id of the Progeny.</param>
+        /// <param name="familyId">The Id of the Family.</param>
         /// <param name="tagFilter">The string to filter the result list by. An empty string will include all locations.</param>
         /// <returns>List of Location objects.</returns>
-        Task<List<Location>> GetLocationsList(int progenyId, string tagFilter = "");
+        Task<List<Location>> GetLocationsList(int progenyId, int familyId, string tagFilter = "");
 
         /// <summary>
         /// Gets the Address entity with a given AddressId.

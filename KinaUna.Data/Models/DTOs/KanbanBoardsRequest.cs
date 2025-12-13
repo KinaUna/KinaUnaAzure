@@ -10,6 +10,11 @@ namespace KinaUna.Data.Models.DTOs
         public List<int> ProgenyIds { get; set; } = [];
 
         /// <summary>
+        /// Gets or sets the list of Ids for the families to get KanbanBoards for.
+        /// </summary>
+        public List<int> FamilyIds { get; set; } = [];
+
+        /// <summary>
         /// Gets or sets the number of items to skip for pagination.
         /// </summary>
         public int Skip { get; set; } = 0;

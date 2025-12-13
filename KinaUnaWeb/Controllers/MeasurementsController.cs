@@ -1,17 +1,19 @@
-﻿using KinaUnaWeb.Models.ItemViewModels;
+﻿using KinaUna.Data.Extensions;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUnaWeb.Models;
+using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
+using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using KinaUna.Data.Extensions;
-using KinaUnaWeb.Models;
-using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class MeasurementsController(IMeasurementsHttpClient measurementsHttpClient, IViewModelSetupService viewModelSetupService) : Controller
+    public class MeasurementsController(IMeasurementsHttpClient measurementsHttpClient, IViewModelSetupService viewModelSetupService, IProgenyHttpClient progenyHttpClient) : Controller
     {
         /// <summary>
         /// Measurement Index page. Shows a list of all measurements for a Progeny.
@@ -25,8 +27,35 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             MeasurementViewModel model = new(baseModel);
             
+            model.MeasurementId = measurementId;
+             
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> MeasurementsTable(int progenyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
+            MeasurementViewModel model = new(baseModel);
+
             model.MeasurementsList = await measurementsHttpClient.GetMeasurementsList(model.CurrentProgenyId);
-            
+
+            if (model.MeasurementsList.Count != 0)
+            {
+                model.MeasurementsList = [.. model.MeasurementsList.OrderBy(m => m.Date)];
+            }
+
+            return PartialView("_MeasurementsTablePartial", model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetMeasurementsData(int progenyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
+            MeasurementViewModel model = new(baseModel);
+
+            model.MeasurementsList = await measurementsHttpClient.GetMeasurementsList(model.CurrentProgenyId);
+
             if (model.MeasurementsList.Count != 0)
             {
                 model.MeasurementsList = [.. model.MeasurementsList.OrderBy(m => m.Date)];
@@ -35,16 +64,15 @@ namespace KinaUnaWeb.Controllers
             {
                 Measurement m = new()
                 {
-                    ProgenyId = childId,
+                    ProgenyId = progenyId,
                     Date = DateTime.UtcNow,
                     CreatedDate = DateTime.UtcNow
                 };
                 model.MeasurementsList = [m];
             }
 
-            model.MeasurementId = measurementId;
+            return Json(model.MeasurementsList);
 
-            return View(model);
         }
 
         /// <summary>
@@ -57,18 +85,11 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> ViewMeasurement(int measurementId, bool partialView = false)
         {
             Measurement measurement = await measurementsHttpClient.GetMeasurement(measurementId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), measurement.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), measurement.ProgenyId, 0, false);
             MeasurementViewModel model = new(baseModel);
-
-            if (measurement.AccessLevel < model.CurrentAccessLevel)
-            {
-                return RedirectToAction("Index");
-            }
-
-            model.SetPropertiesFromMeasurement(measurement, model.IsCurrentUserProgenyAdmin);
-
-
-           
+            
+            model.SetPropertiesFromMeasurement(measurement);
+            
             model.MeasurementItem.Progeny = model.CurrentProgeny;
             model.MeasurementItem.Progeny.PictureLink = model.MeasurementItem.Progeny.GetProfilePictureUrl();
 
@@ -87,19 +108,13 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> AddMeasurement()
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0 , false);
             MeasurementViewModel model = new(baseModel);
             
-            if (model.CurrentUser == null)
-            {
-                return PartialView("_AccessDeniedPartial");
-            }
-
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
-
-            model.SetAccessLevelList();
-
+            model.MeasurementItem.Date = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            
             return PartialView("_AddMeasurementPartial", model);
         }
 
@@ -114,9 +129,20 @@ namespace KinaUnaWeb.Controllers
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.MeasurementItem.ProgenyId);
             model.SetBaseProperties(baseModel);
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            bool canUserAdd = false;
+            if (model.MeasurementItem.ProgenyId > 0)
             {
-                return PartialView("_AccessDeniedPartial");
+                List<Progeny> progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Add);
+                if (progenies.Exists(p => p.Id == model.MeasurementItem.ProgenyId))
+                {
+                    canUserAdd = true;
+                }
+            }
+            
+            if (!canUserAdd)
+            {
+                // Todo: Show that no entities are available to add kanban for.
+                return RedirectToAction("Index");
             }
 
             model.MeasurementItem.CreatedDate = DateTime.UtcNow;
@@ -126,6 +152,7 @@ namespace KinaUnaWeb.Controllers
             model.MeasurementItem = await measurementsHttpClient.AddMeasurement(measurementItem);
             model.MeasurementItem.Date = TimeZoneInfo.ConvertTimeFromUtc(model.MeasurementItem.Date, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.MeasurementItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(model.MeasurementItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.MeasurementItem.Progeny = await progenyHttpClient.GetProgeny(model.MeasurementItem.ProgenyId);
 
             return PartialView("_MeasurementAddedPartial", model);
         }
@@ -139,18 +166,23 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditMeasurement(int itemId)
         {
             Measurement measurement = await measurementsHttpClient.GetMeasurement(itemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), measurement.ProgenyId);
-            MeasurementViewModel model = new(baseModel);
-            
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (measurement == null || measurement.MeasurementId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (measurement.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
             {
                 return PartialView("_AccessDeniedPartial");
             }
 
-            model.SetPropertiesFromMeasurement(measurement, model.IsCurrentUserProgenyAdmin);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), measurement.ProgenyId, 0, false);
+            MeasurementViewModel model = new(baseModel);
 
-            model.SetAccessLevelList();
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(measurement.ProgenyId);
+            model.SetProgenyList();
 
+            model.SetPropertiesFromMeasurement(measurement);
+            
             return PartialView("_EditMeasurementPartial", model);
         }
 
@@ -163,19 +195,26 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditMeasurement(MeasurementViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.MeasurementItem.ProgenyId);
-            model.SetBaseProperties(baseModel);
-            
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            Measurement existingMeasurement = await measurementsHttpClient.GetMeasurement(model.MeasurementItem.MeasurementId);
+            if (existingMeasurement == null || existingMeasurement.MeasurementId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (existingMeasurement.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
             {
                 return PartialView("_AccessDeniedPartial");
             }
 
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.MeasurementItem.ProgenyId, 0, false);
+            model.SetBaseProperties(baseModel);
+            
             Measurement editedMeasurement = model.CreateMeasurement();
 
             model.MeasurementItem = await measurementsHttpClient.UpdateMeasurement(editedMeasurement);
             model.MeasurementItem.Date = TimeZoneInfo.ConvertTimeFromUtc(model.MeasurementItem.Date, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.MeasurementItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(model.MeasurementItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.MeasurementItem.Progeny = await progenyHttpClient.GetProgeny(model.MeasurementItem.ProgenyId);
+
             return PartialView("_MeasurementUpdatedPartial", model);
         }
 
@@ -188,13 +227,17 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteMeasurement(int itemId)
         {
             Measurement measurement = await measurementsHttpClient.GetMeasurement(itemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), measurement.ProgenyId);
-            MeasurementViewModel model = new(baseModel);
-           
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (measurement == null || measurement.MeasurementId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (measurement.ItemPerMission.PermissionLevel < PermissionLevel.Admin)
             {
                 return PartialView("_AccessDeniedPartial");
             }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), measurement.ProgenyId, 0, false);
+            MeasurementViewModel model = new(baseModel);
 
             model.MeasurementItem = measurement;
             return View(model);
@@ -210,14 +253,18 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteMeasurement(MeasurementViewModel model)
         {
             Measurement measurement = await measurementsHttpClient.GetMeasurement(model.MeasurementItem.MeasurementId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), measurement.ProgenyId);
-            model.SetBaseProperties(baseModel);
-
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (measurement == null || measurement.MeasurementId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (measurement.ItemPerMission.PermissionLevel < PermissionLevel.Admin)
             {
                 return PartialView("_AccessDeniedPartial");
             }
 
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), measurement.ProgenyId);
+            model.SetBaseProperties(baseModel);
+            
             _ = await measurementsHttpClient.DeleteMeasurement(measurement.MeasurementId);
 
             return RedirectToAction("Index", "Measurements");
@@ -232,20 +279,18 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> CopyMeasurement(int itemId)
         {
             Measurement measurement = await measurementsHttpClient.GetMeasurement(itemId);
+            if (measurement == null || measurement.MeasurementId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), measurement.ProgenyId);
             MeasurementViewModel model = new(baseModel);
 
-            if (model.CurrentAccessLevel > measurement.AccessLevel)
-            {
-                return PartialView("_AccessDeniedPartial");
-            }
-
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(measurement.ProgenyId);
             model.SetProgenyList();
-
-            model.SetPropertiesFromMeasurement(measurement, model.IsCurrentUserProgenyAdmin);
-
-            model.SetAccessLevelList();
+            
+            model.SetPropertiesFromMeasurement(measurement);
 
             return PartialView("_CopyMeasurementPartial", model);
         }
@@ -259,11 +304,22 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CopyMeasurement(MeasurementViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.MeasurementItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.MeasurementItem.ProgenyId, 0, false);
             model.SetBaseProperties(baseModel);
 
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            bool canUserAdd = false;
+            if (model.MeasurementItem.ProgenyId > 0)
             {
+                List<Progeny> progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Add);
+                if (progenies.Exists(p => p.Id == model.MeasurementItem.ProgenyId))
+                {
+                    canUserAdd = true;
+                }
+            }
+            
+            if (!canUserAdd)
+            {
+                // Todo: Show that no family or family members are available to add measurement for.
                 return PartialView("_AccessDeniedPartial");
             }
 
@@ -272,6 +328,8 @@ namespace KinaUnaWeb.Controllers
             model.MeasurementItem = await measurementsHttpClient.AddMeasurement(editedMeasurement);
             model.MeasurementItem.Date = TimeZoneInfo.ConvertTimeFromUtc(model.MeasurementItem.Date, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.MeasurementItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(model.MeasurementItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.MeasurementItem.Progeny = await progenyHttpClient.GetProgeny(model.MeasurementItem.ProgenyId);
+
             return PartialView("_MeasurementCopiedPartial", model);
         }
     }

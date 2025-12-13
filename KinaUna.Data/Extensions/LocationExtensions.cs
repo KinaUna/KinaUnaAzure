@@ -15,8 +15,9 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherLocation"></param>
         public static void CopyPropertiesForUpdate(this Location currentLocation, Location otherLocation )
         {
-            currentLocation.AccessLevel = otherLocation.AccessLevel;
             currentLocation.Author = otherLocation.Author;
+            currentLocation.ModifiedBy = otherLocation.ModifiedBy;
+            currentLocation.ModifiedTime = DateTime.UtcNow;
             currentLocation.City = otherLocation.City;
             currentLocation.Country = otherLocation.Country;
             currentLocation.County = otherLocation.County;
@@ -33,6 +34,7 @@ namespace KinaUna.Data.Extensions
             currentLocation.State = otherLocation.State;
             currentLocation.StreetName = otherLocation.StreetName;
             currentLocation.Tags = otherLocation.Tags;
+            currentLocation.ItemPermissionsDtoList = otherLocation.ItemPermissionsDtoList;
         }
 
         /// <summary>
@@ -42,8 +44,11 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherLocation"></param>
         public static void CopyPropertiesForAdd(this Location currentLocation, Location otherLocation)
         {
-            currentLocation.AccessLevel = otherLocation.AccessLevel;
             currentLocation.Author = otherLocation.Author;
+            currentLocation.CreatedBy = otherLocation.CreatedBy;
+            currentLocation.CreatedTime = DateTime.UtcNow;
+            currentLocation.ModifiedBy = otherLocation.CreatedBy;
+            currentLocation.ModifiedTime = DateTime.UtcNow;
             currentLocation.City = otherLocation.City;
             currentLocation.Country = otherLocation.Country;
             currentLocation.County = otherLocation.County;
@@ -57,9 +62,11 @@ namespace KinaUna.Data.Extensions
             currentLocation.Notes = otherLocation.Notes;
             currentLocation.PostalCode = otherLocation.PostalCode;
             currentLocation.ProgenyId = otherLocation.ProgenyId;
+            currentLocation.FamilyId = otherLocation.FamilyId;
             currentLocation.State = otherLocation.State;
             currentLocation.StreetName = otherLocation.StreetName;
             currentLocation.Tags = otherLocation.Tags;
+            currentLocation.ItemPermissionsDtoList = otherLocation.ItemPermissionsDtoList;
         }
 
         /// <summary>
@@ -77,11 +84,10 @@ namespace KinaUna.Data.Extensions
 
 
         //Source: https://learn.microsoft.com/en-us/answers/questions/1345224/calculate-distance-between-two-coordinates-lat1-lo
-        private static double ToRadians(double angleIn10thofaDegree)
+        private static double ToRadians(double angleInDeciDegrees)
         {
-            // Angle in 10th
-            // of a degree
-            return (angleIn10thofaDegree *
+            // Angle in 10th of a degree (deci-degrees)
+            return (angleInDeciDegrees *
                     Math.PI) / 180;
         }
 

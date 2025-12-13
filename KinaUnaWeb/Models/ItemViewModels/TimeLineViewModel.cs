@@ -15,6 +15,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public int FirstItemYear { get; set; }
         public TimelineParameters Parameters { get; set; }
 
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
         public TimeLineViewModel()
         {
             
@@ -30,6 +33,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             Parameters = new TimelineParameters
             {
                 ProgenyId = CurrentProgeny.Id,
+                FamilyId = CurrentFamily.FamilyId,
                 Skip = Skip,
                 Count = Items,
                 SortBy = SortBy,

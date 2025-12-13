@@ -1,21 +1,24 @@
-﻿using KinaUnaWeb.Models.ItemViewModels;
+﻿using KinaUna.Data.Extensions;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.Family;
+using KinaUnaWeb.Models;
+using KinaUnaWeb.Models.ItemViewModels;
+using KinaUnaWeb.Models.TypeScriptModels.Locations;
 using KinaUnaWeb.Services;
+using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using KinaUna.Data.Extensions;
-using KinaUnaWeb.Models;
-using KinaUnaWeb.Services.HttpClients;
-using Microsoft.Extensions.Configuration;
-using KinaUnaWeb.Models.TypeScriptModels.Locations;
 
 namespace KinaUnaWeb.Controllers
 {
     public class LocationsController(
         IProgenyHttpClient progenyHttpClient,
+        IFamiliesHttpClient familiesHttpClient,
         ILocationsHttpClient locationsHttpClient,
         IViewModelSetupService viewModelSetupService,
         IConfiguration configuration)
@@ -27,6 +30,7 @@ namespace KinaUnaWeb.Controllers
         /// Locations Index page. Shows a list of all locations for a Progeny.
         /// </summary>
         /// <param name="childId">The Id of the Progeny to show locations for.</param>
+        /// <param name="familyId">The Id of the Family to show locations for.</param>
         /// <param name="sortBy">The property to sort locations by, 0 = Date, 1 = Name.</param>
         /// <param name="tagFilter">Filter result to include only locations where the tagFilter is in the Tags list. Empty string includes all locations.</param>
         /// <param name="sort">Sort order, 0 = ascending, 1 descending.</param>
@@ -34,15 +38,15 @@ namespace KinaUnaWeb.Controllers
         /// <param name="locationId">The LocationId of the location to show details for. If 0, no Location popup is shown.</param>
         /// <returns>View with LocationViewModel.</returns>
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int childId = 0, int sortBy = 0, string tagFilter = "", int sort = 0, int sortTags = 0, int locationId = 0)
+        public async Task<IActionResult> Index(int childId = 0, int familyId = 0, int sortBy = 0, string tagFilter = "", int sort = 0, int sortTags = 0, int locationId = 0)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId);
             LocationViewModel model = new(baseModel)
             {
                 HereMapsApiKey = _hereMapsApiKey
             };
-
-            model.LocationsList = await locationsHttpClient.GetLocationsList(model.CurrentProgenyId, tagFilter);
+            // Todo: Replace with lists of progenies and families.
+            model.LocationsList = await locationsHttpClient.GetLocationsList(model.CurrentProgenyId, model.CurrentFamilyId, tagFilter);
             
             model.SortBy = sortBy;
             model.TagFilter = tagFilter;
@@ -53,6 +57,7 @@ namespace KinaUnaWeb.Controllers
             {
                 LanguageId = model.LanguageId,
                 ProgenyId = model.CurrentProgenyId,
+                FamilyId = model.CurrentFamilyId,
                 SortBy = sortBy,
                 TagFilter = tagFilter,
                 Sort = sort,
@@ -75,18 +80,34 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> ViewLocation(int locationId, string tagFilter, bool partialView = false)
         {
             Location location = await locationsHttpClient.GetLocation(locationId);
+            if (location == null || location.LocationId == 0)
+            {
+                if (partialView)
+                {
+                    return PartialView("_NotFoundPartial");
+                }
+
+                return NotFound();
+            }
+
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId);
             LocationViewModel model = new(baseModel);
-
-            if (location.AccessLevel < model.CurrentAccessLevel)
-            {
-                RedirectToAction("Index");
-            }
             
             model.SetPropertiesFromLocation(location, model.CurrentUser.Timezone); 
             model.TagFilter = tagFilter;
-            model.LocationItem.Progeny = model.CurrentProgeny;
-            model.LocationItem.Progeny.PictureLink = model.LocationItem.Progeny.GetProfilePictureUrl();
+            if (model.LocationItem.ProgenyId > 0)
+            {
+                model.LocationItem.Progeny = model.CurrentProgeny;
+                model.LocationItem.Progeny.PictureLink = model.LocationItem.Progeny.GetProfilePictureUrl();
+            }
+            if (model.LocationItem.FamilyId > 0)
+            {
+                model.LocationItem.Family = await familiesHttpClient.GetFamily(model.LocationItem.FamilyId);
+                if (model.LocationItem.Family != null)
+                {
+                    model.LocationItem.Family.PictureLink = model.LocationItem.Family.GetProfilePictureUrl();
+                }
+            }
 
             if (partialView)
             {
@@ -124,14 +145,18 @@ namespace KinaUnaWeb.Controllers
             else
             {
                 locationItemResponse.LocationItem = await locationsHttpClient.GetLocation(parameters.LocationId);
-                BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), locationItemResponse.LocationItem.ProgenyId);
-                locationItemResponse.IsCurrentUserProgenyAdmin = baseModel.IsCurrentUserProgenyAdmin;
-                locationItemResponse.LocationItem.Progeny = baseModel.CurrentProgeny;
+                BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), locationItemResponse.LocationItem.ProgenyId, locationItemResponse.LocationItem.FamilyId, false);
+                if (locationItemResponse.LocationItem.ProgenyId > 0)
+                {
+                    locationItemResponse.LocationItem.Progeny = baseModel.CurrentProgeny;
+                }
+                if (locationItemResponse.LocationItem.FamilyId > 0)
+                {
+                    locationItemResponse.LocationItem.Family = await familiesHttpClient.GetFamily(locationItemResponse.LocationItem.FamilyId);
+                }
             }
 
-
             return PartialView("_LocationElementPartial", locationItemResponse);
-
         }
 
         /// <summary>
@@ -155,15 +180,14 @@ namespace KinaUnaWeb.Controllers
                 parameters.CurrentPageNumber = 1;
             }
 
-            List<Location> locationsList = []; // await locationsHttpClient.GetLocationsList(parameters.ProgenyId, baseModel.CurrentAccessLevel, parameters.TagFilter);
+            List<Location> locationsList = [];
             
             foreach (int progenyId in parameters.Progenies)
             {
-                List<Location> locList = await locationsHttpClient.GetLocationsList(progenyId, parameters.TagFilter);
+                List<Location> locList = await locationsHttpClient.GetLocationsList(progenyId, 0, parameters.TagFilter);
                 locationsList.AddRange(locList);
             }
-
-
+            
             List<string> tagsList = [];
 
             if (locationsList.Count != 0)
@@ -219,13 +243,14 @@ namespace KinaUnaWeb.Controllers
         /// Page to show a map with all locations obtained from photos for a Progeny.
         /// </summary>
         /// <param name="childId">The Id of the Progeny to show photo locations for.</param>
+        /// <param name="familyId">The Id of the Family to show photo locations for.</param>
         /// <param name="tagFilter">Filter result to include only locations where the tagFilter is in the Tags list. Empty string includes all locations.</param>
         /// <param name="sortOrder">Sort order, 0 = ascending, 1 descending.</param>
         /// <returns>View with LocationViewModel.</returns>
         [AllowAnonymous]
-        public async Task<IActionResult> PhotoLocations(int childId = 0, string tagFilter = "", int sortOrder = 1)
+        public async Task<IActionResult> PhotoLocations(int childId = 0, int familyId = 0, string tagFilter = "", int sortOrder = 1)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId);
             LocationViewModel model = new(baseModel)
             {
                 LocationsList = [],
@@ -236,6 +261,7 @@ namespace KinaUnaWeb.Controllers
             {
                 LanguageId = model.LanguageId,
                 ProgenyId = model.CurrentProgenyId,
+                FamilyId = model.CurrentFamilyId,
                 TagFilter = tagFilter,
                 Sort = sortOrder
             };
@@ -249,54 +275,20 @@ namespace KinaUnaWeb.Controllers
         /// <returns>View with LocationViewModel.</returns>
         public async Task<IActionResult> AddLocation()
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0, false);
             LocationViewModel model = new(baseModel)
             {
                 HereMapsApiKey = _hereMapsApiKey
             };
-
-            List<string> tagsList = [];
-
-            if (model.CurrentUser == null)
-            {
-                return PartialView("_AccessDeniedPartial");
-            }
-
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
-
-            if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
-            {
-                List<Progeny> accessList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
-                if (accessList.Count != 0)
-                {
-                    foreach (Progeny progeny in accessList)
-                    {
-                        List<Location> locList1 = await locationsHttpClient.GetLocationsList(progeny.Id);
-                        foreach (Location loc in locList1)
-                        {
-                            if (string.IsNullOrEmpty(loc.Tags)) continue;
-
-                            List<string> locTags = [.. loc.Tags.Split(',')];
-                            foreach (string tagstring in locTags)
-                            {
-                                if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                                {
-                                    tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
             
-            model.SetTagList(tagsList);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
+            model.SetProgenyList();
+            model.FamilyList = await viewModelSetupService.GetFamilySelectList();
+            model.SetFamilyList();
 
             model.LocationItem.Latitude = 30.94625288456589;
             model.LocationItem.Longitude = -54.10861860580418;
             model.LocationItem.Date = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-
-            model.SetAccessLevelList();
-            model.SetProgenyList();
 
             return PartialView("_AddLocationPartial", model);
         }
@@ -310,12 +302,32 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddLocation(LocationViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.LocationItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.LocationItem.ProgenyId, model.LocationItem.FamilyId, false);
             model.SetBaseProperties(baseModel);
 
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            bool canUserAdd = false;
+            if (model.LocationItem.ProgenyId > 0)
             {
-                return PartialView("_AccessDeniedPartial");
+                List<Progeny> progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Add);
+                if (progenies.Exists(p => p.Id == model.LocationItem.ProgenyId))
+                {
+                    canUserAdd = true;
+                }
+            }
+
+            if (model.LocationItem.FamilyId > 0)
+            {
+                List<Family> families = await familiesHttpClient.GetFamiliesUserCanAccess(PermissionLevel.Add);
+                if (families.Exists(f => f.FamilyId == model.LocationItem.FamilyId))
+                {
+                    canUserAdd = true;
+                }
+            }
+
+            if (!canUserAdd)
+            {
+                // Todo: Show that no entities are available to add kanban for.
+                return RedirectToAction("Index");
             }
 
             Location locationItem = model.CreateLocation();
@@ -330,6 +342,16 @@ namespace KinaUnaWeb.Controllers
                 model.LocationItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(model.LocationItem.DateAdded.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
 
+            if (model.LocationItem.ProgenyId > 0)
+            {
+                model.LocationItem.Progeny = await progenyHttpClient.GetProgeny(model.LocationItem.ProgenyId);
+            }
+
+            if (model.LocationItem.FamilyId > 0)
+            {
+                model.LocationItem.Family = await familiesHttpClient.GetFamily(model.LocationItem.FamilyId);
+            }
+
             return PartialView("_LocationAddedPartial", model);
         }
 
@@ -341,51 +363,29 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditLocation(int itemId)
         {
             Location location = await locationsHttpClient.GetLocation(itemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId);
+            if (location == null || location.LocationId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+
+            if (location.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId, location.FamilyId, false);
             LocationViewModel model = new(baseModel)
             {
                 HereMapsApiKey = _hereMapsApiKey
             };
 
-            if (model.CurrentUser == null)
-            {
-                return PartialView("_AccessDeniedPartial");
-            }
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(location.ProgenyId);
+            model.SetProgenyList();
+            model.FamilyList = await viewModelSetupService.GetFamilySelectList(location.FamilyId);
+            model.SetFamilyList();
 
-            List<string> tagsList = [];
-            if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
-            {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
-
-                List<Progeny> accessList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
-                if (accessList.Count != 0)
-                {
-                    foreach (Progeny progeny in accessList)
-                    {
-                        
-                        List<Location> locList1 = await locationsHttpClient.GetLocationsList(progeny.Id);
-                        foreach (Location locationItem in locList1)
-                        {
-                            if (string.IsNullOrEmpty(locationItem.Tags)) continue;
-
-                            List<string> locTags = [.. locationItem.Tags.Split(',')];
-                            foreach (string tagstring in locTags)
-                            {
-                                if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                                {
-                                    tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            
             model.SetPropertiesFromLocation(location, model.CurrentUser.Timezone);
             
-            model.SetTagList(tagsList);
-            model.SetAccessLevelList();
-
             return PartialView("_EditLocationPartial", model);
         }
 
@@ -398,14 +398,19 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditLocation(LocationViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.LocationItem.ProgenyId);
-            model.SetBaseProperties(baseModel);
-            
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            Location existingLocation = await locationsHttpClient.GetLocation(model.LocationItem.LocationId);
+            if (existingLocation == null || existingLocation.LocationId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (existingLocation.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
             {
                 return PartialView("_AccessDeniedPartial");
             }
 
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.LocationItem.ProgenyId, model.LocationItem.FamilyId, false);
+            model.SetBaseProperties(baseModel);
+            
             Location location = model.CreateLocation();
 
             model.LocationItem = await locationsHttpClient.UpdateLocation(location);
@@ -416,6 +421,16 @@ namespace KinaUnaWeb.Controllers
             if (model.LocationItem.DateAdded.HasValue)
             {
                 model.LocationItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(model.LocationItem.DateAdded.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            if (model.LocationItem.ProgenyId > 0)
+            {
+                model.LocationItem.Progeny = await progenyHttpClient.GetProgeny(model.LocationItem.ProgenyId);
+            }
+
+            if (model.LocationItem.FamilyId > 0)
+            {
+                model.LocationItem.Family = await familiesHttpClient.GetFamily(model.LocationItem.FamilyId);
             }
 
             return PartialView("_LocationUpdatedPartial", model);
@@ -429,17 +444,32 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteLocation(int itemId)
         {
             Location location = await locationsHttpClient.GetLocation(itemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId);
+            if (location == null || location.LocationId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (location.ItemPerMission.PermissionLevel < PermissionLevel.Admin)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId, location.FamilyId, false);
             LocationViewModel model = new(baseModel)
             {
                 LocationItem = location,
                 HereMapsApiKey = _hereMapsApiKey
             };
 
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (model.LocationItem.ProgenyId > 0)
             {
-                return PartialView("_AccessDeniedPartial");
+                model.LocationItem.Progeny = await progenyHttpClient.GetProgeny(model.LocationItem.ProgenyId);
             }
+
+            if (model.LocationItem.FamilyId > 0)
+            {
+                model.LocationItem.Family = await familiesHttpClient.GetFamily(model.LocationItem.FamilyId);
+            }
+
             return View(model);
         }
 
@@ -453,14 +483,18 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteLocation(LocationViewModel model)
         {
             Location location = await locationsHttpClient.GetLocation(model.LocationItem.LocationId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId);
-            model.SetBaseProperties(baseModel);
-
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (location == null || location.LocationId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (location.ItemPerMission.PermissionLevel < PermissionLevel.Admin)
             {
                 return PartialView("_AccessDeniedPartial");
             }
 
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId, location.FamilyId, false);
+            model.SetBaseProperties(baseModel);
+            
             _ = await locationsHttpClient.DeleteLocation(location.LocationId);
 
             return RedirectToAction("Index", "Locations");
@@ -474,53 +508,24 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> CopyLocation(int itemId)
         {
             Location location = await locationsHttpClient.GetLocation(itemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId);
+            if (location == null || location.LocationId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), location.ProgenyId, location.FamilyId, false);
             LocationViewModel model = new(baseModel)
             {
                 HereMapsApiKey = _hereMapsApiKey
             };
 
-            if (model.CurrentAccessLevel > location.AccessLevel)
-            {
-                return PartialView("_AccessDeniedPartial");
-            }
-
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(location.ProgenyId);
             model.SetProgenyList();
-
-            List<string> tagsList = [];
-            if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
-            {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
-
-                List<Progeny> accessList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
-                if (accessList.Count != 0)
-                {
-                    foreach (Progeny progeny in accessList)
-                    {
-                        List<Location> locList1 = await locationsHttpClient.GetLocationsList(progeny.Id);
-                        foreach (Location locationItem in locList1)
-                        {
-                            if (string.IsNullOrEmpty(locationItem.Tags)) continue;
-
-                            List<string> locTags = [.. locationItem.Tags.Split(',')];
-                            foreach (string tagstring in locTags)
-                            {
-                                if (!tagsList.Contains(tagstring.TrimStart(' ', ',').TrimEnd(' ', ',')))
-                                {
-                                    tagsList.Add(tagstring.TrimStart(' ', ',').TrimEnd(' ', ','));
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
+            model.FamilyList = await viewModelSetupService.GetFamilySelectList(location.FamilyId);
+            model.SetFamilyList();
+            
             model.SetPropertiesFromLocation(location, model.CurrentUser.Timezone);
-
-            model.SetTagList(tagsList);
-            model.SetAccessLevelList();
-
+            
             return PartialView("_CopyLocationPartial", model);
         }
 
@@ -533,13 +538,34 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CopyLocation(LocationViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.LocationItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.LocationItem.ProgenyId, model.LocationItem.FamilyId, false);
             model.SetBaseProperties(baseModel);
 
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            bool canUserAdd = false;
+            if (model.LocationItem.ProgenyId > 0)
             {
+                List<Progeny> progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Add);
+                if (progenies.Exists(p => p.Id == model.LocationItem.ProgenyId))
+                {
+                    canUserAdd = true;
+                }
+            }
+
+            if (model.LocationItem.FamilyId > 0)
+            {
+                List<Family> families = await familiesHttpClient.GetFamiliesUserCanAccess(PermissionLevel.Add);
+                if (families.Exists(f => f.FamilyId == model.LocationItem.FamilyId))
+                {
+                    canUserAdd = true;
+                }
+            }
+
+            if (!canUserAdd)
+            {
+                // Todo: Show that no family or family members are available to add kanban for.
                 return PartialView("_AccessDeniedPartial");
             }
+
 
             Location location = model.CreateLocation();
 
@@ -552,6 +578,16 @@ namespace KinaUnaWeb.Controllers
             if (model.LocationItem.DateAdded.HasValue)
             {
                 model.LocationItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(model.LocationItem.DateAdded.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            }
+
+            if (model.LocationItem.ProgenyId > 0)
+            {
+                model.LocationItem.Progeny = await progenyHttpClient.GetProgeny(model.LocationItem.ProgenyId);
+            }
+
+            if (model.LocationItem.FamilyId > 0)
+            {
+                model.LocationItem.Family = await familiesHttpClient.GetFamily(model.LocationItem.FamilyId);
             }
 
             return PartialView("_LocationCopiedPartial", model);

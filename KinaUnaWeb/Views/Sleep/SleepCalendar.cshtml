@@ -137,14 +137,6 @@
 
 </script>
 <div class="col-12">
-    @if (Model.IsCurrentUserProgenyAdmin)
-    {
-        <div class="btn-group" style="float: right;">
-            <a asp-controller="Sleep" asp-action="AddSleep" class="btn btn-success btn-round leave-page">
-                <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Add sleep", PageNames.Sleep, Model.LanguageId)
-            </a>
-        </div>
-    }
     <div class="page-tab-container ml-1">
         <div class="page-tab" id="page-title-div">
             <a class="btn-page-tab" asp-controller="Sleep" asp-action="Index" asp-route-childId="@Model.CurrentProgenyId">

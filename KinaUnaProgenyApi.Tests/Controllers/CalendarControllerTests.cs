@@ -1,0 +1,1088 @@
+﻿using KinaUna.Data;
+using KinaUna.Data.Contexts;
+using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.DTOs;
+using KinaUna.Data.Models.Family;
+using KinaUnaProgenyApi.Controllers;
+using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.CalendarServices;
+using KinaUnaProgenyApi.Services.FamiliesServices;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Moq;
+using System.Security.Claims;
+
+namespace KinaUnaProgenyApi.Tests.Controllers
+{
+    public class CalendarControllerTests : IDisposable
+    {
+        private readonly ProgenyDbContext _progenyDbContext;
+        private readonly Mock<ICalendarService> _mockCalendarService;
+        private readonly Mock<ITimelineService> _mockTimelineService;
+        private readonly Mock<IProgenyService> _mockProgenyService;
+        private readonly Mock<IFamiliesService> _mockFamiliesService;
+        private readonly Mock<IWebNotificationsService> _mockWebNotificationsService;
+        private readonly Mock<IAccessManagementService> _mockAccessManagementService;
+        private readonly CalendarController _controller;
+
+        private readonly UserInfo _testUser;
+        private readonly Progeny _testProgeny;
+        private readonly Family _testFamily;
+        private readonly CalendarItem _testCalendarItem;
+        private readonly TimeLineItem _testTimeLineItem;
+
+        private const string TestUserEmail = Constants.DefaultUserEmail;
+        private const string TestUserId = Constants.DefaultUserId;
+        private const int TestProgenyId = 1;
+        private const int TestFamilyId = 1;
+        private const int TestCalendarItemId = 100;
+
+        public CalendarControllerTests()
+        {
+            // Setup in-memory DbContext
+            DbContextOptions<ProgenyDbContext> progenyOptions = new DbContextOptionsBuilder<ProgenyDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+            _progenyDbContext = new ProgenyDbContext(progenyOptions);
+
+            // Setup test data
+            _testUser = new UserInfo
+            {
+                UserId = TestUserId,
+                UserEmail = TestUserEmail,
+                ViewChild = TestProgenyId,
+                IsKinaUnaAdmin = false,
+                FirstName = "Test",
+                MiddleName = "M",
+                LastName = "User",
+                ProfilePicture = "profile.jpg"
+            };
+
+            _testProgeny = new Progeny
+            {
+                Id = TestProgenyId,
+                Name = "Test Progeny",
+                NickName = "Testy",
+                BirthDay = DateTime.UtcNow.AddYears(-2)
+            };
+
+            _testFamily = new Family
+            {
+                FamilyId = TestFamilyId,
+                Name = "Test Family"
+            };
+
+            _testCalendarItem = new CalendarItem
+            {
+                EventId = TestCalendarItemId,
+                ProgenyId = TestProgenyId,
+                FamilyId = 0,
+                Title = "Test Event",
+                Notes = "Test notes",
+                StartTime = DateTime.UtcNow.AddDays(1),
+                EndTime = DateTime.UtcNow.AddDays(1).AddHours(2),
+                AllDay = false,
+                Author = TestUserId,
+                CreatedBy = TestUserId,
+                UId = Guid.NewGuid().ToString()
+            };
+
+            _testTimeLineItem = new TimeLineItem
+            {
+                TimeLineId = 1,
+                ProgenyId = TestProgenyId,
+                FamilyId = 0,
+                ItemId = TestCalendarItemId.ToString(),
+                ItemType = (int)KinaUnaTypes.TimeLineType.Calendar,
+                ProgenyTime = (DateTime)_testCalendarItem.StartTime,
+                CreatedBy = TestUserId,
+                CreatedTime = DateTime.UtcNow
+            };
+
+            // Setup mocks
+            Mock<IUserInfoService> mockUserInfoService = new();
+            _mockCalendarService = new Mock<ICalendarService>();
+            _mockTimelineService = new Mock<ITimelineService>();
+            _mockProgenyService = new Mock<IProgenyService>();
+            _mockFamiliesService = new Mock<IFamiliesService>();
+            _mockWebNotificationsService = new Mock<IWebNotificationsService>();
+            _mockAccessManagementService = new Mock<IAccessManagementService>();
+
+            // Setup default mock behaviors
+            mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
+                .ReturnsAsync(_testUser);
+
+            // Initialize controller
+            _controller = new CalendarController(
+                mockUserInfoService.Object,
+                _mockCalendarService.Object,
+                _mockTimelineService.Object,
+                _mockProgenyService.Object,
+                _mockFamiliesService.Object,
+                _mockWebNotificationsService.Object,
+                _mockAccessManagementService.Object
+            );
+
+            SetupControllerContext();
+        }
+
+        private void SetupControllerContext()
+        {
+            List<Claim> claims =
+            [
+                new(ClaimTypes.NameIdentifier, TestUserId),
+                new(ClaimTypes.Email, TestUserEmail)
+            ];
+            ClaimsIdentity identity = new(claims, "TestAuthType");
+            ClaimsPrincipal claimsPrincipal = new(identity);
+
+            _controller.ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
+            };
+        }
+
+        #region Progenies Tests
+
+        [Fact]
+        public async Task Progenies_ReturnsOkWithCalendarItems_WhenValidProgenyIdsProvided()
+        {
+            // Arrange
+            CalendarItemsRequest request = new()
+            {
+                ProgenyIds = [TestProgenyId],
+                FamilyIds = [],
+                StartDate = DateTime.UtcNow,
+                EndDate = DateTime.UtcNow.AddDays(30)
+            };
+
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, _testUser))
+                .ReturnsAsync(_testProgeny);
+
+            List<CalendarItem> expectedItems = new() { _testCalendarItem };
+            _mockCalendarService.Setup(x => x.GetCalendarList(TestProgenyId, 0, _testUser, request.StartDate, request.EndDate))
+                .ReturnsAsync(expectedItems);
+
+            // Act
+            IActionResult? result = await _controller.Progenies(request);
+
+            // Assert
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<CalendarItem> returnedItems = Assert.IsAssignableFrom<List<CalendarItem>>(okResult.Value);
+            Assert.Single(returnedItems);
+            Assert.Equal(_testCalendarItem.EventId, returnedItems[0].EventId);
+        }
+
+        [Fact]
+        public async Task Progenies_ReturnsOkWithCalendarItems_WhenValidFamilyIdsProvided()
+        {
+            // Arrange
+            CalendarItem familyCalendarItem = new()
+            {
+                EventId = 200,
+                ProgenyId = 0,
+                FamilyId = TestFamilyId,
+                Title = "Family Event",
+                StartTime = DateTime.UtcNow.AddDays(5),
+                EndTime = DateTime.UtcNow.AddDays(5).AddHours(1),
+                UId = Guid.NewGuid().ToString()
+            };
+
+            CalendarItemsRequest request = new()
+            {
+                ProgenyIds = [],
+                FamilyIds = [TestFamilyId],
+                StartDate = DateTime.UtcNow,
+                EndDate = DateTime.UtcNow.AddDays(30)
+            };
+
+            _mockFamiliesService.Setup(x => x.GetFamilyById(TestFamilyId, _testUser))
+                .ReturnsAsync(_testFamily);
+
+            List<CalendarItem> expectedItems = new() { familyCalendarItem };
+            _mockCalendarService.Setup(x => x.GetCalendarList(0, TestFamilyId, _testUser, request.StartDate, request.EndDate))
+                .ReturnsAsync(expectedItems);
+
+            // Act
+            IActionResult? result = await _controller.Progenies(request);
+
+            // Assert
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<CalendarItem> returnedItems = Assert.IsAssignableFrom<List<CalendarItem>>(okResult.Value);
+            Assert.Single(returnedItems);
+            Assert.Equal(familyCalendarItem.EventId, returnedItems[0].EventId);
+        }
+
+        [Fact]
+        public async Task Progenies_ReturnsOkWithCombinedItems_WhenBothProgenyAndFamilyIdsProvided()
+        {
+            // Arrange
+            CalendarItem familyCalendarItem = new()
+            {
+                EventId = 200,
+                ProgenyId = 0,
+                FamilyId = TestFamilyId,
+                Title = "Family Event",
+                StartTime = DateTime.UtcNow.AddDays(5),
+                EndTime = DateTime.UtcNow.AddDays(5).AddHours(1),
+                UId = Guid.NewGuid().ToString()
+            };
+
+            CalendarItemsRequest request = new()
+            {
+                ProgenyIds = [TestProgenyId],
+                FamilyIds = [TestFamilyId],
+                StartDate = DateTime.UtcNow,
+                EndDate = DateTime.UtcNow.AddDays(30)
+            };
+
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, _testUser))
+                .ReturnsAsync(_testProgeny);
+
+            _mockFamiliesService.Setup(x => x.GetFamilyById(TestFamilyId, _testUser))
+                .ReturnsAsync(_testFamily);
+
+            _mockCalendarService.Setup(x => x.GetCalendarList(TestProgenyId, 0, _testUser, request.StartDate, request.EndDate))
+                .ReturnsAsync(new List<CalendarItem> { _testCalendarItem });
+
+            _mockCalendarService.Setup(x => x.GetCalendarList(0, TestFamilyId, _testUser, request.StartDate, request.EndDate))
+                .ReturnsAsync(new List<CalendarItem> { familyCalendarItem });
+
+            // Act
+            IActionResult? result = await _controller.Progenies(request);
+
+            // Assert
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<CalendarItem> returnedItems = Assert.IsAssignableFrom<List<CalendarItem>>(okResult.Value);
+            Assert.Equal(2, returnedItems.Count);
+        }
+
+        [Fact]
+        public async Task Progenies_ReturnsOkWithEmptyList_WhenNoAccessibleProgeniesOrFamilies()
+        {
+            // Arrange
+            CalendarItemsRequest request = new()
+            {
+                ProgenyIds = [TestProgenyId],
+                FamilyIds = [TestFamilyId],
+                StartDate = DateTime.UtcNow,
+                EndDate = DateTime.UtcNow.AddDays(30)
+            };
+
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, _testUser))
+                .ReturnsAsync((Progeny)null!);
+
+            _mockFamiliesService.Setup(x => x.GetFamilyById(TestFamilyId, _testUser))
+                .ReturnsAsync((Family)null!);
+
+            // Act
+            IActionResult? result = await _controller.Progenies(request);
+
+            // Assert
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            List<CalendarItem> returnedItems = Assert.IsAssignableFrom<List<CalendarItem>>(okResult.Value);
+            Assert.Empty(returnedItems);
+        }
+
+        #endregion
+
+        #region GetCalendarItem Tests
+
+        [Fact]
+        public async Task GetCalendarItem_ReturnsOk_WhenCalendarItemExists()
+        {
+            // Arrange
+            _mockCalendarService.Setup(x => x.GetCalendarItem(TestCalendarItemId, _testUser))
+                .ReturnsAsync(_testCalendarItem);
+
+            // Act
+            IActionResult? result = await _controller.GetCalendarItem(TestCalendarItemId);
+
+            // Assert
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            CalendarItem returnedItem = Assert.IsType<CalendarItem>(okResult.Value);
+            Assert.Equal(TestCalendarItemId, returnedItem.EventId);
+            Assert.Equal(_testCalendarItem.Title, returnedItem.Title);
+        }
+
+        [Fact]
+        public async Task GetCalendarItem_ReturnsNotFound_WhenCalendarItemDoesNotExist()
+        {
+            // Arrange
+            _mockCalendarService.Setup(x => x.GetCalendarItem(TestCalendarItemId, _testUser))
+                .ReturnsAsync((CalendarItem)null!);
+
+            // Act
+            IActionResult? result = await _controller.GetCalendarItem(TestCalendarItemId);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        #endregion
+
+        #region Post Tests
+
+        [Fact]
+        public async Task Post_ReturnsOk_WhenValidProgenyCalendarItemProvided()
+        {
+            // Arrange
+            CalendarItem newCalendarItem = new()
+            {
+                ProgenyId = TestProgenyId,
+                FamilyId = 0,
+                Title = "New Event",
+                StartTime = DateTime.UtcNow.AddDays(1),
+                EndTime = DateTime.UtcNow.AddDays(1).AddHours(2),
+                UId = Guid.NewGuid().ToString()
+            };
+
+            CalendarItem addedCalendarItem = new()
+            {
+                EventId = TestCalendarItemId,
+                ProgenyId = TestProgenyId,
+                FamilyId = 0,
+                Title = "New Event",
+                StartTime = newCalendarItem.StartTime,
+                EndTime = newCalendarItem.EndTime,
+                Author = TestUserId,
+                CreatedBy = TestUserId,
+                UId = newCalendarItem.UId
+            };
+
+            _mockAccessManagementService.Setup(x => x.HasProgenyPermission(TestProgenyId, _testUser, PermissionLevel.Add))
+                .ReturnsAsync(true);
+
+            _mockCalendarService.Setup(x => x.AddCalendarItem(It.IsAny<CalendarItem>(), _testUser))
+                .ReturnsAsync(addedCalendarItem);
+
+            _mockTimelineService.Setup(x => x.AddTimeLineItem(It.IsAny<TimeLineItem>(), _testUser))
+                .ReturnsAsync(_testTimeLineItem);
+
+            _mockCalendarService.Setup(x => x.GetCalendarItem(It.IsAny<int>(), _testUser))
+                .ReturnsAsync(addedCalendarItem);
+
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, _testUser))
+                .ReturnsAsync(_testProgeny);
+
+            // Act
+            IActionResult? result = await _controller.Post(newCalendarItem);
+
+            // Assert
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            CalendarItem returnedItem = Assert.IsType<CalendarItem>(okResult.Value);
+            Assert.Equal(TestCalendarItemId, returnedItem.EventId);
+            Assert.Equal(TestUserId, returnedItem.Author);
+            Assert.Equal(TestUserId, returnedItem.CreatedBy);
+        }
+
+        [Fact]
+        public async Task Post_ReturnsOk_WhenValidFamilyCalendarItemProvided()
+        {
+            // Arrange
+            CalendarItem newCalendarItem = new()
+            {
+                ProgenyId = 0,
+                FamilyId = TestFamilyId,
+                Title = "Family Event",
+                StartTime = DateTime.UtcNow.AddDays(1),
+                EndTime = DateTime.UtcNow.AddDays(1).AddHours(2),
+                UId = Guid.NewGuid().ToString()
+            };
+
+            CalendarItem addedCalendarItem = new()
+            {
+                EventId = TestCalendarItemId,
+                ProgenyId = 0,
+                FamilyId = TestFamilyId,
+                Title = "Family Event",
+                StartTime = newCalendarItem.StartTime,
+                EndTime = newCalendarItem.EndTime,
+                Author = TestUserId,
+                CreatedBy = TestUserId,
+                UId = newCalendarItem.UId
+            };
+
+            _mockAccessManagementService.Setup(x => x.HasFamilyPermission(TestFamilyId, _testUser, PermissionLevel.Add))
+                .ReturnsAsync(true);
+
+            _mockCalendarService.Setup(x => x.AddCalendarItem(It.IsAny<CalendarItem>(), _testUser))
+                .ReturnsAsync(addedCalendarItem);
+
+            _mockTimelineService.Setup(x => x.AddTimeLineItem(It.IsAny<TimeLineItem>(), _testUser))
+                .ReturnsAsync(_testTimeLineItem);
+
+            _mockCalendarService.Setup(x => x.GetCalendarItem(It.IsAny<int>(), _testUser))
+                .ReturnsAsync(addedCalendarItem);
+
+            _mockFamiliesService.Setup(x => x.GetFamilyById(TestFamilyId, _testUser))
+                .ReturnsAsync(_testFamily);
+
+            // Act
+            IActionResult? result = await _controller.Post(newCalendarItem);
+
+            // Assert
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            CalendarItem returnedItem = Assert.IsType<CalendarItem>(okResult.Value);
+            Assert.Equal(TestCalendarItemId, returnedItem.EventId);
+        }
+
+        [Fact]
+        public async Task Post_ReturnsBadRequest_WhenBothProgenyIdAndFamilyIdAreSet()
+        {
+            // Arrange
+            CalendarItem invalidCalendarItem = new()
+            {
+                ProgenyId = TestProgenyId,
+                FamilyId = TestFamilyId,
+                Title = "Invalid Event",
+                StartTime = DateTime.UtcNow.AddDays(1),
+                EndTime = DateTime.UtcNow.AddDays(1).AddHours(2)
+            };
+
+            // Act
+            IActionResult? result = await _controller.Post(invalidCalendarItem);
+
+            // Assert
+            BadRequestObjectResult badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("A calendar event must have either a ProgenyId or a FamilyId set, but not both.", badRequestResult.Value);
+        }
+
+        [Fact]
+        public async Task Post_ReturnsBadRequest_WhenNeitherProgenyIdNorFamilyIdAreSet()
+        {
+            // Arrange
+            CalendarItem invalidCalendarItem = new()
+            {
+                ProgenyId = 0,
+                FamilyId = 0,
+                Title = "Invalid Event",
+                StartTime = DateTime.UtcNow.AddDays(1),
+                EndTime = DateTime.UtcNow.AddDays(1).AddHours(2)
+            };
+
+            // Act
+            IActionResult? result = await _controller.Post(invalidCalendarItem);
+
+            // Assert
+            BadRequestObjectResult badRequestResult = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("A calendar event must have either a ProgenyId or a FamilyId set.", badRequestResult.Value);
+        }
+
+        [Fact]
+        public async Task Post_ReturnsUnauthorized_WhenUserLacksProgenyAddPermission()
+        {
+            // Arrange
+            CalendarItem newCalendarItem = new()
+            {
+                ProgenyId = TestProgenyId,
+                FamilyId = 0,
+                Title = "New Event",
+                StartTime = DateTime.UtcNow.AddDays(1),
+                EndTime = DateTime.UtcNow.AddDays(1).AddHours(2)
+            };
+
+            _mockAccessManagementService.Setup(x => x.HasProgenyPermission(TestProgenyId, _testUser, PermissionLevel.Add))
+                .ReturnsAsync(false);
+
+            // Act
+            IActionResult? result = await _controller.Post(newCalendarItem);
+
+            // Assert
+            Assert.IsType<UnauthorizedResult>(result);
+        }
+
+        [Fact]
+        public async Task Post_ReturnsUnauthorized_WhenUserLacksFamilyAddPermission()
+        {
+            // Arrange
+            CalendarItem newCalendarItem = new()
+            {
+                ProgenyId = 0,
+                FamilyId = TestFamilyId,
+                Title = "Family Event",
+                StartTime = DateTime.UtcNow.AddDays(1),
+                EndTime = DateTime.UtcNow.AddDays(1).AddHours(2)
+            };
+
+            _mockAccessManagementService.Setup(x => x.HasFamilyPermission(TestFamilyId, _testUser, PermissionLevel.Add))
+                .ReturnsAsync(false);
+
+            // Act
+            IActionResult? result = await _controller.Post(newCalendarItem);
+
+            // Assert
+            Assert.IsType<UnauthorizedResult>(result);
+        }
+
+        [Fact]
+        public async Task Post_ReturnsUnauthorized_WhenCalendarServiceReturnsNull()
+        {
+            // Arrange
+            CalendarItem newCalendarItem = new()
+            {
+                ProgenyId = TestProgenyId,
+                FamilyId = 0,
+                Title = "New Event",
+                StartTime = DateTime.UtcNow.AddDays(1),
+                EndTime = DateTime.UtcNow.AddDays(1).AddHours(2)
+            };
+
+            _mockAccessManagementService.Setup(x => x.HasProgenyPermission(TestProgenyId, _testUser, PermissionLevel.Add))
+                .ReturnsAsync(true);
+
+            _mockCalendarService.Setup(x => x.AddCalendarItem(It.IsAny<CalendarItem>(), _testUser))
+                .ReturnsAsync((CalendarItem)null!);
+
+            // Act
+            IActionResult? result = await _controller.Post(newCalendarItem);
+
+            // Assert
+            Assert.IsType<UnauthorizedResult>(result);
+        }
+
+        [Fact]
+        public async Task Post_SendsNotifications_WhenCalendarItemIsAdded()
+        {
+            // Arrange
+            CalendarItem newCalendarItem = new()
+            {
+                ProgenyId = TestProgenyId,
+                FamilyId = 0,
+                Title = "New Event",
+                StartTime = DateTime.UtcNow.AddDays(1),
+                EndTime = DateTime.UtcNow.AddDays(1).AddHours(2),
+                UId = Guid.NewGuid().ToString()
+            };
+
+            CalendarItem addedCalendarItem = new()
+            {
+                EventId = TestCalendarItemId,
+                ProgenyId = TestProgenyId,
+                FamilyId = 0,
+                Title = "New Event",
+                StartTime = newCalendarItem.StartTime,
+                EndTime = newCalendarItem.EndTime,
+                Author = TestUserId,
+                CreatedBy = TestUserId,
+                UId = newCalendarItem.UId
+            };
+
+            _mockAccessManagementService.Setup(x => x.HasProgenyPermission(TestProgenyId, _testUser, PermissionLevel.Add))
+                .ReturnsAsync(true);
+
+            _mockCalendarService.Setup(x => x.AddCalendarItem(It.IsAny<CalendarItem>(), _testUser))
+                .ReturnsAsync(addedCalendarItem);
+
+            _mockTimelineService.Setup(x => x.AddTimeLineItem(It.IsAny<TimeLineItem>(), _testUser))
+                .ReturnsAsync(_testTimeLineItem);
+
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, _testUser))
+                .ReturnsAsync(_testProgeny);
+
+            // Act
+            await _controller.Post(newCalendarItem);
+
+            // Assert
+            _mockWebNotificationsService.Verify(x => x.SendCalendarNotification(
+                addedCalendarItem,
+                _testUser,
+                It.IsAny<string>()), Times.Once);
+        }
+
+        #endregion
+
+        #region Put Tests
+
+        [Fact]
+        public async Task Put_ReturnsOk_WhenValidUpdateProvided()
+        {
+            // Arrange
+            CalendarItem updatedCalendarItem = new()
+            {
+                EventId = TestCalendarItemId,
+                ProgenyId = TestProgenyId,
+                FamilyId = 0,
+                Title = "Updated Event",
+                StartTime = DateTime.UtcNow.AddDays(2),
+                EndTime = DateTime.UtcNow.AddDays(2).AddHours(3),
+                UId = _testCalendarItem.UId,
+                ItemPerMission = new TimelineItemPermission
+                {
+                    PermissionLevel = PermissionLevel.Edit
+                }
+            };
+
+            CalendarItem existingCalendarItem = new()
+            {
+                EventId = TestCalendarItemId,
+                ProgenyId = TestProgenyId,
+                FamilyId = 0,
+                Title = _testCalendarItem.Title,
+                StartTime = _testCalendarItem.StartTime,
+                EndTime = _testCalendarItem.EndTime,
+                Author = TestUserId,
+                CreatedBy = TestUserId,
+                UId = _testCalendarItem.UId,
+                ItemPerMission = new TimelineItemPermission
+                {
+                    PermissionLevel = PermissionLevel.Edit
+                }
+            };
+
+            _mockCalendarService.Setup(x => x.GetCalendarItem(TestCalendarItemId, _testUser))
+                .ReturnsAsync(existingCalendarItem);
+
+            _mockCalendarService.Setup(x => x.UpdateCalendarItem(It.IsAny<CalendarItem>(), _testUser))
+                .ReturnsAsync(updatedCalendarItem);
+
+            _mockCalendarService.Setup(x => x.GetCalendarItem(It.IsAny<int>(), _testUser))
+                .ReturnsAsync(updatedCalendarItem);
+
+            _mockTimelineService.Setup(x => x.GetTimeLineItemByItemId(
+                TestCalendarItemId.ToString(),
+                (int)KinaUnaTypes.TimeLineType.Calendar,
+                _testUser))
+                .ReturnsAsync(_testTimeLineItem);
+
+            _mockTimelineService.Setup(x => x.UpdateTimeLineItem(It.IsAny<TimeLineItem>(), _testUser))
+                .ReturnsAsync(_testTimeLineItem);
+
+            // Act
+            IActionResult? result = await _controller.Put(TestCalendarItemId, updatedCalendarItem);
+
+            // Assert
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            CalendarItem returnedItem = Assert.IsType<CalendarItem>(okResult.Value);
+            Assert.Equal(updatedCalendarItem.Title, returnedItem.Title);
+            Assert.Equal(TestUserId, updatedCalendarItem.ModifiedBy);
+        }
+
+        [Fact]
+        public async Task Put_ReturnsUnauthorized_WhenCalendarItemNotFound()
+        {
+            // Arrange
+            CalendarItem updatedCalendarItem = new()
+            {
+                EventId = TestCalendarItemId,
+                ProgenyId = TestProgenyId,
+                FamilyId = 0,
+                Title = "Updated Event"
+            };
+
+            _mockCalendarService.Setup(x => x.GetCalendarItem(TestCalendarItemId, _testUser))
+                .ReturnsAsync((CalendarItem)null!);
+
+            // Act
+            IActionResult? result = await _controller.Put(TestCalendarItemId, updatedCalendarItem);
+
+            // Assert
+            Assert.IsType<UnauthorizedResult>(result);
+        }
+
+        [Fact]
+        public async Task Put_ReturnsUnauthorized_WhenUserLacksEditPermission()
+        {
+            // Arrange
+            CalendarItem updatedCalendarItem = new()
+            {
+                EventId = TestCalendarItemId,
+                ProgenyId = TestProgenyId,
+                FamilyId = 0,
+                Title = "Updated Event"
+            };
+
+            CalendarItem existingCalendarItem = new()
+            {
+                EventId = TestCalendarItemId,
+                ProgenyId = TestProgenyId,
+                FamilyId = 0,
+                Title = _testCalendarItem.Title,
+                ItemPerMission = new TimelineItemPermission
+                {
+                    PermissionLevel = PermissionLevel.View
+                }
+            };
+
+            _mockCalendarService.Setup(x => x.GetCalendarItem(TestCalendarItemId, _testUser))
+                .ReturnsAsync(existingCalendarItem);
+
+            // Act
+            IActionResult? result = await _controller.Put(TestCalendarItemId, updatedCalendarItem);
+
+            // Assert
+            Assert.IsType<UnauthorizedResult>(result);
+        }
+
+        [Fact]
+        public async Task Put_ReturnsUnauthorized_WhenCalendarServiceUpdateFails()
+        {
+            // Arrange
+            CalendarItem updatedCalendarItem = new()
+            {
+                EventId = TestCalendarItemId,
+                ProgenyId = TestProgenyId,
+                FamilyId = 0,
+                Title = "Updated Event"
+            };
+
+            CalendarItem existingCalendarItem = new()
+            {
+                EventId = TestCalendarItemId,
+                ProgenyId = TestProgenyId,
+                FamilyId = 0,
+                Title = _testCalendarItem.Title,
+                ItemPerMission = new TimelineItemPermission
+                {
+                    PermissionLevel = PermissionLevel.Edit
+                }
+            };
+
+            _mockCalendarService.Setup(x => x.GetCalendarItem(TestCalendarItemId, _testUser))
+                .ReturnsAsync(existingCalendarItem);
+
+            _mockCalendarService.Setup(x => x.UpdateCalendarItem(It.IsAny<CalendarItem>(), _testUser))
+                .ReturnsAsync((CalendarItem)null!);
+
+            // Act
+            IActionResult? result = await _controller.Put(TestCalendarItemId, updatedCalendarItem);
+
+            // Assert
+            Assert.IsType<UnauthorizedResult>(result);
+        }
+
+        [Fact]
+        public async Task Put_UpdatesTimeLineItem_WhenTimeLineItemExists()
+        {
+            // Arrange
+            CalendarItem updatedCalendarItem = new()
+            {
+                EventId = TestCalendarItemId,
+                ProgenyId = TestProgenyId,
+                FamilyId = 0,
+                Title = "Updated Event",
+                StartTime = DateTime.UtcNow.AddDays(2),
+                EndTime = DateTime.UtcNow.AddDays(2).AddHours(3),
+                UId = _testCalendarItem.UId
+            };
+
+            CalendarItem existingCalendarItem = new()
+            {
+                EventId = TestCalendarItemId,
+                ProgenyId = TestProgenyId,
+                FamilyId = 0,
+                Title = _testCalendarItem.Title,
+                ItemPerMission = new TimelineItemPermission
+                {
+                    PermissionLevel = PermissionLevel.Edit
+                }
+            };
+
+            _mockCalendarService.Setup(x => x.GetCalendarItem(TestCalendarItemId, _testUser))
+                .ReturnsAsync(existingCalendarItem);
+
+            _mockCalendarService.Setup(x => x.UpdateCalendarItem(It.IsAny<CalendarItem>(), _testUser))
+                .ReturnsAsync(updatedCalendarItem);
+
+            _mockTimelineService.Setup(x => x.GetTimeLineItemByItemId(
+                TestCalendarItemId.ToString(),
+                (int)KinaUnaTypes.TimeLineType.Calendar,
+                _testUser))
+                .ReturnsAsync(_testTimeLineItem);
+
+            _mockTimelineService.Setup(x => x.UpdateTimeLineItem(It.IsAny<TimeLineItem>(), _testUser))
+                .ReturnsAsync(_testTimeLineItem);
+
+            // Act
+            await _controller.Put(TestCalendarItemId, updatedCalendarItem);
+
+            // Assert
+            _mockTimelineService.Verify(x => x.UpdateTimeLineItem(It.IsAny<TimeLineItem>(), _testUser), Times.Once);
+        }
+
+        #endregion
+
+        #region Delete Tests
+
+        [Fact]
+        public async Task Delete_ReturnsNoContent_WhenCalendarItemDeletedSuccessfully()
+        {
+            // Arrange
+            _mockAccessManagementService.Setup(x => x.HasItemPermission(
+                KinaUnaTypes.TimeLineType.Calendar,
+                TestCalendarItemId,
+                _testUser,
+                PermissionLevel.Admin))
+                .ReturnsAsync(true);
+
+            _mockCalendarService.Setup(x => x.GetCalendarItem(TestCalendarItemId, _testUser))
+                .ReturnsAsync(_testCalendarItem);
+
+            _mockCalendarService.Setup(x => x.DeleteCalendarItem(_testCalendarItem, _testUser))
+                .ReturnsAsync(_testCalendarItem);
+
+            _mockTimelineService.Setup(x => x.GetTimeLineItemByItemId(
+                TestCalendarItemId.ToString(),
+                (int)KinaUnaTypes.TimeLineType.Calendar,
+                _testUser))
+                .ReturnsAsync(_testTimeLineItem);
+
+            _mockTimelineService.Setup(x => x.DeleteTimeLineItem(_testTimeLineItem, _testUser))
+                .ReturnsAsync(_testTimeLineItem);
+
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, _testUser))
+                .ReturnsAsync(_testProgeny);
+
+            // Act
+            IActionResult? result = await _controller.Delete(TestCalendarItemId);
+
+            // Assert
+            Assert.IsType<NoContentResult>(result);
+            Assert.Equal(TestUserId, _testCalendarItem.ModifiedBy);
+        }
+
+        [Fact]
+        public async Task Delete_ReturnsUnauthorized_WhenUserLacksAdminPermission()
+        {
+            // Arrange
+            _mockAccessManagementService.Setup(x => x.HasItemPermission(
+                KinaUnaTypes.TimeLineType.Calendar,
+                TestCalendarItemId,
+                _testUser,
+                PermissionLevel.Admin))
+                .ReturnsAsync(false);
+
+            // Act
+            IActionResult? result = await _controller.Delete(TestCalendarItemId);
+
+            // Assert
+            Assert.IsType<UnauthorizedResult>(result);
+        }
+
+        [Fact]
+        public async Task Delete_ReturnsNotFound_WhenCalendarItemDoesNotExist()
+        {
+            // Arrange
+            _mockAccessManagementService.Setup(x => x.HasItemPermission(
+                KinaUnaTypes.TimeLineType.Calendar,
+                TestCalendarItemId,
+                _testUser,
+                PermissionLevel.Admin))
+                .ReturnsAsync(true);
+
+            _mockCalendarService.Setup(x => x.GetCalendarItem(TestCalendarItemId, _testUser))
+                .ReturnsAsync((CalendarItem)null!);
+
+            // Act
+            IActionResult? result = await _controller.Delete(TestCalendarItemId);
+
+            // Assert
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task Delete_ReturnsUnauthorized_WhenCalendarServiceDeleteFails()
+        {
+            // Arrange
+            _mockAccessManagementService.Setup(x => x.HasItemPermission(
+                KinaUnaTypes.TimeLineType.Calendar,
+                TestCalendarItemId,
+                _testUser,
+                PermissionLevel.Admin))
+                .ReturnsAsync(true);
+
+            _mockCalendarService.Setup(x => x.GetCalendarItem(TestCalendarItemId, _testUser))
+                .ReturnsAsync(_testCalendarItem);
+
+            _mockCalendarService.Setup(x => x.DeleteCalendarItem(_testCalendarItem, _testUser))
+                .ReturnsAsync((CalendarItem)null!);
+
+            // Act
+            IActionResult? result = await _controller.Delete(TestCalendarItemId);
+
+            // Assert
+            Assert.IsType<UnauthorizedResult>(result);
+        }
+
+        [Fact]
+        public async Task Delete_DeletesTimeLineItem_WhenTimeLineItemExists()
+        {
+            // Arrange
+            _mockAccessManagementService.Setup(x => x.HasItemPermission(
+                KinaUnaTypes.TimeLineType.Calendar,
+                TestCalendarItemId,
+                _testUser,
+                PermissionLevel.Admin))
+                .ReturnsAsync(true);
+
+            _mockCalendarService.Setup(x => x.GetCalendarItem(TestCalendarItemId, _testUser))
+                .ReturnsAsync(_testCalendarItem);
+
+            _mockCalendarService.Setup(x => x.DeleteCalendarItem(_testCalendarItem, _testUser))
+                .ReturnsAsync(_testCalendarItem);
+
+            _mockTimelineService.Setup(x => x.GetTimeLineItemByItemId(
+                TestCalendarItemId.ToString(),
+                (int)KinaUnaTypes.TimeLineType.Calendar,
+                _testUser))
+                .ReturnsAsync(_testTimeLineItem);
+
+            _mockTimelineService.Setup(x => x.DeleteTimeLineItem(_testTimeLineItem, _testUser))
+                .ReturnsAsync(_testTimeLineItem);
+
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, _testUser))
+                .ReturnsAsync(_testProgeny);
+
+            // Act
+            await _controller.Delete(TestCalendarItemId);
+
+            // Assert
+            _mockTimelineService.Verify(x => x.DeleteTimeLineItem(_testTimeLineItem, _testUser), Times.Once);
+        }
+
+        [Fact]
+        public async Task Delete_SendsProgenyNotifications_WhenProgenyCalendarItemDeleted()
+        {
+            // Arrange
+            _mockAccessManagementService.Setup(x => x.HasItemPermission(
+                KinaUnaTypes.TimeLineType.Calendar,
+                TestCalendarItemId,
+                _testUser,
+                PermissionLevel.Admin))
+                .ReturnsAsync(true);
+
+            _mockCalendarService.Setup(x => x.GetCalendarItem(TestCalendarItemId, _testUser))
+                .ReturnsAsync(_testCalendarItem);
+
+            _mockCalendarService.Setup(x => x.DeleteCalendarItem(_testCalendarItem, _testUser))
+                .ReturnsAsync(_testCalendarItem);
+
+            _mockTimelineService.Setup(x => x.GetTimeLineItemByItemId(
+                TestCalendarItemId.ToString(),
+                (int)KinaUnaTypes.TimeLineType.Calendar,
+                _testUser))
+                .ReturnsAsync(_testTimeLineItem);
+
+            _mockTimelineService.Setup(x => x.DeleteTimeLineItem(_testTimeLineItem, _testUser))
+                .ReturnsAsync(_testTimeLineItem);
+
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, _testUser))
+                .ReturnsAsync(_testProgeny);
+
+            // Act
+            await _controller.Delete(TestCalendarItemId);
+
+            // Assert
+            _mockWebNotificationsService.Verify(x => x.SendCalendarNotification(
+                _testCalendarItem,
+                _testUser,
+                It.Is<string>(s => s.Contains(_testProgeny.NickName))), Times.Once);
+        }
+
+        [Fact]
+        public async Task Delete_SendsFamilyNotifications_WhenFamilyCalendarItemDeleted()
+        {
+            // Arrange
+            CalendarItem familyCalendarItem = new()
+            {
+                EventId = TestCalendarItemId,
+                ProgenyId = 0,
+                FamilyId = TestFamilyId,
+                Title = "Family Event",
+                StartTime = DateTime.UtcNow.AddDays(1),
+                EndTime = DateTime.UtcNow.AddDays(1).AddHours(2),
+                Author = TestUserId,
+                UId = Guid.NewGuid().ToString()
+            };
+
+            TimeLineItem familyTimeLineItem = new()
+            {
+                TimeLineId = 1,
+                ProgenyId = 0,
+                FamilyId = TestFamilyId,
+                ItemId = TestCalendarItemId.ToString(),
+                ItemType = (int)KinaUnaTypes.TimeLineType.Calendar,
+                ProgenyTime = (DateTime)familyCalendarItem.StartTime,
+                CreatedBy = TestUserId
+            };
+
+            _mockAccessManagementService.Setup(x => x.HasItemPermission(
+                KinaUnaTypes.TimeLineType.Calendar,
+                TestCalendarItemId,
+                _testUser,
+                PermissionLevel.Admin))
+                .ReturnsAsync(true);
+
+            _mockCalendarService.Setup(x => x.GetCalendarItem(TestCalendarItemId, _testUser))
+                .ReturnsAsync(familyCalendarItem);
+
+            _mockCalendarService.Setup(x => x.DeleteCalendarItem(familyCalendarItem, _testUser))
+                .ReturnsAsync(familyCalendarItem);
+
+            _mockTimelineService.Setup(x => x.GetTimeLineItemByItemId(
+                TestCalendarItemId.ToString(),
+                (int)KinaUnaTypes.TimeLineType.Calendar,
+                _testUser))
+                .ReturnsAsync(familyTimeLineItem);
+
+            _mockTimelineService.Setup(x => x.DeleteTimeLineItem(familyTimeLineItem, _testUser))
+                .ReturnsAsync(familyTimeLineItem);
+
+            _mockFamiliesService.Setup(x => x.GetFamilyById(TestFamilyId, _testUser))
+                .ReturnsAsync(_testFamily);
+
+            // Act
+            await _controller.Delete(TestCalendarItemId);
+
+            // Assert
+            _mockWebNotificationsService.Verify(x => x.SendCalendarNotification(
+                familyCalendarItem,
+                _testUser,
+                It.Is<string>(s => s.Contains(_testFamily.Name))), Times.Once);
+        }
+
+        [Fact]
+        public async Task Delete_DoesNotSendNotifications_WhenTimeLineItemIsNull()
+        {
+            // Arrange
+            _mockAccessManagementService.Setup(x => x.HasItemPermission(
+                KinaUnaTypes.TimeLineType.Calendar,
+                TestCalendarItemId,
+                _testUser,
+                PermissionLevel.Admin))
+                .ReturnsAsync(true);
+
+            _mockCalendarService.Setup(x => x.GetCalendarItem(TestCalendarItemId, _testUser))
+                .ReturnsAsync(_testCalendarItem);
+
+            _mockCalendarService.Setup(x => x.DeleteCalendarItem(_testCalendarItem, _testUser))
+                .ReturnsAsync(_testCalendarItem);
+
+            _mockTimelineService.Setup(x => x.GetTimeLineItemByItemId(
+                TestCalendarItemId.ToString(),
+                (int)KinaUnaTypes.TimeLineType.Calendar,
+                _testUser))
+                .ReturnsAsync((TimeLineItem)null!);
+
+            // Act
+            await _controller.Delete(TestCalendarItemId);
+
+            // Assert
+            _mockWebNotificationsService.Verify(x => x.SendCalendarNotification(
+                It.IsAny<CalendarItem>(),
+                It.IsAny<UserInfo>(),
+                It.IsAny<string>()), Times.Never);
+        }
+
+        #endregion
+
+        public void Dispose()
+        {
+            _progenyDbContext.Dispose();
+            GC.SuppressFinalize(this);
+        }
+    }
+}

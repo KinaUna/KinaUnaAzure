@@ -3,12 +3,13 @@ using KinaUna.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using KinaUna.Data.Models.AccessManagement;
+using System.Text.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -57,11 +58,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
             const string userInfoApiPath = "api/UserInfo/UserInfoByEmail/";
             
-            HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userInfoApiPath, new StringContent(JsonConvert.SerializeObject(email), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userInfoApiPath, new StringContent(JsonSerializer.Serialize(email, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!userInfoResponse.IsSuccessStatusCode) return new UserInfo();
 
             string userinfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
-            UserInfo userInfo = JsonConvert.DeserializeObject<UserInfo>(userinfoAsString);
+            UserInfo userInfo = JsonSerializer.Deserialize<UserInfo>(userinfoAsString, JsonSerializerOptions.Web);
             return userInfo;
         }
 
@@ -70,18 +71,38 @@ namespace KinaUnaWeb.Services.HttpClients
         /// </summary>
         /// <param name="userId">The user's UserId.</param>
         /// <returns>The UserInfo with the given UserId. If not found or an error occurs a new UserInfo with Id=0 is returned.</returns>
-        public async Task<UserInfo> GetUserInfoByUserId(string userId)
+        public async Task<UserInfo> GetExtendedUserInfoByUserId(string userId)
         {
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
-            const string userInfoApiPath = "api/UserInfo/ByUserIdPost/";
-            HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userInfoApiPath, new StringContent(JsonConvert.SerializeObject(userId), System.Text.Encoding.UTF8, "application/json"));
+            const string userInfoApiPath = "api/UserInfo/ExtendedUserInfoByUserId/";
+            HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userInfoApiPath, new StringContent(JsonSerializer.Serialize(userId, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!userInfoResponse.IsSuccessStatusCode) return new UserInfo();
             
             string userinfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
-            UserInfo userInfo = JsonConvert.DeserializeObject<UserInfo>(userinfoAsString);
+            UserInfo userInfo = JsonSerializer.Deserialize<UserInfo>(userinfoAsString, JsonSerializerOptions.Web);
+            return userInfo ?? new UserInfo();
+        }
+
+        /// <summary>
+        /// Gets a user's information without extended properties from the UserId.
+        /// </summary>
+        /// <param name="userId">The user's UserId.</param>
+        /// <returns>The UserInfo with the given UserId. If not found or an error occurs a new UserInfo with Id=0 is returned.</returns>
+        public async Task<UserInfo> GetSimpleUserInfoByUserId(string userId)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            const string userInfoApiPath = "api/UserInfo/SimpleUserInfoByUserId/";
+            HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userInfoApiPath, new StringContent(JsonSerializer.Serialize(userId, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
+            if (!userInfoResponse.IsSuccessStatusCode) return new UserInfo();
+
+            string userinfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
+            UserInfo userInfo = JsonSerializer.Deserialize<UserInfo>(userinfoAsString, JsonSerializerOptions.Web);
             return userInfo ?? new UserInfo();
         }
 
@@ -97,11 +118,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string newUserInfoApiPath = "/api/UserInfo/";
-            HttpResponseMessage newUserInfoResponse = await _httpClient.PostAsync(newUserInfoApiPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage newUserInfoResponse = await _httpClient.PostAsync(newUserInfoApiPath, new StringContent(JsonSerializer.Serialize(userInfo, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!newUserInfoResponse.IsSuccessStatusCode) return new UserInfo();
 
             string newUserResponseString = await newUserInfoResponse.Content.ReadAsStringAsync();
-            UserInfo addedUserinfo = JsonConvert.DeserializeObject<UserInfo>(newUserResponseString);
+            UserInfo addedUserinfo = JsonSerializer.Deserialize<UserInfo>(newUserResponseString, JsonSerializerOptions.Web);
             return addedUserinfo ?? new UserInfo();
         }
 
@@ -117,11 +138,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string newUserInfoApiPath = "/api/UserInfo/0";
-            HttpResponseMessage newUserInfoResponse = await _httpClient.PutAsync(newUserInfoApiPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage newUserInfoResponse = await _httpClient.PutAsync(newUserInfoApiPath, new StringContent(JsonSerializer.Serialize(userInfo, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!newUserInfoResponse.IsSuccessStatusCode) return new UserInfo();
             
             string newUserResponseString = await newUserInfoResponse.Content.ReadAsStringAsync();
-            UserInfo updatedUserinfo = JsonConvert.DeserializeObject<UserInfo>(newUserResponseString);
+            UserInfo updatedUserinfo = JsonSerializer.Deserialize<UserInfo>(newUserResponseString, JsonSerializerOptions.Web);
             return updatedUserinfo ?? new UserInfo();
         }
 
@@ -140,11 +161,11 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string deleteApiPath = "/api/UserInfo/" + userInfo.UserId;
 
-            HttpResponseMessage deleteResponse = await _httpClient.PutAsync(deleteApiPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage deleteResponse = await _httpClient.PutAsync(deleteApiPath, new StringContent(JsonSerializer.Serialize(userInfo, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!deleteResponse.IsSuccessStatusCode) return new UserInfo();
 
             string deleteResponseString = await deleteResponse.Content.ReadAsStringAsync();
-            UserInfo deletedUserInfo = JsonConvert.DeserializeObject<UserInfo>(deleteResponseString);
+            UserInfo deletedUserInfo = JsonSerializer.Deserialize<UserInfo>(deleteResponseString, JsonSerializerOptions.Web);
             return deletedUserInfo ?? new UserInfo();
         }
 
@@ -160,11 +181,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string userinfoApiPath = "/api/UserInfo/CheckCurrentUser/";
-            HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userinfoApiPath, new StringContent(JsonConvert.SerializeObject(userId), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userinfoApiPath, new StringContent(JsonSerializer.Serialize(userId, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!userInfoResponse.IsSuccessStatusCode) return new UserInfo();
 
             string userInfoResponseAsString = await userInfoResponse.Content.ReadAsStringAsync();
-            UserInfo userInfo = JsonConvert.DeserializeObject<UserInfo>(userInfoResponseAsString);
+            UserInfo userInfo = JsonSerializer.Deserialize<UserInfo>(userInfoResponseAsString, JsonSerializerOptions.Web);
             return userInfo;
         }
 
@@ -185,7 +206,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!userInfoResponse.IsSuccessStatusCode) return userInfosList;
 
             string userInfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
-            userInfosList = JsonConvert.DeserializeObject<List<UserInfo>>(userInfoAsString);
+            userInfosList = JsonSerializer.Deserialize<List<UserInfo>>(userInfoAsString, JsonSerializerOptions.Web);
 
             return userInfosList;
         }
@@ -209,7 +230,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!deleteResponse.IsSuccessStatusCode) return deletedUserInfo;
 
             string deleteResponseString = await deleteResponse.Content.ReadAsStringAsync();
-            deletedUserInfo = JsonConvert.DeserializeObject<UserInfo>(deleteResponseString);
+            deletedUserInfo = JsonSerializer.Deserialize<UserInfo>(deleteResponseString, JsonSerializerOptions.Web);
 
             return deletedUserInfo;
         }
@@ -227,6 +248,35 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string userInfosApiPath = "/api/UserInfo/GetAll";
             await _httpClient.GetAsync(userInfosApiPath);
+        }
+
+        /// <summary>
+        /// Retrieves the permission level for the specified user on a given item.
+        /// </summary>
+        /// <remarks>This method uses the current user's authentication context to determine their
+        /// permission level for the specified item. Ensure that the user is authenticated before calling this
+        /// method.</remarks>
+        /// <param name="type">The type of the item, represented as a <see cref="KinaUnaTypes.TimeLineType"/>.</param>
+        /// <param name="itemId">The unique identifier of the item for which the permission level is being retrieved.</param>
+        /// <param name="progenyId">The ProgenyId associated with the item.</param>
+        /// <param name="familyId">The FamilyId associated with the item.</param>
+        /// <returns>The <see cref="PermissionLevel"/> indicating the user's access rights to the specified item.  Returns <see
+        /// cref="PermissionLevel.None"/> if the user does not have any permissions or if the request fails.</returns>
+        public async Task<PermissionLevel> GetItemPermissionForUser(KinaUnaTypes.TimeLineType type, int itemId, int progenyId, int familyId)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            string accessManagementApiPath = "/api/AccessManagement/GetItemPermissionForUser/" + (int)type + "/" + itemId + "/" + progenyId + "/" + familyId;
+
+            HttpResponseMessage accessManagementResponse = await _httpClient.GetAsync(accessManagementApiPath);
+            if (!accessManagementResponse.IsSuccessStatusCode) return PermissionLevel.None;
+
+            string accessManagementResponseString = await accessManagementResponse.Content.ReadAsStringAsync();
+            PermissionLevel permissionLevel = JsonSerializer.Deserialize<PermissionLevel>(accessManagementResponseString, JsonSerializerOptions.Web);
+            
+            return permissionLevel;
         }
     }
 }

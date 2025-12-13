@@ -1,17 +1,20 @@
-﻿using KinaUnaWeb.Models.ItemViewModels;
+﻿using KinaUna.Data.Extensions;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.DTOs;
+using KinaUnaWeb.Models;
+using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
+using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
-using KinaUna.Data.Extensions;
-using KinaUnaWeb.Models;
-using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class SleepController(ISleepHttpClient sleepHttpClient, IViewModelSetupService viewModelSetupService) : Controller
+    public class SleepController(ISleepHttpClient sleepHttpClient, IViewModelSetupService viewModelSetupService, IProgenyHttpClient progenyHttpClient) : Controller
     {
         /// <summary>
         /// Sleep Index page. Shows a list of all sleep items for a progeny.
@@ -24,14 +27,35 @@ namespace KinaUnaWeb.Controllers
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             SleepViewModel model = new(baseModel);
-
-            List<Sleep> sleepList = await sleepHttpClient.GetSleepList(model.CurrentProgenyId);
-
-            model.ProcessSleepListData(sleepList);
             
             model.SleepId = sleepId;
 
             return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> SleepTable(int progenyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
+            SleepViewModel model = new(baseModel);
+
+            List<Sleep> sleepList = await sleepHttpClient.GetSleepList(model.CurrentProgenyId);
+            model.ProcessSleepListData(sleepList);
+
+            return PartialView("_SleepTablePartial", model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> SleepChartData(int progenyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
+            SleepViewModel model = new(baseModel);
+
+            List<Sleep> sleepList = await sleepHttpClient.GetSleepList(model.CurrentProgenyId);
+
+            model.ProcessSleepListData(sleepList);
+
+            return Json(model.GetSleepDataModel());
         }
 
         /// <summary>
@@ -44,8 +68,16 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> ViewSleep(int sleepId, bool partialView = false)
         {
             Sleep sleepItem = await sleepHttpClient.GetSleepItem(sleepId);
+            if (sleepItem == null || sleepItem.SleepId == 0)
+            {
+                if (partialView)
+                {
+                    return PartialView("_NotFoundPartial");
+                }
+                return NotFound();
+            }
 
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), sleepItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), sleepItem.ProgenyId, 0, false);
             SleepViewModel model = new(baseModel);
             
             model.SetPropertiesFromSleepItem(sleepItem);
@@ -68,7 +100,7 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> SleepCalendar(int childId = 0)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, 0, false);
             SleepViewModel model = new(baseModel);
             
             List<Sleep> allSleepList = await sleepHttpClient.GetSleepList(model.CurrentProgenyId);
@@ -93,10 +125,8 @@ namespace KinaUnaWeb.Controllers
                 return PartialView("_AccessDeniedPartial");
             }
 
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
-
-            model.SetAccessLevelList();
 
             return PartialView("_AddSleepPartial", model);
         }
@@ -112,10 +142,21 @@ namespace KinaUnaWeb.Controllers
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.SleepItem.ProgenyId);
             model.SetBaseProperties(baseModel);
-            
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+
+            bool canUserAdd = false;
+            if (model.SleepItem.ProgenyId > 0)
             {
-                return PartialView("_AccessDeniedPartial");
+                List<Progeny> progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Add);
+                if (progenies.Exists(p => p.Id == model.SleepItem.ProgenyId))
+                {
+                    canUserAdd = true;
+                }
+            }
+
+            if (!canUserAdd)
+            {
+                // Todo: Show that no entities are available to add sleep for.
+                return RedirectToAction("Index");
             }
 
             model.SleepItem.Author = model.CurrentUser.UserId;
@@ -126,6 +167,7 @@ namespace KinaUnaWeb.Controllers
             model.SleepItem = await sleepHttpClient.AddSleep(sleepToAdd);
             model.SleepItem.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(model.SleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.SleepItem.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(model.SleepItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.SleepItem.Progeny = await progenyHttpClient.GetProgeny(model.SleepItem.ProgenyId);
 
             return PartialView("_SleepAddedPartial", model);
         }
@@ -139,18 +181,24 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditSleep(int itemId)
         {
             Sleep sleep = await sleepHttpClient.GetSleepItem(itemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), sleep.ProgenyId);
-            SleepViewModel model = new(baseModel);
-            
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (sleep == null || sleep.SleepId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (sleep.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
             {
                 return PartialView("_AccessDeniedPartial");
             }
 
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), sleep.ProgenyId, 0, false);
+            SleepViewModel model = new(baseModel);
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(sleep.ProgenyId);
+            model.SetProgenyList();
+
             model.SetPropertiesFromSleepItem(sleep);
             model.SetRatingList();
-            model.SetAccessLevelList();
-
+            
             return PartialView("_EditSleepPartial", model);
         }
 
@@ -163,16 +211,19 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditSleep(SleepViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.SleepItem.ProgenyId);
-            model.SetBaseProperties(baseModel);
-
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            Sleep existingSleep = await sleepHttpClient.GetSleepItem(model.SleepItem.SleepId);
+            if (existingSleep == null || existingSleep.SleepId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (existingSleep.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
             {
                 return PartialView("_AccessDeniedPartial");
             }
 
-            if (!ModelState.IsValid) return RedirectToAction("Index", "Sleep");
-
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.SleepItem.ProgenyId, 0, false);
+            model.SetBaseProperties(baseModel);
+            
             model.SleepItem.Progeny = model.CurrentProgeny;
             model.SleepItem.SleepStart = TimeZoneInfo.ConvertTimeToUtc(model.SleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.SleepItem.SleepEnd = TimeZoneInfo.ConvertTimeToUtc(model.SleepItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
@@ -180,10 +231,14 @@ namespace KinaUnaWeb.Controllers
             {
                 model.SleepItem.SleepRating = 3;
             }
-                
+
+            model.SleepItem.ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString, JsonSerializerOptions.Web);
+
+
             model.SleepItem = await sleepHttpClient.UpdateSleep(model.SleepItem);
             model.SleepItem.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(model.SleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.SleepItem.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(model.SleepItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.SleepItem.Progeny = await progenyHttpClient.GetProgeny(model.SleepItem.ProgenyId);
 
             return PartialView("_SleepUpdatedPartial", model);
         }
@@ -197,15 +252,20 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteSleep(int itemId)
         {
             Sleep sleep = await sleepHttpClient.GetSleepItem(itemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), sleep.ProgenyId);
-            SleepViewModel model = new(baseModel);
-            
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (sleep == null || sleep.SleepId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (sleep.ItemPerMission.PermissionLevel < PermissionLevel.Admin)
             {
                 return PartialView("_AccessDeniedPartial");
             }
 
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), sleep.ProgenyId, 0, false);
+            SleepViewModel model = new(baseModel);
+            
             model.SleepItem = sleep;
+            model.SleepItem.Progeny = await progenyHttpClient.GetProgeny(model.SleepItem.ProgenyId);
 
             return View(model);
         }
@@ -220,13 +280,17 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteSleep(SleepViewModel model)
         {
             Sleep sleep = await sleepHttpClient.GetSleepItem(model.SleepItem.SleepId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), sleep.ProgenyId);
-            model.SetBaseProperties(baseModel);
-
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (sleep == null || sleep.SleepId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (sleep.ItemPerMission.PermissionLevel < PermissionLevel.Admin)
             {
                 return PartialView("_AccessDeniedPartial");
             }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), sleep.ProgenyId, 0, false);
+            model.SetBaseProperties(baseModel);
 
             await sleepHttpClient.DeleteSleepItem(sleep.SleepId);
 
@@ -244,19 +308,13 @@ namespace KinaUnaWeb.Controllers
             Sleep sleep = await sleepHttpClient.GetSleepItem(itemId);
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), sleep.ProgenyId);
             SleepViewModel model = new(baseModel);
-
-            if (model.CurrentAccessLevel > sleep.AccessLevel)
-            {
-                return PartialView("_AccessDeniedPartial");
-            }
-
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
 
             model.SetPropertiesFromSleepItem(sleep);
             model.SetRatingList();
-            model.SetAccessLevelList();
-
+            
             return PartialView("_CopySleepPartial", model);
         }
 
@@ -269,15 +327,23 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CopySleep(SleepViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.SleepItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.SleepItem.ProgenyId, 0, false);
             model.SetBaseProperties(baseModel);
-
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            bool canUserAdd = false;
+            if (model.SleepItem.ProgenyId > 0)
             {
-                return PartialView("_AccessDeniedPartial");
+                List<Progeny> progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Add);
+                if (progenies.Exists(p => p.Id == model.SleepItem.ProgenyId))
+                {
+                    canUserAdd = true;
+                }
             }
 
-            if (!ModelState.IsValid) return RedirectToAction("Index", "Sleep");
+            if (!canUserAdd)
+            {
+                // Todo: Show that no entities are available to add sleep for.
+                return RedirectToAction("Index");
+            }
 
             model.SleepItem.Progeny = model.CurrentProgeny;
             model.SleepItem.SleepStart = TimeZoneInfo.ConvertTimeToUtc(model.SleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
@@ -290,6 +356,7 @@ namespace KinaUnaWeb.Controllers
             model.SleepItem = await sleepHttpClient.UpdateSleep(model.SleepItem);
             model.SleepItem.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(model.SleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.SleepItem.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(model.SleepItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.SleepItem.Progeny = await progenyHttpClient.GetProgeny(model.SleepItem.ProgenyId);
 
             return PartialView("_SleepCopiedPartial", model);
         }

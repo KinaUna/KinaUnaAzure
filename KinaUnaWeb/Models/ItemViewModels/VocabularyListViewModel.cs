@@ -9,6 +9,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<WordDateCount> ChartData { get; set; } = [];
         public int VocabularyId { get; set; }
 
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
         public VocabularyListViewModel()
         {
             VocabularyList = [];
@@ -19,7 +22,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             SetBaseProperties(baseItemsViewModel);
         }
 
-        public void SetVocabularyList(List<VocabularyItem> vocabularyList)
+        public void SetVocabularyList(List<VocabularyItem> vocabularyList, BaseItemsViewModel baseItemsViewModel)
         {
             VocabularyList = [];
 
@@ -28,9 +31,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
             foreach (VocabularyItem vocabularyItem in vocabularyList)
             {
-                if (vocabularyItem.AccessLevel < CurrentAccessLevel) continue;
-
-                VocabularyItemViewModel vocabularyItemViewModel = new()
+                VocabularyItemViewModel vocabularyItemViewModel = new(baseItemsViewModel)
                 {
                     VocabularyItem =
                     {
@@ -41,9 +42,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
                         Language = vocabularyItem.Language,
                         SoundsLike = vocabularyItem.SoundsLike,
                         Word = vocabularyItem.Word,
-                        WordId = vocabularyItem.WordId
-                    },
-                    IsCurrentUserProgenyAdmin = IsCurrentUserProgenyAdmin
+                        WordId = vocabularyItem.WordId,
+                        ItemPermission = vocabularyItem.ItemPermission
+                    }
                 };
 
                 VocabularyList.Add(vocabularyItemViewModel);

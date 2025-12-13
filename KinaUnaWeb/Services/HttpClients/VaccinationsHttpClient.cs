@@ -3,11 +3,11 @@ using KinaUna.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -59,7 +59,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!vaccinationResponse.IsSuccessStatusCode) return new Vaccination();
 
             string vaccinationAsString = await vaccinationResponse.Content.ReadAsStringAsync();
-            Vaccination vaccinationItem = JsonConvert.DeserializeObject<Vaccination>(vaccinationAsString);
+            Vaccination vaccinationItem = JsonSerializer.Deserialize<Vaccination>(vaccinationAsString, JsonSerializerOptions.Web);
             return vaccinationItem ?? new Vaccination();
         }
 
@@ -75,11 +75,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string vaccinationsApiPath = "/api/Vaccinations/";
-            HttpResponseMessage vaccinationResponse = await _httpClient.PostAsync(vaccinationsApiPath, new StringContent(JsonConvert.SerializeObject(vaccination), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage vaccinationResponse = await _httpClient.PostAsync(vaccinationsApiPath, new StringContent(JsonSerializer.Serialize(vaccination, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!vaccinationResponse.IsSuccessStatusCode) return new Vaccination();
 
             string vaccinationAsString = await vaccinationResponse.Content.ReadAsStringAsync();
-            vaccination = JsonConvert.DeserializeObject<Vaccination>(vaccinationAsString);
+            vaccination = JsonSerializer.Deserialize<Vaccination>(vaccinationAsString, JsonSerializerOptions.Web);
             return vaccination ?? new Vaccination();
         }
 
@@ -95,11 +95,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateVaccinationsApiPath = "/api/Vaccinations/" + vaccination.VaccinationId;
-            HttpResponseMessage vaccinationResponse = await _httpClient.PutAsync(updateVaccinationsApiPath, new StringContent(JsonConvert.SerializeObject(vaccination), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage vaccinationResponse = await _httpClient.PutAsync(updateVaccinationsApiPath, new StringContent(JsonSerializer.Serialize(vaccination, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!vaccinationResponse.IsSuccessStatusCode) return new Vaccination();
 
             string vaccinationAsString = await vaccinationResponse.Content.ReadAsStringAsync();
-            vaccination = JsonConvert.DeserializeObject<Vaccination>(vaccinationAsString);
+            vaccination = JsonSerializer.Deserialize<Vaccination>(vaccinationAsString, JsonSerializerOptions.Web);
             return vaccination ?? new Vaccination();
         }
 
@@ -136,7 +136,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!vaccinationsResponse.IsSuccessStatusCode) return progenyVaccinationsList;
 
             string vaccinationsAsString = await vaccinationsResponse.Content.ReadAsStringAsync();
-            progenyVaccinationsList = JsonConvert.DeserializeObject<List<Vaccination>>(vaccinationsAsString);
+            progenyVaccinationsList = JsonSerializer.Deserialize<List<Vaccination>>(vaccinationsAsString, JsonSerializerOptions.Web);
 
             return progenyVaccinationsList;
         }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using KinaUna.Data.Models.AccessManagement;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -15,6 +16,29 @@ namespace KinaUnaWeb.Services.HttpClients
         /// <param name="progenyId">The Progeny's Id.</param>
         /// <returns>Progeny object with the given Id. If not found, a new Progeny object with Id=0 is returned.</returns>
         Task<Progeny> GetProgeny(int progenyId);
+
+        /// <summary>
+        /// Retrieves a list of progenies that the currently signed-in user can access based on the specified permission
+        /// level.
+        /// </summary>
+        /// <remarks>This method uses the currently signed-in user's identity to determine access. The
+        /// user must be authenticated, and their access token must be valid.</remarks>
+        /// <param name="permissionLevel">The level of permission required to access the progenies. This determines which progenies are included in
+        /// the result.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see cref="Progeny"/>
+        /// objects that the user has access to. If no progenies are accessible, an empty list is returned.</returns>
+        Task<List<Progeny>> GetProgeniesUserCanAccess(PermissionLevel permissionLevel);
+
+        /// <summary>
+        /// Retrieves the list of permissions associated with a specific progeny.
+        /// </summary>
+        /// <remarks>This method makes an HTTP request to an external service to retrieve the permissions.
+        /// Ensure that the signed-in user has a valid token, as it is required for authentication.</remarks>
+        /// <param name="progenyId">The unique identifier of the progeny whose permissions are to be retrieved.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see
+        /// cref="ProgenyPermission"/> objects representing the permissions for the specified progeny. Returns an empty
+        /// list if no permissions are found or if the request fails.</returns>
+        Task<List<ProgenyPermission>> GetProgenyPermissionsList(int progenyId);
 
         /// <summary>
         /// Adds a new Progeny.
@@ -59,10 +83,48 @@ namespace KinaUnaWeb.Services.HttpClients
         Task<List<Progeny>> GetProgenyAdminList(string email);
 
         /// <summary>
-        /// Gets the list of TimeLineItems that happened on this data for the given Progenies.
+        /// Retrieves the permission details for a specific progeny permission based on the provided permission ID.
         /// </summary>
-        /// <param name="progeniesList">List of Ids for the progenies to get timeline items for.</param>
-        /// <returns>List of TimeLineItem objects.</returns>
-        Task<List<TimeLineItem>> GetProgeniesYearAgo(List<int> progeniesList);
+        /// <remarks>This method retrieves the permission details by making an HTTP request to the access
+        /// management API. Ensure that the signed-in user has a valid token, as the request requires
+        /// authentication.</remarks>
+        /// <param name="permissionId">The unique identifier of the permission to retrieve.</param>
+        /// <returns>A <see cref="ProgenyPermission"/> object containing the details of the specified permission.  If the
+        /// permission is not found or the request fails, an empty <see cref="ProgenyPermission"/> object is returned.</returns>
+        Task<ProgenyPermission> GetProgenyPermission(int permissionId);
+
+        /// <summary>
+        /// Adds a new progeny permission by sending the specified <see cref="ProgenyPermission"/> object to the access
+        /// management API.
+        /// </summary>
+        /// <remarks>This method requires the user to be authenticated, as it retrieves the signed-in
+        /// user's token to authorize the request. Ensure that the <paramref name="progenyPermission"/> parameter is
+        /// properly populated before calling this method.</remarks>
+        /// <param name="progenyPermission">The <see cref="ProgenyPermission"/> object containing the details of the progeny permission to be added.</param>
+        /// <returns>A <see cref="ProgenyPermission"/> object representing the added progeny permission, as returned by the API. If
+        /// the operation fails, an empty <see cref="ProgenyPermission"/> object is returned.</returns>
+        Task<ProgenyPermission> AddProgenyPermission(ProgenyPermission progenyPermission);
+
+        /// <summary>
+        /// Updates the specified progeny permission in the system.
+        /// </summary>
+        /// <remarks>This method sends an HTTP PUT request to the access management API to update the
+        /// specified progeny permission.  Ensure that the <paramref name="progenyPermission"/> parameter contains valid
+        /// data, including a valid <see cref="ProgenyPermission.ProgenyPermissionId"/>.</remarks>
+        /// <param name="progenyPermission">The <see cref="ProgenyPermission"/> object containing the updated permission details. The <see
+        /// cref="ProgenyPermission.ProgenyPermissionId"/> property must be set to identify the permission to update.</param>
+        /// <returns>A <see cref="ProgenyPermission"/> object representing the updated permission if the operation is successful;
+        /// otherwise, a new <see cref="ProgenyPermission"/> object with default values.</returns>
+        Task<ProgenyPermission> UpdateProgenyPermission(ProgenyPermission progenyPermission);
+
+        /// <summary>
+        /// Deletes a progeny permission with the specified permission ID.
+        /// </summary>
+        /// <remarks>This method sends an HTTP DELETE request to the access management API to remove the
+        /// specified progeny permission. The caller must ensure that the <paramref name="permissionId"/> corresponds to
+        /// a valid permission.</remarks>
+        /// <param name="permissionId">The unique identifier of the permission to delete.</param>
+        /// <returns><see langword="true"/> if the permission was successfully deleted; otherwise, <see langword="false"/>.</returns>
+        Task<bool> DeleteProgenyPermission(int permissionId);
     }
 }

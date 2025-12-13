@@ -11,37 +11,41 @@ namespace KinaUnaProgenyApi.Services
         /// First checks the cache, if not found, gets the Vaccination from the database and adds it to the cache.
         /// </summary>
         /// <param name="id">The VaccinationId of the Vaccination entity to get.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, used for access control.</param>
         /// <returns>The Vaccination object with the given VaccinationId. Null if the Vaccination item doesn't exist.</returns>
-        Task<Vaccination> GetVaccination(int id);
+        Task<Vaccination> GetVaccination(int id, UserInfo currentUserInfo);
 
         /// <summary>
         /// Adds a new Vaccination entity to the database and adds it to the cache.
         /// </summary>
         /// <param name="vaccination">The Vaccination object to add.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The added Vaccination object.</returns>
-        Task<Vaccination> AddVaccination(Vaccination vaccination);
+        Task<Vaccination> AddVaccination(Vaccination vaccination, UserInfo currentUserInfo);
 
         /// <summary>
         /// Updates a Vaccination entity in the database and the cache.
         /// </summary>
         /// <param name="vaccination">The Vaccination object with the updated properties.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The updated Vaccination object.</returns>
-        Task<Vaccination> UpdateVaccination(Vaccination vaccination);
+        Task<Vaccination> UpdateVaccination(Vaccination vaccination, UserInfo currentUserInfo);
 
         /// <summary>
         /// Deletes a Vaccination entity from the database and the cache.
         /// </summary>
         /// <param name="vaccination">The Vaccination object to delete.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns></returns>
-        Task<Vaccination> DeleteVaccination(Vaccination vaccination);
+        Task<Vaccination> DeleteVaccination(Vaccination vaccination, UserInfo currentUserInfo);
 
         /// <summary>
         /// Gets a list of all Vaccinations for a Progeny.
         /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get the list for.</param>
-        /// <param name="accessLevel">The access level for the current user.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, used for access control.</param>
         /// <returns>List of Vaccination objects.</returns>
-        Task<List<Vaccination>> GetVaccinationsList(int progenyId, int accessLevel);
+        Task<List<Vaccination>> GetVaccinationsList(int progenyId, UserInfo currentUserInfo);
     }
 }

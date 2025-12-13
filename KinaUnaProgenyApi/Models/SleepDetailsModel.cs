@@ -9,17 +9,8 @@ namespace KinaUnaProgenyApi.Models
     {
         public List<Sleep> SleepList { get; private set; }
 
-        public void CreateSleepList(Sleep currentSleep, List<Sleep> allSleepList, int accessLevel, int sortOrder, string userTimeZone)
+        public void CreateSleepList(Sleep currentSleep, List<Sleep> sleepList, int sortOrder, string userTimeZone)
         {
-            List<Sleep> sleepList = [];
-            foreach (Sleep sleep in allSleepList)
-            {
-                if (sleep.AccessLevel >= accessLevel)
-                {
-                    sleepList.Add(sleep);
-                }
-            }
-
             if (sortOrder == 0)
             {
                 sleepList = [.. sleepList.OrderBy(s => s.SleepStart)];
@@ -52,8 +43,12 @@ namespace KinaUnaProgenyApi.Models
 
             foreach (Sleep s in SleepList)
             {
-                DateTimeOffset sOffset = new(s.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepStart));
-                DateTimeOffset eOffset = new(s.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(s.SleepEnd));
+                TimeZoneInfo timeZone = TimeZoneInfo.FindSystemTimeZoneById(userTimeZone);
+                DateTime localStart = TimeZoneInfo.ConvertTimeFromUtc(s.SleepStart, timeZone);
+                DateTime localEnd = TimeZoneInfo.ConvertTimeFromUtc(s.SleepEnd, timeZone);
+                
+                DateTimeOffset sOffset = new(localStart, timeZone.GetUtcOffset(s.SleepStart));
+                DateTimeOffset eOffset = new(localEnd, timeZone.GetUtcOffset(s.SleepEnd));
                 s.SleepDuration = eOffset - sOffset;
             }
         }

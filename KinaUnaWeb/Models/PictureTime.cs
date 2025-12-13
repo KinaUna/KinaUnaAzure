@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using KinaUna.Data.Extensions;
 
 namespace KinaUnaWeb.Models
 {
@@ -25,13 +27,21 @@ namespace KinaUnaWeb.Models
         }
 
 
-        public string CalcYears()
+        public List<string> CalcYears()
         {
 
-            TimeSpan age = _pictureUtcTime - _birthDayUtc;
-            double ageYears = age.TotalSeconds / (365.0 * 24.0 * 60.0 * 60.0);
+            List<string> ageYearsList = [];
 
-            return ageYears.ToString("F6");
+            _birthDayUtc.GetElapsedTime(_pictureUtcTime, out int ageYears, out int ageMonths, out int ageDays, out int ageHours, out int ageMinutes, out int ageSeconds);
+
+            ageYearsList.Add(ageYears.ToString());
+            ageYearsList.Add(ageMonths.ToString());
+            ageYearsList.Add(ageDays.ToString());
+            ageYearsList.Add(ageHours.ToString());
+            ageYearsList.Add(ageMinutes.ToString());
+            ageYearsList.Add(ageSeconds.ToString());
+
+            return ageYearsList;
         }
 
         public string CalcMonths()

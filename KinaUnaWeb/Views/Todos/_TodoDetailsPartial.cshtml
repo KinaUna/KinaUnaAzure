@@ -1,6 +1,7 @@
 ﻿@using System.Web
 @using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.TodoViewModel
 @inject ILocaleManager LocaleManager
@@ -10,7 +11,18 @@
     {
         titleType = await LocaleManager.GetTranslation("Subtask", PageNames.Todos, Model.LanguageId);
     }
-    string title = Model.TodoItem.Progeny.NickName + " : " + titleType;
+
+    string title = string.Empty;
+    if (Model.TodoItem.ProgenyId > 0)
+    {
+        title = Model.TodoItem.Progeny.NickName + " : " + titleType;
+    }
+
+    if (Model.TodoItem.FamilyId > 0)
+    {
+        title = Model.TodoItem.Family.Name + " : " + titleType;
+    }
+
     string setAsNotStartedString = await LocaleManager.GetTranslation("Set as not started", PageNames.Todos, Model.LanguageId);
     string setAsInProgressString = await LocaleManager.GetTranslation("Set as in progress", PageNames.Todos, Model.LanguageId);
     string setAsCompletedString = await LocaleManager.GetTranslation("Set as completed", PageNames.Todos, Model.LanguageId);
@@ -20,7 +32,14 @@
     <div class="timeline-card-body bg-todos item-details-content">
         <div class="row sticky-top m-0 item-details-header">
             <div class="col-12 bg-todos-header">
-                <img src="@Model.TodoItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                @if (Model.TodoItem.ProgenyId > 0)
+                {
+                    <img src="@Model.TodoItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                }
+                @if (Model.TodoItem.FamilyId > 0)
+                {
+                    <img src="@Model.TodoItem.Family.GetProfilePictureUrl()" class="item-details-title-picture" />
+                }
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
@@ -54,7 +73,7 @@
             </div>
             <div class="col">
                 <div class="row text-white">
-                    <div class="col-auto">
+                    <div class="col-12">
                         <span class="text-white-75">@await LocaleManager.GetTranslation("Status", PageNames.Todos, Model.LanguageId):</span> @await LocaleManager.GetTranslation(Model.TodoItem.StatusText(), PageNames.Todos, Model.LanguageId)
                         <i class="material-icons-small">@Model.TodoItem.StatusIcon()</i>
                     </div>
@@ -125,48 +144,51 @@
                 </div>
             </div>
         </div>
-
-
-            @if (Model.IsCurrentUserProgenyAdmin)
-            {
-                <div class="row m-0">
-                    <div class="col-auto d-none d-md-block">
-                        <span class="timeline-icon"><i class="material-icons" style="font-size: 48px; opacity: 0">fact_check</i></span>
-                    </div>
-                    <div class="col">
-                        <div class="space-20"></div>
-                        <div class="row">
-                            <div class="col-12">
-                                @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.NotStarted)
-                                {
-                                    <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-not-started-id="@Model.TodoItem.TodoItemId">
-                                        <i class="material-icons kinauna-icon-medium">pending_actions</i> @setAsNotStartedString
-                                    </button>
-                                }
-                                @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.InProgress)
-                                {
-                                    <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-in-progress-id="@Model.TodoItem.TodoItemId">
-                                        <i class="material-icons kinauna-icon-medium">assignment</i> @setAsInProgressString
-                                    </button>
-                                }
-                                @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Completed)
-                                {
-                                    <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-completed-id="@Model.TodoItem.TodoItemId">
-                                        <i class="material-icons kinauna-icon-medium">assignment_turned_in</i> @setAsCompletedString
-                                    </button>
-                                }
-                                @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Cancelled)
-                                {
-                                    <button class="btn btn-link p-3 float-right text-white-75" data-set-todo-item-cancelled-id="@Model.TodoItem.TodoItemId">
-                                        <i class="material-icons kinauna-icon-medium">playlist_remove</i> @setAsCancelledString
-                                    </button>
-                                }
-                            </div>
+        @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit || Model.TodoItem.Progeny?.UserId == User.GetUserId())
+        {
+            <div class="row m-0">
+                <div class="col-auto d-none d-md-block">
+                    <span class="timeline-icon"><i class="material-icons" style="font-size: 48px; opacity: 0">fact_check</i></span>
+                </div>
+                <div class="col">
+                    <div class="space-20"></div>
+                    <div class="row">
+                        <div class="col-12">
+                            @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.NotStarted)
+                            {
+                                <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-not-started-id="@Model.TodoItem.TodoItemId">
+                                    <i class="material-icons kinauna-icon-medium">pending_actions</i> @setAsNotStartedString
+                                </button>
+                            }
+                            @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.InProgress)
+                            {
+                                <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-in-progress-id="@Model.TodoItem.TodoItemId">
+                                    <i class="material-icons kinauna-icon-medium">assignment</i> @setAsInProgressString
+                                </button>
+                            }
+                            @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Completed)
+                            {
+                                <button class="btn btn-link p-3 float-left text-white-75" data-set-todo-item-completed-id="@Model.TodoItem.TodoItemId">
+                                    <i class="material-icons kinauna-icon-medium">assignment_turned_in</i> @setAsCompletedString
+                                </button>
+                            }
+                            @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.Cancelled)
+                            {
+                                <button class="btn btn-link p-3 float-right text-white-75" data-set-todo-item-cancelled-id="@Model.TodoItem.TodoItemId">
+                                    <i class="material-icons kinauna-icon-medium">playlist_remove</i> @setAsCancelledString
+                                </button>
+                            }
+                        </div>
+                        <div class="col-12">
+                            <button id="assign-todo-item-to-button-@Model.TodoItem.TodoItemId" class="btn btn-link p-3 text-white-75" data-todo-item-id="@Model.TodoItem.TodoItemId">
+                                <span class="material-icons-small">assignment_ind</span>
+                                @await LocaleManager.GetTranslation("Assign to ..", PageNames.Todos, Model.LanguageId)
+                            </button>
                         </div>
                     </div>
                 </div>
-                
-            }
+            </div>
+        }
         <div class="row m-0">
             <div class="col-auto d-none d-md-block">
                 <span class="timeline-icon"><i class="material-icons" style="font-size: 48px; opacity: 0">fact_check</i></span>
@@ -184,6 +206,11 @@
                                     {
                                         <span class="text-appendage-light ml-2"> [@Model.TodoItem.CompletedSubtaskCount / @Model.TodoItem.SubtaskCount]</span>
                                     }
+                                    else
+                                    {
+                                        <div class="space-10"></div>
+                                        <span class="text-appendage-light">@await LocaleManager.GetTranslation("There are no subtasks for this item", PageNames.Todos, Model.LanguageId) </span>
+                                    }
                                 </div>
                             </div>
                             <div class="space-10"></div>
@@ -197,7 +224,7 @@
                                     </div>
                                 </div>
                             </div>
-                            @if (Model.IsCurrentUserProgenyAdmin)
+                            @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Add || Model.TodoItem.Progeny?.UserId == User.GetUserId())
                             {
                                 <div class="row text-white">
                                     <div class="col-12">
@@ -247,7 +274,7 @@
                                         </div>
                                     </div>
                                 }
-                                @if (Model.IsCurrentUserProgenyAdmin)
+                                @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit || Model.TodoItem.Progeny?.UserId == User.GetUserId())
                                 {
                                     <div class="space-10"></div>
                                     <div class="row">
@@ -268,12 +295,15 @@
             </div>
             <div class="space-20"></div>
             <div class="col-12 text-right text-white-50" style="font-size: small;">Created by: @Model.TodoItem.CreatedBy</div>
-            @if (Model.IsCurrentUserProgenyAdmin)
+            @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
             {
                 <div class="space-50"></div>
                 <div class="col-12">
                     <a data-edit-item-type="todo" data-edit-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
-                    <a data-delete-item-type="todo" data-delete-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
+                    {
+                        <a data-delete-item-type="todo" data-delete-item-item-id="@Model.TodoItem.TodoItemId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    }
                 </div>
             }
         </div>

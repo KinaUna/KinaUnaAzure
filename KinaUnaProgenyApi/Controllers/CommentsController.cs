@@ -11,7 +11,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// <summary>
     /// API endpoints for comments.
     /// </summary>
-    /// <param name="azureNotifications"></param>
     /// <param name="commentsService"></param>
     /// <param name="progenyService"></param>
     /// <param name="userInfoService"></param>
@@ -21,7 +20,6 @@ namespace KinaUnaProgenyApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class CommentsController(
-        IAzureNotifications azureNotifications,
         ICommentsService commentsService,
         IProgenyService progenyService,
         IUserInfoService userInfoService,
@@ -83,13 +81,12 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Comment value)
         {
-            Progeny progeny = await progenyService.GetProgeny(value.Progeny.Id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Progeny progeny = await progenyService.GetProgeny(value.Progeny.Id, currentUserInfo);
 
-            string userId = User.GetUserId();
-            // Todo: Check user's access level to the Progeny.
-            if (progeny != null && value.CommentThreadNumber != 0)
+            if (progeny != null && progeny.Id != 0 && value.CommentThreadNumber != 0)
             {
-                if (userId != value.Author)
+                if (currentUserInfo.UserId != value.Author)
                 {
                     return Unauthorized();
                 }
@@ -105,17 +102,8 @@ namespace KinaUnaProgenyApi.Controllers
             string notificationTitle = "New comment for " + newComment.Progeny.NickName;
             string notificationMessage = value.DisplayName + " added a new comment for " + newComment.Progeny.NickName;
 
-            TimeLineItem timeLineItem = new()
-            {
-                ProgenyId = newComment.Progeny.Id,
-                ItemId = newComment.ItemId,
-                ItemType = newComment.ItemType,
-                AccessLevel = newComment.AccessLevel
-            };
-
             UserInfo userinfo = await userInfoService.GetUserInfoByUserId(value.Author);
 
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userinfo.ProfilePicture);
             await webNotificationsService.SendCommentNotification(newComment, userinfo, notificationTitle, notificationMessage);
 
             return Ok(newComment);
@@ -131,19 +119,19 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Comment value)
         {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             Comment comment = await commentsService.GetComment(id);
             if (comment == null)
             {
                 return NotFound();
             }
 
-            Progeny progeny = await progenyService.GetProgeny(value.Progeny.Id);
+            Progeny progeny = await progenyService.GetProgeny(value.Progeny.Id, currentUserInfo);
 
-            string userId = User.GetUserId();
-            if (progeny != null)
+            if (progeny != null && progeny.Id != 0)
             {
 
-                if (userId != comment.Author)
+                if (currentUserInfo.UserId != comment.Author)
                 {
                     return Unauthorized();
                 }

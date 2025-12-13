@@ -1,16 +1,17 @@
-﻿using KinaUnaWeb.Models.ItemViewModels;
+﻿using KinaUna.Data.Extensions;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUnaWeb.Models;
+using KinaUnaWeb.Models.ItemViewModels;
+using KinaUnaWeb.Models.TypeScriptModels.Notes;
 using KinaUnaWeb.Services;
+using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using KinaUna.Data.Extensions;
-using KinaUnaWeb.Models;
-using KinaUnaWeb.Models.TypeScriptModels.Notes;
-using KinaUnaWeb.Services.HttpClients;
-using System.IO;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -34,7 +35,7 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Index(int childId = 0, int page = 0, int sort = 1, int itemsPerPage = 10, int noteId = 0)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, 0, false);
             NotesListViewModel model = new(baseModel)
             {
                 NotesPageParameters =
@@ -60,7 +61,12 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> ViewNote(int noteId, bool partialView = false)
         {
             Note note = await notesHttpClient.GetNote(noteId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId);
+            if (note == null || note.NoteId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId, 0, false);
             NoteViewModel model = new(baseModel)
             {
                 NoteItem = note
@@ -68,7 +74,7 @@ namespace KinaUnaWeb.Controllers
 
             model.NoteItem.Progeny = model.CurrentProgeny;
             model.NoteItem.Progeny.PictureLink = model.NoteItem.Progeny.GetProfilePictureUrl();
-            UserInfo noteUserInfo = await userInfosHttpClient.GetUserInfoByUserId(model.NoteItem.Owner);
+            UserInfo noteUserInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(model.NoteItem.Owner);
             model.NoteItem.Owner = noteUserInfo.FullName();
             if (partialView)
             {
@@ -158,12 +164,13 @@ namespace KinaUnaWeb.Controllers
             else
             {
                 noteItemResponse.Note = await notesHttpClient.GetNote(parameters.NoteId);
+                if (noteItemResponse.Note == null || noteItemResponse.Note.NoteId == 0)
+                {
+                    return PartialView("_NotFoundPartial");
+                }
                 noteItemResponse.Note.Progeny = await progenyHttpClient.GetProgeny(noteItemResponse.Note.ProgenyId);
-                noteItemResponse.NoteId = noteItemResponse.Note.NoteId;
-
-                BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), noteItemResponse.Note.ProgenyId);
-                noteItemResponse.IsCurrentUserProgenyAdmin = baseModel.IsCurrentUserProgenyAdmin;
-                UserInfo noteUserInfo = await userInfosHttpClient.GetUserInfoByUserId(noteItemResponse.Note.Owner);
+                noteItemResponse.NoteId = noteItemResponse.Note.NoteId; 
+                UserInfo noteUserInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(noteItemResponse.Note.Owner);
                 noteItemResponse.Note.Owner = noteUserInfo.FullName();
             }
             
@@ -180,23 +187,14 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> AddNote()
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0, false);
             NoteViewModel model = new(baseModel);
-            if (model.CurrentUser == null)
-            {
-                return PartialView("_NotFoundPartial");
-            }
-
-            if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
-            {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
-                model.SetProgenyList();
-            }
+            
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
+            model.SetProgenyList();
 
             model.NoteItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.PathName = model.CurrentUser.UserId;
-
-            model.SetAccessLevelList();
 
             return PartialView("_AddNotePartial", model);
         }
@@ -212,18 +210,27 @@ namespace KinaUnaWeb.Controllers
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.NoteItem.ProgenyId);
             model.SetBaseProperties(baseModel);
-            
-            List<Progeny> progAdminList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
-            if (progAdminList.Count == 0)
+            bool canUserAdd = false;
+            if (model.NoteItem.ProgenyId > 0)
             {
-                // Todo: Show that no children are available to add note for.
+                List<Progeny> progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Add);
+                if (progenies.Exists(p => p.Id == model.NoteItem.ProgenyId))
+                {
+                    canUserAdd = true;
+                }
+            }
+
+            if (!canUserAdd)
+            {
+                // Todo: Show that no entities are available to add note for.
                 return RedirectToAction("Index");
             }
-            
+
             Note noteItem = model.CreateNote();
                 
             model.NoteItem = await notesHttpClient.AddNote(noteItem);
             model.NoteItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(model.NoteItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.NoteItem.Progeny = await progenyHttpClient.GetProgeny(model.NoteItem.ProgenyId);
 
             return PartialView("_NoteAddedPartial", model);
         }
@@ -237,18 +244,23 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditNote(int itemId)
         {
             Note note = await notesHttpClient.GetNote(itemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId);
-            NoteViewModel model = new(baseModel);
-            
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (note == null || note.NoteId == 0)
             {
-                return PartialView("_AccessDeniedPartial");
+                return PartialView("_NotFoundPartial");
             }
 
-            model.SetPropertiesFromNote(note);
-            
-            model.SetAccessLevelList();
+            if (note.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
+            {
+                return Unauthorized();
+            }
 
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId);
+            NoteViewModel model = new(baseModel);
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(note.ProgenyId);
+            model.SetProgenyList();
+
+            model.SetPropertiesFromNote(note);
             model.PathName = model.CurrentUser.UserId;
             
             return PartialView("_EditNotePartial", model);
@@ -263,18 +275,24 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditNote(NoteViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.NoteItem.ProgenyId);
-            model.SetBaseProperties(baseModel);
-            
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
-            { 
-                return PartialView("_AccessDeniedPartial");
+            Note existingNote = await notesHttpClient.GetNote(model.NoteItem.NoteId);
+            if (existingNote == null || existingNote.NoteId == 0)
+            {
+                return PartialView("_NotFoundPartial");
             }
+            if (existingNote.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
+            {
+                return Unauthorized();
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.NoteItem.ProgenyId, 0, false);
+            model.SetBaseProperties(baseModel);
             
             Note editedNote = model.CreateNote();
 
             model.NoteItem = await notesHttpClient.UpdateNote(editedNote);
             model.NoteItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(model.NoteItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.NoteItem.Progeny = await progenyHttpClient.GetProgeny(model.NoteItem.ProgenyId);
 
             return PartialView("_NoteUpdatedPartial", model);
         }
@@ -288,14 +306,18 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteNote(int itemId)
         {
             Note note = await notesHttpClient.GetNote(itemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId);
-            NoteViewModel model = new(baseModel);
-
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (note == null || note.NoteId == 0)
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_NotFoundPartial");
             }
+
+            if (note.ItemPerMission.PermissionLevel < PermissionLevel.Admin)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId, 0, false);
+            NoteViewModel model = new(baseModel);
 
             model.NoteItem = note; 
             
@@ -312,16 +334,20 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteNote(NoteViewModel model)
         {
             Note note = await notesHttpClient.GetNote(model.NoteItem.NoteId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId);
-            model.SetBaseProperties(baseModel);
-
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (note == null || note.NoteId == 0)
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_NotFoundPartial");
+            }
+            if (note.ItemPerMission.PermissionLevel < PermissionLevel.Admin)
+            {
+                return PartialView("_AccessDeniedPartial");
             }
 
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId, 0, false);
+            model.SetBaseProperties(baseModel);
+            
             _ = await notesHttpClient.DeleteNote(note.NoteId);
+
             return RedirectToAction("Index", "Notes");
         }
 
@@ -334,24 +360,17 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> CopyNote(int itemId)
         {
             Note note = await notesHttpClient.GetNote(itemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId);
-            NoteViewModel model = new(baseModel);
-
-            if (model.CurrentAccessLevel > note.AccessLevel)
+            if (note == null || note.NoteId == 0)
             {
-                return PartialView("_AccessDeniedPartial");
+                return PartialView("_NotFoundPartial");
             }
-
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId, 0, false);
+            NoteViewModel model = new(baseModel);
             model.SetPropertiesFromNote(note);
 
-            if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
-            {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
-                model.SetProgenyList();
-            }
-
-            model.SetAccessLevelList();
-
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
+            model.SetProgenyList();
+            
             model.PathName = model.CurrentUser.UserId;
 
             return PartialView("_CopyNotePartial", model);
@@ -366,18 +385,29 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CopyNote(NoteViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.NoteItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.NoteItem.ProgenyId, 0, false);
             model.SetBaseProperties(baseModel);
-
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            
+            bool canUserAdd = false;
+            if (model.NoteItem.ProgenyId > 0)
             {
+                List<Progeny> progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Add);
+                if (progenies.Exists(p => p.Id == model.NoteItem.ProgenyId))
+                {
+                    canUserAdd = true;
+                }
+            }
+            
+            if (!canUserAdd)
+            {
+                // Todo: Show that no family or family members are available to add note for.
                 return PartialView("_AccessDeniedPartial");
             }
-
             Note editedNote = model.CreateNote();
 
             model.NoteItem = await notesHttpClient.AddNote(editedNote);
             model.NoteItem.CreatedDate = TimeZoneInfo.ConvertTimeFromUtc(model.NoteItem.CreatedDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+            model.NoteItem.Progeny = await progenyHttpClient.GetProgeny(model.NoteItem.ProgenyId);
 
             return PartialView("_NoteCopiedPartial", model);
         }
@@ -394,9 +424,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<FileContentResult> Image([FromQuery] int noteId, [FromQuery] string imageId)
         {
             Note note = await notesHttpClient.GetNote(noteId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), note.ProgenyId);
-
-            if (baseModel.CurrentAccessLevel > note.AccessLevel)
+            if (note == null || note.NoteId ==0 || note.ItemPerMission.PermissionLevel < PermissionLevel.View)
             {
                 MemoryStream fileContentNoAccess = await imageStore.GetStream("868b62e2-6978-41a1-97dc-1cc1116f65a6.jpg");
                 byte[] fileContentBytesNoAccess = fileContentNoAccess.ToArray();

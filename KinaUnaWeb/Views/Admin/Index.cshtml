@@ -2,7 +2,10 @@
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = "Administration";
+    
+    // This ensures the _RegisterTerms text is created, otherwise it will not show up in the Manage Texts list.
     _ = await LocaleManager.GetPageTextByTitle("__RegisterTerms", "Register", 1);
+    
 }
 <div class="ml-xl-auto mr-xl-auto col-xl-11 col-xxl-10">
     <div class="add-item-container">

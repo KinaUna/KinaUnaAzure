@@ -1,5 +1,6 @@
 ﻿@using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.FriendViewModel
 @inject ILocaleManager LocaleManager
@@ -118,11 +119,14 @@
                 </div>
 
             </div>
-            @if (Model.IsCurrentUserProgenyAdmin)
+            @if (Model.FriendItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
             {
                 <div class="col-12">
                     <a data-edit-item-type="friend" data-edit-item-item-id="@Model.FriendItem.FriendId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
-                    <a asp-controller="Friends" asp-action="DeleteFriend" asp-route-itemId="@Model.FriendItem.FriendSince" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    @if (Model.FriendItem.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
+                    {
+                        <a asp-controller="Friends" asp-action="DeleteFriend" asp-route-itemId="@Model.FriendItem.FriendSince" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    }
                 </div>
 
             }

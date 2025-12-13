@@ -1,7 +1,10 @@
 ﻿using KinaUna.Data.Models.ItemInterfaces;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.DTOs;
 
 namespace KinaUna.Data.Models
 {
@@ -20,23 +23,34 @@ namespace KinaUna.Data.Models
         /// </summary>
         [MaxLength(128)]
         public string UId { get; set; } = string.Empty;
+
         /// <summary>
         /// The Id of the Progeny the event belongs to.
         /// </summary>
-        public int ProgenyId { get; set; }
+        public int ProgenyId { get; set; } = 0; // 0 if associated with a family.
+
+        /// <summary>
+        /// Gets or sets the identifier for the family associated with this entity.
+        /// </summary>
+        public int FamilyId { get; set; } = 0; // 0 if associated with a progeny.
+
         /// <summary>
         /// The event title.
         /// </summary>
         [MaxLength(256)]
         public string Title { get; set; } = string.Empty;
+
         /// <summary>
         /// Notes and detailed description of the event.
         /// </summary>
+        [MaxLength(4000)]
         public string Notes { get; set; } = string.Empty;
+        
         /// <summary>
         /// The start time and date of the event.
         /// </summary>
         public DateTime? StartTime { get; set; }
+        
         /// <summary>
         /// The end time and date of the event.
         /// </summary>
@@ -56,11 +70,7 @@ namespace KinaUna.Data.Models
         /// All day event. I.e. birthday, holiday etc.
         /// </summary>
         public bool AllDay { get; set; }
-        /// <summary>
-        /// The required access level to view the event.
-        /// </summary>
-        public int AccessLevel { get; set; }
-
+        
         /// <summary>
         /// The User Id of the user who created the event.
         /// </summary>
@@ -72,6 +82,28 @@ namespace KinaUna.Data.Models
         /// 0 = No recurrence.
         /// </summary>
         public int RecurrenceRuleId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the identifier of the user or system that created the entity.
+        /// </summary>
+        [MaxLength(256)]
+        public string CreatedBy { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the date and time when the entity was created.
+        /// </summary>
+        public DateTime CreatedTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifier of the user or system that last modified the entity.
+        /// </summary>
+        [MaxLength(256)]
+        public string ModifiedBy { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the date and time when the object was last modified.
+        /// </summary>
+        public DateTime ModifiedTime { get; set; }
 
         /// <summary>
         /// String representation of the start time.
@@ -88,7 +120,10 @@ namespace KinaUna.Data.Models
         /// Progeny data for the progeny the event belongs to.
         /// </summary>
         [NotMapped]
-        public Progeny Progeny { get; set; } = new Progeny();
+        public Progeny Progeny { get; set; } = new();
+
+        [NotMapped]
+        public Family.Family Family { get; set; } = new();
 
         /// <summary>
         /// Read only flag. Used to determine if the event can be edited or deleted in Calendar views.
@@ -101,6 +136,18 @@ namespace KinaUna.Data.Models
         /// </summary>
         [NotMapped]
         public RecurrenceRule RecurrenceRule { get; set; } = new RecurrenceRule();
+
+        /// <summary>
+        /// The current user's permissions for this item.
+        /// </summary>
+        [NotMapped]
+        public TimelineItemPermission ItemPerMission { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of item permissions associated with the current entity. For adding or updating item permissions.
+        /// </summary>
+        [NotMapped]
+        public List<ItemPermissionDto> ItemPermissionsDtoList { get; set; } = [];
 
         /// <summary>
         /// Get the location string for the event. Needed for the ILocatable interface.

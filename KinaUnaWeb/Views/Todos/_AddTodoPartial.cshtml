@@ -3,21 +3,18 @@
 @model KinaUnaWeb.Models.ItemViewModels.TodoViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = await LocaleManager.GetTranslation("Add todo", PageNames.Todos, Model.LanguageId);
+    string pageTitle = await LocaleManager.GetTranslation("Add todo", PageNames.Todos, Model.LanguageId);
     string addTodoForString = await LocaleManager.GetTranslation("Add todo for:", PageNames.Todos, Model.LanguageId);
     const string longDateTimeFormat = "dd-MMMM-yyyy";
     const string zebraDateTimeFormat = "d-F-Y";
     const string longDateTimeFormatMoment = "DD-MMMM-YYYY";
+    int permissionsDataType = (int)KinaUnaTypes.TimeLineType.TodoItem;
 
     foreach (SelectListItem statusItem in Model.StatusList)
     {
         statusItem.Text = await LocaleManager.GetTranslation(statusItem.Text, PageNames.Todos, Model.LanguageId);
     }
-    foreach (SelectListItem accessLevelItem in Model.AccessLevelListEn)
-    {
-        accessLevelItem.Text = await LocaleManager.GetTranslation(accessLevelItem.Text, PageNames.AccessManagement, Model.LanguageId);
-    }
-
+    
     Model.KanbanBoardsList[0].Text = await LocaleManager.GetTranslation("Do not add to a Kanban board", PageNames.Todos, Model.LanguageId);
 }
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
@@ -27,29 +24,35 @@
     <div class="timeline-card-body modal-content item-details-content">
         <div class="row sticky-top m-0 item-details-header">
             <div class="col-12 bg-add-item-header">
-                <span class="h4 mr-3 align-bottom">@ViewData["Title"]</span>
+                <span class="h4 mr-3 align-bottom">@pageTitle</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
         </div>
         <form id="save-item-form" asp-action="AddTodo" asp-controller="Todos" role="form" method="post">
             <div class="space-20"></div>
-            @if (Model.ProgenyList.Count > 1)
+            <div class="form-group">
+                <label class="col-auto control-label">@addTodoForString</label>
+                <div class="col-auto">
+                    <button id="add-item-for-individual-button" class="btn btn-primary" type="button">Individual</button>
+                    <button id="add-item-for-family-button" class="btn btn-outline-primary" type="button">Family</button>
+                </div>
+            </div>
+            @if (Model.ProgenyList.Count > 0)
             {
-                <div class="form-group">
+                <div id="individual-select-from-group" class="form-group">
                     <label asp-for="TodoItem.ProgenyId" class="col-auto control-label">@addTodoForString </label>
                     <div class="col-auto">
                         <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="TodoItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
                     </div>
                 </div>
             }
-            else
+            @if (Model.FamilyList.Count > 0)
             {
-                <div class="form-group">
-                    <label asp-for="TodoItem.ProgenyId" class="col-auto control-label">@addTodoForString</label>
+                <div id="family-select-from-group" class="form-group d-none">
+                    <label asp-for="TodoItem.FamilyId" class="col-auto control-label">@addTodoForString </label>
                     <div class="col-auto">
-                        <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text"/>
+                        <select id="item-family-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.FamilyList.Count" asp-for="TodoItem.FamilyId" asp-items="@Model.FamilyList"></select>
                     </div>
-                    <input asp-for="TodoItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden"/>
                 </div>
             }
             <div class="form-group">
@@ -131,12 +134,6 @@
                     <textarea rows="4" asp-for="TodoItem.Notes" class="form-control"></textarea>
                 </div>
             </div>
-            <div class="form-group">
-                <label asp-for="TodoItem.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-                <div class="col-auto">
-                    <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="TodoItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
-                </div>
-            </div>
             <div class="space-10"></div>
             <div class="form-group">
                 <label asp-for="AddToKanbanBoardId" class="col-auto control-label">@await LocaleManager.GetTranslation("Add to Kanban Board", PageNames.Todos, Model.LanguageId)</label>
@@ -144,6 +141,9 @@
                     <select id="add-todo-item-to-kanban-board-select" class="selectpicker form-control form-control-inherit-color" data-style="btn-kinaunaselect" data-size="@Model.KanbanBoardsList.Count" asp-for="AddToKanbanBoardId" asp-items="@Model.KanbanBoardsList"></select>
                 </div>
             </div>
+            <div id="item-permissions-editor-div" class="d-none" data-item-type="@permissionsDataType" data-item-id="@Model.TodoItem.TodoItemId"></div>
+            <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
+            <input id="inherit-permissions-input" asp-for="InheritPermissions" value="@Model.InheritPermissions" type="hidden"/>
             <div class="space-20"></div>
             <div class="form-group">
                 <div class="col-auto control-label"></div>

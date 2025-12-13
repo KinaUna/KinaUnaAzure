@@ -1,12 +1,9 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
-@using System.Globalization
 @model KinaUnaWeb.Models.ItemViewModels.MeasurementViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = Model.CurrentProgeny.NickName + " - " + await LocaleManager.GetTranslation("Measurements", PageNames.Measurements, Model.LanguageId);
-    string heightString = await LocaleManager.GetTranslation("Height", PageNames.Measurements, Model.LanguageId);
-    string weightString = await LocaleManager.GetTranslation("Weight", PageNames.Measurements, Model.LanguageId);
+    ViewData["Title"] = await LocaleManager.GetTranslation("Measurements", PageNames.Measurements, Model.LanguageId);
 }
 
 @section Scripts
@@ -17,166 +14,14 @@
     <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap4.min.js"></script>
     <script src="https://cdn.datatables.net/plug-ins/1.13.4/sorting/datetime-moment.js"></script>
+    <script src="~/lib/chart.js/dist/Chart.js"></script>
 }
 
 <div id="popup-measurement-id-div" class="d-none" data-popup-measurement-id="@Model.MeasurementId"></div>
 <div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10">
-    @if (Model.MeasurementsList == null || !Model.MeasurementsList.Any())
-    {
-        <div class="h-4">@ViewData["Title"]</div>
-        <div>
-            @await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Measurements, Model.LanguageId)
-        </div>
-    }
-    else
-    {
-        <div class="h-4">@ViewData["Title"]</div>
-        <div class="table-responsive">
-            <table id="measurements-list" class="table table-bordered table-striped" style="margin-top: 15px;">
-                <thead>
-                    <tr>
-                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Date", PageNames.Measurements, Model.LanguageId)</th>
-                        <th style="font-weight: bold">@heightString</th>
-                        <th style="font-weight: bold">@weightString</th>
-                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Head size", PageNames.Measurements, Model.LanguageId)</th>
-                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Eye color", PageNames.Measurements, Model.LanguageId)</th>
-                        <th style="font-weight: bold">@await LocaleManager.GetTranslation("Hair color", PageNames.Measurements, Model.LanguageId)</th>
-                        @if (Model.IsCurrentUserProgenyAdmin)
-                        {
-                            <th style="font-weight: bold">@await LocaleManager.GetTranslation("Action", PageNames.Measurements, Model.LanguageId)</th>
-                        }
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (Measurement measurementItem in Model.MeasurementsList)
-                    {
-                        <tr>
-                            <td style="min-width: 100px;">@measurementItem.Date.ToString("dd-MMM-yyyy")</td>
-                            <td>@measurementItem.Height</td>
-                            <td>@measurementItem.Weight</td>
-                            <td>@measurementItem.Circumference</td>
-                            <td>@measurementItem.EyeColor</td>
-                            <td>@measurementItem.HairColor</td>
-                            @if (Model.IsCurrentUserProgenyAdmin)
-                            {
-                                <td>
-                                    <div>
-                                        <a data-edit-item-type="measurement" data-edit-item-item-id="@measurementItem.MeasurementId" class="btn btn-info btn-round btn-sm item-details-edit-button edit-item-button">
-                                            <i class="fas fa-pencil-alt"></i>
-                                        </a>
-                                        <a asp-controller="Measurements" asp-action="DeleteMeasurement" asp-route-itemId="@measurementItem.MeasurementId" class="btn btn-danger btn-round btn-sm leave-page">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            }
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
-        <canvas id="chart-container" style="clear: both; height: 380px;"></canvas>
-        <br />
-        <canvas id="chart-container2" style="clear: both; height: 380px;"></canvas>
-        <script src="~/lib/chart.js/dist/Chart.js"></script>
-        <script type="text/javascript">
-            let heightData = [@foreach (Measurement heightItem in Model.MeasurementsList)
-                              {
-                                  if (heightItem.Height > 0.0)
-                                  {
-                                      string chartYear = heightItem.Date.Year.ToString();
-                                      string chartMonth = (heightItem.Date.Month - 1).ToString();
-                                      string chartDay = heightItem.Date.Day.ToString();
-                                      @Html.Raw("{ t: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + heightItem.Height.ToString(CultureInfo.InvariantCulture) + "},")
-                                  }
-                              }];
-        let heightString = '@heightString';
-        let weightData = [@foreach (Measurement weightItem in Model.MeasurementsList)
-                          {
-                              if (weightItem.Weight > 0.0)
-                              {
-                                  string chartYear = weightItem.Date.Year.ToString();
-                                  string chartMonth = (weightItem.Date.Month - 1).ToString();
-                                  string chartDay = weightItem.Date.Day.ToString();
-                                  @Html.Raw("{ x: new Date(" + chartYear + ", " + chartMonth + ", " + chartDay + "), y: " + weightItem.Weight.ToString(CultureInfo.InvariantCulture) + "},")
-                              }
-                          }];
-         let weightString = '@weightString';
-         let measurementsHeightChartContainer = document.getElementById("chart-container");
-if (measurementsHeightChartContainer != null) {
-    let myChart = new Chart(measurementsHeightChartContainer, {
-        type: 'line',
-        data: {
-            datasets: [{
-                label: heightString,
-                data: heightData,
-                borderColor: [
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(54, 162, 235, 1)',
-                    'rgba(255, 206, 86, 1)',
-                    'rgba(75, 192, 192, 1)',
-                    'rgba(153, 102, 255, 1)',
-                    'rgba(255, 159, 64, 1)'
-                ],
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                xAxes: [{
-                    type: 'time',
-                    time: {
-                        displayFormats: {
-                            quarter: 'MMM YYYY'
-                        }
-                    }
-                }],
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: false
-                    }
-                }]
-            }
-        }
-    });
-}
-
-let measurementsWeightChartContainer = document.getElementById("chart-container2");
-if (measurementsWeightChartContainer !== null) {
-    var myChart2 = new Chart(measurementsWeightChartContainer, {
-        type: 'line',
-        data: {
-
-            datasets: [{
-                label: weightString,
-                data: weightData,
-                borderColor: 'rgb(95, 192, 192)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            scales: {
-                xAxes: [{
-                    type: 'time',
-                    time: {
-                        displayFormats: {
-                            quarter: 'MMM YYYY'
-                        }
-                    }
-                }],
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: false
-                    }
-                }]
-            }
-        }
-    });
-}
-
-
-
-        </script>
-        <script src="/js/measurements/measurements-index.js" type="module" asp-append-version="true"></script>
-    }
+    <div id="progeny-selector-container"></div>
+    <div class="space-20"></div>
+    <div id="measurements-list-container-div"></div>
 </div>
+
+<script src="/js/measurements/measurements-index-v12.js" type="module" asp-append-version="true"></script>

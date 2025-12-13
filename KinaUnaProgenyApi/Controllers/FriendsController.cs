@@ -1,15 +1,15 @@
 ﻿using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
-using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
-using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUnaProgenyApi.Services.AccessManagementService;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -17,9 +17,7 @@ namespace KinaUnaProgenyApi.Controllers
     /// API endpoints for Friends.
     /// </summary>
     /// <param name="imageStore"></param>
-    /// <param name="azureNotifications"></param>
     /// <param name="userInfoService"></param>
-    /// <param name="userAccessService"></param>
     /// <param name="friendService"></param>
     /// <param name="timelineService"></param>
     /// <param name="progenyService"></param>
@@ -30,13 +28,12 @@ namespace KinaUnaProgenyApi.Controllers
     [ApiController]
     public class FriendsController(
         IImageStore imageStore,
-        IAzureNotifications azureNotifications,
         IUserInfoService userInfoService,
-        IUserAccessService userAccessService,
         IFriendService friendService,
         ITimelineService timelineService,
         IProgenyService progenyService,
-        IWebNotificationsService webNotificationsService)
+        IWebNotificationsService webNotificationsService,
+        IAccessManagementService accessManagementService)
         : ControllerBase
     {
         /// <summary>
@@ -48,14 +45,9 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id:int}")]
         public async Task<IActionResult> Progeny(int id)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
-            List<Friend> friendsList = await friendService.GetFriendsList(id, accessLevelResult.Value);
+            List<Friend> friendsList = await friendService.GetFriendsList(id, currentUserInfo);
 
             return Ok(friendsList);
 
@@ -70,19 +62,13 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetFriendItem(int id)
         {
-            Friend friend = await friendService.GetFriend(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Friend friend = await friendService.GetFriend(id, currentUserInfo);
             if (friend == null)
             {
                 return NotFound();
             }
-
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(friend.ProgenyId, userEmail, friend.AccessLevel);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-
+            
             return Ok(friend);
         }
 
@@ -97,21 +83,10 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Friend value)
         {
-            // Check if child exists.
-            Progeny prog = await progenyService.GetProgeny(value.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (prog != null)
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            if (!await accessManagementService.HasProgenyPermission(value.ProgenyId, currentUserInfo, PermissionLevel.Add))
             {
-                // Check if user is allowed to add contacts for this child.
-
-                if (!prog.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
-            }
-            else
-            {
-                return NotFound();
+                return Unauthorized();
             }
 
             value.Author = User.GetUserId();
@@ -121,17 +96,23 @@ namespace KinaUnaProgenyApi.Controllers
                 value.PictureLink = Constants.ProfilePictureUrl;
             }
 
-            Friend friendItem = await friendService.AddFriend(value);
+            value.CreatedBy = User.GetUserId();
+            value.ModifiedBy = User.GetUserId();
+
+            Friend friendItem = await friendService.AddFriend(value, currentUserInfo);
+            if (friendItem == null)
+            {
+                return Unauthorized();
+            }
 
             TimeLineItem timeLineItem = new();
             timeLineItem.CopyFriendPropertiesForAdd(friendItem);
-            await timelineService.AddTimeLineItem(timeLineItem);
+            await timelineService.AddTimeLineItem(timeLineItem, currentUserInfo);
+            Progeny progeny = await progenyService.GetProgeny(friendItem.ProgenyId, currentUserInfo);
+            string notificationTitle = "Friend added for " + progeny.NickName; // Todo: Localize.
+            await webNotificationsService.SendFriendNotification(friendItem, currentUserInfo, notificationTitle);
 
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-            string notificationTitle = "Friend added for " + prog.NickName;
-            string notificationMessage = userInfo.FirstName + " " + userInfo.MiddleName + " " + userInfo.LastName + " added a new friend for " + prog.NickName;
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendFriendNotification(friendItem, userInfo, notificationTitle);
+            friendItem = await friendService.GetFriend(friendItem.FriendId, currentUserInfo);
 
             return Ok(friendItem);
         }
@@ -147,18 +128,10 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Friend value)
         {
-            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, id, currentUserInfo, PermissionLevel.Edit))
             {
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
-            }
-            else
-            {
-                return NotFound();
+                return Unauthorized();
             }
 
             if (value.PictureLink == Constants.DefaultPictureLink)
@@ -166,23 +139,31 @@ namespace KinaUnaProgenyApi.Controllers
                 value.PictureLink = Constants.ProfilePictureUrl;
             }
 
-            Friend friendItem = await friendService.GetFriend(id);
+            Friend friendItem = await friendService.GetFriend(id, currentUserInfo);
             if (friendItem == null)
             {
                 return NotFound();
             }
 
+            value.ModifiedBy = User.GetUserId();
+            
             friendItem.CopyPropertiesForUpdate(value);
 
-            friendItem = await friendService.UpdateFriend(friendItem);
+            friendItem = await friendService.UpdateFriend(friendItem, currentUserInfo);
+            if (friendItem == null)
+            {
+                return Unauthorized();
+            }
 
             friendItem.Author = User.GetUserId();
 
-            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(friendItem.FriendId.ToString(), (int)KinaUnaTypes.TimeLineType.Friend);
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(friendItem.FriendId.ToString(), (int)KinaUnaTypes.TimeLineType.Friend, currentUserInfo);
             if (timeLineItem != null && timeLineItem.CopyFriendItemPropertiesForUpdate(friendItem))
             {
-                _ = await timelineService.UpdateTimeLineItem(timeLineItem);
+                _ = await timelineService.UpdateTimeLineItem(timeLineItem, currentUserInfo);
             }
+
+            friendItem = await friendService.GetFriend(friendItem.FriendId, currentUserInfo);
 
             return Ok(friendItem);
         }
@@ -198,45 +179,39 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            Friend friendItem = await friendService.GetFriend(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, id, currentUserInfo, PermissionLevel.Admin))
+            {
+                return Unauthorized();
+            }
+
+            Friend friendItem = await friendService.GetFriend(id, currentUserInfo);
             if (friendItem == null) return NotFound();
+            
+            Progeny progeny = await progenyService.GetProgeny(friendItem.ProgenyId, currentUserInfo);
+            
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(friendItem.FriendId.ToString(), (int)KinaUnaTypes.TimeLineType.Friend, currentUserInfo);
+            
+            friendItem.ModifiedBy = User.GetUserId();
 
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-
-            Progeny progeny = await progenyService.GetProgeny(friendItem.ProgenyId);
-            if (progeny != null)
+            Friend deletedFriend = await friendService.DeleteFriend(friendItem, currentUserInfo);
+            if (deletedFriend == null)
             {
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
+                return Unauthorized();
             }
-            else
-            {
-                return NotFound();
-            }
-
-            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(friendItem.FriendId.ToString(), (int)KinaUnaTypes.TimeLineType.Friend);
 
             if (timeLineItem != null)
             {
-                _ = await timelineService.DeleteTimeLineItem(timeLineItem);
+                _ = await timelineService.DeleteTimeLineItem(timeLineItem, currentUserInfo);
             }
-            
-            _ = await friendService.DeleteFriend(friendItem);
 
             if (timeLineItem == null) return NoContent();
 
             friendItem.Author = User.GetUserId();
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-
-            string notificationTitle = "Friend deleted for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " deleted a friend for " + progeny.NickName + ". Friend: " + friendItem.Name;
-
-            friendItem.AccessLevel = timeLineItem.AccessLevel = 0;
-
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendFriendNotification(friendItem, userInfo, notificationTitle);
+            
+            string notificationTitle = "Friend deleted for " + progeny.NickName; // Todo: Localize.
+            
+            await webNotificationsService.SendFriendNotification(friendItem, currentUserInfo, notificationTitle);
 
             return NoContent();
 
@@ -251,23 +226,22 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{friendId:int}")]
         public async Task<IActionResult> DownloadPicture(int friendId)
         {
-            Friend friend = await friendService.GetFriend(friendId);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Friend friend = await friendService.GetFriend(friendId, currentUserInfo);
 
-            if (friend == null)
+            if (friend == null || friend.FriendId == 0 || friend.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
             {
                 return NotFound();
             }
 
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(friend.ProgenyId, userEmail);
-            if (userAccess == null || userAccess.AccessLevel <= 0 || !friend.PictureLink.StartsWith("http", System.StringComparison.CurrentCultureIgnoreCase)) return NotFound();
+            if (!friend.PictureLink.StartsWith("http", System.StringComparison.CurrentCultureIgnoreCase)) return NotFound();
 
             await using (Stream stream = await GetStreamFromUrl(friend.PictureLink))
             {
                 friend.PictureLink = await imageStore.SaveImage(stream, BlobContainers.Friends, friend.GetPictureFileContentType());
             }
 
-            friend = await friendService.UpdateFriend(friend);
+            friend = await friendService.UpdateFriend(friend, currentUserInfo);
 
             return Ok(friend);
 

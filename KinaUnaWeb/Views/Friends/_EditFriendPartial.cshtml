@@ -4,10 +4,13 @@
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Edit friend", PageNames.Friends, Model.LanguageId);
+    string friendForString = await LocaleManager.GetTranslation("Friend for", PageNames.Friends, Model.LanguageId);
     const string longDateTimeFormat = "dd-MMMM-yyyy";
     const string zebraDateTimeFormat = "d-F-Y";
     const int changedItemTypeFriend = (int)KinaUnaTypes.TimeLineType.Friend;
+    int permissionsDataType = (int)KinaUnaTypes.TimeLineType.Friend;
 }
+<div class="d-none" id="item-progeny-id-div" data-progeny-id="@Model.FriendItem.ProgenyId"></div>
 <div class="timeline-update-data-div d-none" data-changed-item-type="@changedItemTypeFriend" data-changed-item-item-id="@Model.FriendItem.FriendId"></div>
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="add-friend-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
@@ -21,10 +24,27 @@
         </div>
         <form id="save-item-form" asp-action="EditFriend" asp-controller="Friends" role="form" method="post" enctype="multipart/form-data">
             <div class="space-20"></div>
+            <div class="form-group d-none">
+                <label class="col-auto control-label">@friendForString</label>
+                <div class="col-auto">
+                    <button id="add-item-for-individual-button" class="btn btn-primary" type="button">Individual</button>
+                    <button id="add-item-for-family-button" class="btn btn-outline-primary" type="button">Family</button>
+                </div>
+            </div>
+            @if (Model.ProgenyList.Count > 0)
+            {
+                <div id="individual-select-from-group" class="form-group">
+                    <label asp-for="FriendItem.ProgenyId" class="col-auto control-label">@friendForString </label>
+                    <div class="col-auto">
+                        <select id="item-progeny-id-select" disabled="disabled" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="FriendItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
+                    </div>
+                </div>
+            }
+            <div class="space-20"></div>
             <div class="form-group">
                 <label asp-for="FriendItem.Name" class="col-auto control-label">@await LocaleManager.GetTranslation("Name", PageNames.Friends, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input asp-for="FriendItem.Name" class="form-control" value="@Model.FriendItem.Name" />
+                    <input asp-for="FriendItem.Name" class="form-control" value="@Model.FriendItem.Name"/>
                 </div>
             </div>
             <div class="form-group">
@@ -45,9 +65,9 @@
                             <div class="btn btn-primary btn-round btn-file ">
                                 <span data-trigger="fileinput" class="fileinput-new">@await LocaleManager.GetTranslation("New picture", PageNames.Friends, Model.LanguageId)</span>
                                 <span class="fileinput-exists">@await LocaleManager.GetTranslation("Change picture", PageNames.Friends, Model.LanguageId)</span>
-                                <input id="friend-profile-picture-file-input" type="file" name="File" accept="image/*" />
+                                <input id="friend-profile-picture-file-input" type="file" name="File" accept="image/*"/>
                             </div>
-                            <br />
+                            <br/>
                             <a href="#" class="btn btn-danger btn-round fileinput-exists" data-dismiss="fileinput">
                                 <i class="fa fa-times"></i> @await LocaleManager.GetTranslation("Remove picture", PageNames.Friends, Model.LanguageId)
                             </a>
@@ -67,7 +87,7 @@
                     }
                     <div class="input-group date">
                         <input id="friend-date-time-picker" type="text"
-                               class="form-control" data-zdp_readonly_element="false" asp-for="FriendItem.FriendSince" value="@friendSince.ToString(longDateTimeFormat)" />
+                               class="form-control" data-zdp_readonly_element="false" asp-for="FriendItem.FriendSince" value="@friendSince.ToString(longDateTimeFormat)"/>
                     </div>
                 </div>
             </div>
@@ -80,7 +100,7 @@
             <div class="form-group">
                 <label asp-for="FriendItem.Context" class="col-auto control-label">@await LocaleManager.GetTranslation("Context", PageNames.Friends, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="context-input" asp-for="FriendItem.Context" class="form-control" value="@Model.FriendItem.Context" placeholder="@await LocaleManager.GetTranslation("Add context...", PageNames.Friends, Model.LanguageId)" />
+                    <input id="context-input" asp-for="FriendItem.Context" class="form-control" value="@Model.FriendItem.Context" placeholder="@await LocaleManager.GetTranslation("Add context...", PageNames.Friends, Model.LanguageId)"/>
                 </div>
             </div>
             <div class="form-group">
@@ -92,21 +112,18 @@
             <div class="form-group">
                 <label class="col-auto control-label">@await LocaleManager.GetTranslation("Tags", PageNames.Friends, Model.LanguageId)</label>
                 <div class="col-auto">
-                    <input id="tag-list" type="text" asp-for="FriendItem.Tags" value="@Model.FriendItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Contacts, Model.LanguageId)" class="form-control" />
+                    <input id="tag-list" type="text" asp-for="FriendItem.Tags" value="@Model.FriendItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Contacts, Model.LanguageId)" class="form-control"/>
                 </div>
             </div>
-            <div class="form-group">
-                <label asp-for="FriendItem.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-                <div class="col-auto">
-                    <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="FriendItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
-                </div>
-            </div>
+            <div id="item-permissions-editor-div" class="d-none" data-item-type="@permissionsDataType" data-item-id="@Model.FriendItem.FriendId"></div>
+            <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
+            <input id="inherit-permissions-input" asp-for="InheritPermissions" value="@Model.InheritPermissions" type="hidden"/>
             <div class="space-20"></div>
-            <input asp-for="FriendItem.ProgenyId" value="@Model.FriendItem.ProgenyId" type="hidden" />
-            <input asp-for="FriendItem.FriendAddedDate" value="@Model.FriendItem.FriendAddedDate" type="hidden" />
-            <input asp-for="FriendItem.FriendId" value="@Model.FriendItem.FriendId" type="hidden" />
-            <input asp-for="FriendItem.PictureLink" value="@Model.FriendItem.PictureLink" type="hidden" />
-            <input asp-for="FriendItem.Author" value="@Model.FriendItem.Author" type="hidden" />
+            <input asp-for="FriendItem.ProgenyId" value="@Model.FriendItem.ProgenyId" type="hidden"/>
+            <input asp-for="FriendItem.FriendAddedDate" value="@Model.FriendItem.FriendAddedDate" type="hidden"/>
+            <input asp-for="FriendItem.FriendId" value="@Model.FriendItem.FriendId" type="hidden"/>
+            <input asp-for="FriendItem.PictureLink" value="@Model.FriendItem.PictureLink" type="hidden"/>
+            <input asp-for="FriendItem.Author" value="@Model.FriendItem.Author" type="hidden"/>
             <div>
                 <div class="form-group">
                     <div class="col-auto control-label"></div>

@@ -3,11 +3,11 @@ using KinaUna.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -47,11 +47,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string kanbanItemsApiPath = "/api/KanbanItems/";
-            HttpResponseMessage kanbanItemsResponse = await _httpClient.PostAsJsonAsync(kanbanItemsApiPath, kanbanItem).ConfigureAwait(false);
+            HttpResponseMessage kanbanItemsResponse = await _httpClient.PostAsJsonAsync(kanbanItemsApiPath, kanbanItem);
             if (!kanbanItemsResponse.IsSuccessStatusCode) return kanbanItem;
             
-            string kanbanItemAsString = await kanbanItemsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-            kanbanItem = JsonConvert.DeserializeObject<KanbanItem>(kanbanItemAsString);
+            string kanbanItemAsString = await kanbanItemsResponse.Content.ReadAsStringAsync();
+            kanbanItem = JsonSerializer.Deserialize<KanbanItem>(kanbanItemAsString, JsonSerializerOptions.Web);
             
             return kanbanItem;
         }
@@ -63,11 +63,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string kanbanItemsApiPath = "/api/KanbanItems/" + kanbanItem.KanbanItemId;
-            HttpResponseMessage kanbanItemsResponse = await _httpClient.DeleteAsync(kanbanItemsApiPath).ConfigureAwait(false);
+            HttpResponseMessage kanbanItemsResponse = await _httpClient.DeleteAsync(kanbanItemsApiPath);
             if (!kanbanItemsResponse.IsSuccessStatusCode) return kanbanItem;
 
-            string kanbanItemAsString = await kanbanItemsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-            kanbanItem = JsonConvert.DeserializeObject<KanbanItem>(kanbanItemAsString);
+            string kanbanItemAsString = await kanbanItemsResponse.Content.ReadAsStringAsync();
+            kanbanItem = JsonSerializer.Deserialize<KanbanItem>(kanbanItemAsString, JsonSerializerOptions.Web);
 
             return kanbanItem;
         }
@@ -80,12 +80,12 @@ namespace KinaUnaWeb.Services.HttpClients
 
             KanbanItem kanbanItem = new();
             string kanbanItemsApiPath = "/api/KanbanItems/GetKanbanItem/" + kanbanItemId;
-            HttpResponseMessage kanbanItemsResponse = await _httpClient.GetAsync(kanbanItemsApiPath).ConfigureAwait(false);
+            HttpResponseMessage kanbanItemsResponse = await _httpClient.GetAsync(kanbanItemsApiPath);
             if (!kanbanItemsResponse.IsSuccessStatusCode) return kanbanItem;
 
-            string kanbanItemAsString = await kanbanItemsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string kanbanItemAsString = await kanbanItemsResponse.Content.ReadAsStringAsync();
 
-            kanbanItem = JsonConvert.DeserializeObject<KanbanItem>(kanbanItemAsString);
+            kanbanItem = JsonSerializer.Deserialize<KanbanItem>(kanbanItemAsString, JsonSerializerOptions.Web);
 
             return kanbanItem;
         }
@@ -98,12 +98,12 @@ namespace KinaUnaWeb.Services.HttpClients
 
             List<KanbanItem> kanbanItems = [];
             string kanbanItemsApiPath = "/api/KanbanItems/GetKanbanItemsForBoard/" + kanbanBoardId + "/false";
-            HttpResponseMessage kanbanItemsResponse = await _httpClient.GetAsync(kanbanItemsApiPath).ConfigureAwait(false);
+            HttpResponseMessage kanbanItemsResponse = await _httpClient.GetAsync(kanbanItemsApiPath);
             if (!kanbanItemsResponse.IsSuccessStatusCode) return kanbanItems;
 
-            string kanbanItemsAsString = await kanbanItemsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string kanbanItemsAsString = await kanbanItemsResponse.Content.ReadAsStringAsync();
 
-            kanbanItems = JsonConvert.DeserializeObject<List<KanbanItem>>(kanbanItemsAsString);
+            kanbanItems = JsonSerializer.Deserialize<List<KanbanItem>>(kanbanItemsAsString, JsonSerializerOptions.Web);
 
             return kanbanItems;
         }
@@ -116,12 +116,12 @@ namespace KinaUnaWeb.Services.HttpClients
 
             List<KanbanItem> kanbanItems = [];
             string kanbanItemsApiPath = "/api/KanbanItems/GetKanbanItemsForTodoItem/" + todoItemId + "/false";
-            HttpResponseMessage kanbanItemsResponse = await _httpClient.GetAsync(kanbanItemsApiPath).ConfigureAwait(false);
+            HttpResponseMessage kanbanItemsResponse = await _httpClient.GetAsync(kanbanItemsApiPath);
             if (!kanbanItemsResponse.IsSuccessStatusCode) return kanbanItems;
 
-            string kanbanItemsAsString = await kanbanItemsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string kanbanItemsAsString = await kanbanItemsResponse.Content.ReadAsStringAsync();
 
-            kanbanItems = JsonConvert.DeserializeObject<List<KanbanItem>>(kanbanItemsAsString);
+            kanbanItems = JsonSerializer.Deserialize<List<KanbanItem>>(kanbanItemsAsString, JsonSerializerOptions.Web);
 
             return kanbanItems;
         }
@@ -133,11 +133,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string kanbanItemsApiPath = "/api/KanbanItems/" + kanbanItem.KanbanItemId;
-            HttpResponseMessage kanbanItemsResponse = await _httpClient.PutAsJsonAsync(kanbanItemsApiPath, kanbanItem).ConfigureAwait(false);
+            HttpResponseMessage kanbanItemsResponse = await _httpClient.PutAsJsonAsync(kanbanItemsApiPath, kanbanItem);
             if (!kanbanItemsResponse.IsSuccessStatusCode) return kanbanItem;
 
-            string kanbanItemAsString = await kanbanItemsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-            kanbanItem = JsonConvert.DeserializeObject<KanbanItem>(kanbanItemAsString);
+            string kanbanItemAsString = await kanbanItemsResponse.Content.ReadAsStringAsync();
+            kanbanItem = JsonSerializer.Deserialize<KanbanItem>(kanbanItemAsString, JsonSerializerOptions.Web);
 
             return kanbanItem;
         }

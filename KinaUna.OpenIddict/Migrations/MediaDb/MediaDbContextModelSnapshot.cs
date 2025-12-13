@@ -4,36 +4,49 @@ using KinaUna.Data.Contexts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+
+#nullable disable
 
 namespace KinaUna.IDP.Migrations.MediaDb
 {
     [DbContext(typeof(MediaDbContext))]
-    // ReSharper disable once PartialTypeWithSinglePart
     partial class MediaDbContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.2-servicing-10034")
-                .HasAnnotation("Relational:MaxIdentifierLength", 128)
-                .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                .HasAnnotation("ProductVersion", "10.0.0")
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("KinaUna.Data.Models.Comment", b =>
                 {
                     b.Property<int>("CommentId")
                         .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
 
-                    b.Property<string>("Author");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CommentId"));
 
-                    b.Property<string>("CommentText");
+                    b.Property<string>("Author")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
-                    b.Property<int>("CommentThreadNumber");
+                    b.Property<string>("CommentText")
+                        .HasMaxLength(4096)
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("Created");
+                    b.Property<int>("CommentThreadNumber")
+                        .HasColumnType("int");
 
-                    b.Property<string>("DisplayName");
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DisplayName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.HasKey("CommentId");
 
@@ -44,9 +57,12 @@ namespace KinaUna.IDP.Migrations.MediaDb
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
 
-                    b.Property<int>("CommentsCount");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CommentsCount")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -57,43 +73,82 @@ namespace KinaUna.IDP.Migrations.MediaDb
                 {
                     b.Property<int>("PictureId")
                         .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
 
-                    b.Property<int>("AccessLevel");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PictureId"));
 
-                    b.Property<string>("Altitude");
+                    b.Property<string>("Altitude")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
-                    b.Property<string>("Author");
+                    b.Property<string>("Author")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
-                    b.Property<int>("CommentThreadNumber");
+                    b.Property<int>("CommentThreadNumber")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Latitude");
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
-                    b.Property<string>("Location");
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("Longtitude");
+                    b.Property<string>("Latitude")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
 
-                    b.Property<string>("Owners");
+                    b.Property<string>("Location")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
-                    b.Property<int>("PictureHeight");
+                    b.Property<string>("Longtitude")
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("ModifiedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Owners")
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
+                    b.Property<int>("PictureHeight")
+                        .HasColumnType("int");
 
                     b.Property<string>("PictureLink")
                         .IsRequired()
-                        .HasMaxLength(400);
+                        .HasMaxLength(400)
+                        .HasColumnType("nvarchar(400)");
 
-                    b.Property<string>("PictureLink1200");
+                    b.Property<string>("PictureLink1200")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
-                    b.Property<string>("PictureLink600");
+                    b.Property<string>("PictureLink600")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
-                    b.Property<int?>("PictureRotation");
+                    b.Property<int?>("PictureRotation")
+                        .HasColumnType("int");
 
-                    b.Property<DateTime?>("PictureTime");
+                    b.Property<DateTime?>("PictureTime")
+                        .HasColumnType("datetime2");
 
-                    b.Property<int>("PictureWidth");
+                    b.Property<int>("PictureWidth")
+                        .HasColumnType("int");
 
-                    b.Property<int>("ProgenyId");
+                    b.Property<int>("ProgenyId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Tags");
+                    b.Property<string>("Tags")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.HasKey("PictureId");
 
@@ -104,37 +159,74 @@ namespace KinaUna.IDP.Migrations.MediaDb
                 {
                     b.Property<int>("VideoId")
                         .ValueGeneratedOnAdd()
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
 
-                    b.Property<int>("AccessLevel");
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("VideoId"));
 
-                    b.Property<string>("Altitude");
+                    b.Property<string>("Altitude")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
-                    b.Property<string>("Author");
+                    b.Property<string>("Author")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
-                    b.Property<int>("CommentThreadNumber");
+                    b.Property<int>("CommentThreadNumber")
+                        .HasColumnType("int");
 
-                    b.Property<TimeSpan?>("Duration");
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
-                    b.Property<string>("Latitude");
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("Location");
+                    b.Property<TimeSpan?>("Duration")
+                        .HasColumnType("time");
 
-                    b.Property<string>("Longtitude");
+                    b.Property<string>("Latitude")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
-                    b.Property<string>("Owners");
+                    b.Property<string>("Location")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
-                    b.Property<int>("ProgenyId");
+                    b.Property<string>("Longtitude")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
-                    b.Property<string>("Tags");
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
-                    b.Property<string>("ThumbLink");
+                    b.Property<DateTime>("ModifiedTime")
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("VideoLink");
+                    b.Property<string>("Owners")
+                        .HasMaxLength(2048)
+                        .HasColumnType("nvarchar(2048)");
 
-                    b.Property<DateTime?>("VideoTime");
+                    b.Property<int>("ProgenyId")
+                        .HasColumnType("int");
 
-                    b.Property<int>("VideoType");
+                    b.Property<string>("Tags")
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
+                    b.Property<string>("ThumbLink")
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
+                    b.Property<string>("VideoLink")
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
+                    b.Property<DateTime?>("VideoTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("VideoType")
+                        .HasColumnType("int");
 
                     b.HasKey("VideoId");
 

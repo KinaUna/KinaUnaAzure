@@ -1,10 +1,11 @@
-﻿@using KinaUnaWeb.Services
+﻿@using System.Globalization
 @using KinaUna.Data
-@using System.Globalization
-@model KinaUnaWeb.Models.FamilyViewModels.ProgenyViewModel
+@using KinaUnaWeb.Models.ProgeniesViewModels
+@using KinaUnaWeb.Services
+@model ProgenyViewModel
 @inject ILocaleManager LocaleManager
 @{
-    ViewData["Title"] = @Model.Name + " - " + await LocaleManager.GetTranslation("Edit family member", PageNames.Progeny, Model.LanguageId);
+    ViewData["Title"] = @Model.Name + " - " + await LocaleManager.GetTranslation("Edit individual", PageNames.Progeny, Model.LanguageId);
     string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
     string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
@@ -30,6 +31,12 @@
                 <label asp-for="NickName" class="col-auto">@await LocaleManager.GetTranslation("Display name", PageNames.Progeny, Model.LanguageId)</label>
                 <div class="col-auto">
                     <input asp-for="NickName" class="form-control" value="@Model.NickName" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="Email" class="col-auto control-label">@await LocaleManager.GetTranslation("KinaUna account email", PageNames.Progeny, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="family-member-email-input" asp-for="Email" type="email" value="@Model.Email" class="form-control" />
                 </div>
             </div>
             <div class="form-group">
@@ -78,7 +85,7 @@
                 </div>
             </div>
             <div class="form-group">
-                <label asp-for="ProgenyInfo.Email" class="col-auto control-label">@await LocaleManager.GetTranslation("Email", PageNames.Contacts, Model.LanguageId)</label>
+                <label asp-for="ProgenyInfo.Email" class="col-auto control-label">@await LocaleManager.GetTranslation("Contact email", PageNames.Progeny, Model.LanguageId)</label>
                 <div class="col-auto">
                     <input asp-for="ProgenyInfo.Email" class="form-control" value="@Model.ProgenyInfo.Email" />
                 </div>
@@ -147,7 +154,7 @@
                 <div class="col-auto"></div>
                 <div class="col-auto">
                     <button class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Save", PageNames.AddItem, Model.LanguageId)</button>
-                    <a class="btn btn-danger leave-page" asp-controller="Family" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
+                    <a class="btn btn-danger leave-page" asp-controller="Families" asp-action="Index">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</a>
                 </div>
             </div>
             <div class="space-50"></div>

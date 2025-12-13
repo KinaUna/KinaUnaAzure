@@ -1,31 +1,28 @@
-﻿using KinaUna.Data;
-using KinaUna.Data.Extensions;
+﻿using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.CalendarServices;
-using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data.Models.Timeline;
 
 namespace KinaUnaProgenyApi.Controllers
 {
     /// <summary>
     /// API endpoints for TimeLineItems.
     /// </summary>
-    /// <param name="progenyService"></param>
-    /// <param name="userAccessService"></param>
     /// <param name="timelineService"></param>
     /// <param name="userInfoService"></param>
     [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class TimeLineController(IProgenyService progenyService, IUserAccessService userAccessService, ITimelineService timelineService, IUserInfoService userInfoService, ICalendarService calendarService) : ControllerBase
+    public class TimeLineController(ITimelineService timelineService, IUserInfoService userInfoService, ICalendarService calendarService) : ControllerBase
     {
         /// <summary>
         /// Gets a list of TimeLineItems for a Progeny,
@@ -37,29 +34,15 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]")]
         public async Task<IActionResult> GetTimeLineRequestData([FromBody] TimelineRequest timelineRequest)
         {
-            Progeny progeny = await progenyService.GetProgeny(timelineRequest.ProgenyId);
-            if (progeny == null) return Ok(new TimelineResponse());
-
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            UserInfo currentUser = await userInfoService.GetUserInfoByEmail(userEmail);
-
-            List<UserAccess> userAccessList = [];
-            foreach (int progenyId in timelineRequest.Progenies)
-            {
-                UserAccess userAccessItem = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
-                if (userAccessItem != null)
-                {
-                    userAccessList.Add(userAccessItem);
-                }
-            }
-
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            
             if (timelineRequest.SortOrder == 1)
             {
                 DateTime updateTime = new(timelineRequest.TimelineStartDateTime.Year, timelineRequest.TimelineStartDateTime.Month, timelineRequest.TimelineStartDateTime.Day, 23, 59, 59);
                 timelineRequest.TimelineStartDateTime = updateTime;
             }
 
-            TimelineResponse timelineResponse = await timelineService.GetTimelineData(timelineRequest, currentUser, userAccessList);
+            TimelineResponse timelineResponse = await timelineService.GetTimelineData(timelineRequest, currentUserInfo);
 
             return Ok(timelineResponse);
         }
@@ -74,21 +57,55 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id:int}")]
         public async Task<IActionResult> Progeny(int id)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(id, 0, currentUserInfo);
+            timeLineList = [.. timeLineList.Where(t => t.ProgenyTime < DateTime.UtcNow)];
 
-            List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(id);
-            timeLineList = [.. timeLineList.Where(t => t.AccessLevel >= accessLevelResult.Value && t.ProgenyTime < DateTime.UtcNow)];
-
-            List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(id);
+            List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(id, 0, currentUserInfo);
             foreach (CalendarItem calendarItem in calendarItems)
             {
-                if (calendarItem.AccessLevel >= accessLevelResult.Value && calendarItem.StartTime.HasValue)
+                if (calendarItem.StartTime.HasValue)
                 {
+                    CalendarItem originalCalendarItem = await calendarService.GetCalendarItem(calendarItem.EventId, currentUserInfo);
+                    if (originalCalendarItem == null)
+                    {
+                        continue;
+                    }
+
+                    TimeLineItem timeLineItem = new();
+                    timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
+                    timeLineList.Add(timeLineItem);
+                }
+            }
+
+            return Ok(timeLineList.Count != 0 ? timeLineList : []);
+        }
+
+        /// <summary>
+        /// Gets a list of all TimeLineItems for a Progeny with the given ProgenyId that a user with a given access level can access.
+        /// </summary>
+        /// <param name="id">The ProgenyId of the Progeny to get TimeLineItems for.</param>
+        /// <returns>List of TimeLineItems.</returns>
+        // GET api/timeline/progeny/[id]
+        [HttpGet]
+        [Route("[action]/{id:int}")]
+        public async Task<IActionResult> Family(int id)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(0, id, currentUserInfo);
+            timeLineList = [.. timeLineList.Where(t => t.ProgenyTime < DateTime.UtcNow)];
+
+            List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(0, id, currentUserInfo);
+            foreach (CalendarItem calendarItem in calendarItems)
+            {
+                if (calendarItem.StartTime.HasValue)
+                {
+                    CalendarItem originalCalendarItem = await calendarService.GetCalendarItem(calendarItem.EventId, currentUserInfo);
+                    if (originalCalendarItem == null)
+                    {
+                        continue;
+                    }
+
                     TimeLineItem timeLineItem = new();
                     timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
                     timeLineList.Add(timeLineItem);
@@ -102,31 +119,92 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]")]
         public async Task<IActionResult> Progenies([FromBody] List<int> progenies)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            
             List<TimeLineItem> timeLineList = [];
             foreach (int progenyId in progenies)
             {
-                UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
-                if (userAccess != null)
-                {
-                    List<TimeLineItem> progenyTimeLineList = await timelineService.GetTimeLineList(progenyId);
-                    progenyTimeLineList = [.. progenyTimeLineList.Where(t => t.AccessLevel >= userAccess.AccessLevel && t.ProgenyTime < DateTime.UtcNow)];
-                    timeLineList.AddRange(progenyTimeLineList);
+                List<TimeLineItem> progenyTimeLineList = await timelineService.GetTimeLineList(progenyId, 0, currentUserInfo);
+                progenyTimeLineList = [.. progenyTimeLineList.Where(t => t.ProgenyTime < DateTime.UtcNow)];
+                timeLineList.AddRange(progenyTimeLineList);
 
-                    List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(progenyId);
-                    foreach (CalendarItem calendarItem in calendarItems)
+                List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(progenyId, 0, currentUserInfo);
+                foreach (CalendarItem calendarItem in calendarItems)
+                {
+                    if (calendarItem.StartTime.HasValue)
                     {
-                        if (calendarItem.AccessLevel >= userAccess.AccessLevel && calendarItem.StartTime.HasValue)
+                        CalendarItem originalCalendarItem = await calendarService.GetCalendarItem(calendarItem.EventId, currentUserInfo);
+                        if (originalCalendarItem == null)
                         {
-                            TimeLineItem timeLineItem = new();
-                            timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
-                            timeLineList.Add(timeLineItem);
+                            continue;
                         }
+
+                        TimeLineItem timeLineItem = new();
+                        timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
+                        timeLineList.Add(timeLineItem);
                     }
                 }
             }
 
             return Ok(timeLineList.Count != 0 ? timeLineList : []);
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> Families([FromBody] List<int> families)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+
+            List<TimeLineItem> timeLineList = [];
+            foreach (int familyId in families)
+            {
+                List<TimeLineItem> progenyTimeLineList = await timelineService.GetTimeLineList(0, familyId, currentUserInfo);
+                progenyTimeLineList = [.. progenyTimeLineList.Where(t => t.ProgenyTime < DateTime.UtcNow)];
+                timeLineList.AddRange(progenyTimeLineList);
+
+                List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(0, familyId, currentUserInfo);
+                foreach (CalendarItem calendarItem in calendarItems)
+                {
+                    if (calendarItem.StartTime.HasValue)
+                    {
+                        CalendarItem originalCalendarItem = await calendarService.GetCalendarItem(calendarItem.EventId, currentUserInfo);
+                        if (originalCalendarItem == null)
+                        {
+                            continue;
+                        }
+
+                        TimeLineItem timeLineItem = new();
+                        timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
+                        timeLineList.Add(timeLineItem);
+                    }
+                }
+            }
+
+            return Ok(timeLineList.Count != 0 ? timeLineList : []);
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> TimelineList([FromBody] TimelineListRequest request)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            TimelineList response = new()
+            {
+                TimelineItems = await timelineService.GetFilteredTimeLineList(request, currentUserInfo)
+            };
+
+            request.Skip += request.Count;
+            
+            List<TimeLineItem> moreTimeLineItems = await timelineService.GetFilteredTimeLineList(request, currentUserInfo);
+            if (moreTimeLineItems.Count > 0)
+            {
+                response.RemainingItemsCount = moreTimeLineItems.Count;
+            }
+            response.AllItemsCount = response.TimelineItems.Count + response.RemainingItemsCount;
+
+            response.FirstItemYear = await timelineService.GetTimeLineListFirstItemYear(request.Progenies, request.Families, currentUserInfo);
+
+            return Ok(response);
         }
 
         /// <summary>
@@ -140,22 +218,22 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id:int}/{count:int}/{start:int}")]
         public async Task<IActionResult> ProgenyLatest(int id, int count = 5, int start = 0)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
-            List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(id);
+            List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(id, 0, currentUserInfo);
             timeLineList = [.. timeLineList
-                .Where(t => t.AccessLevel >= accessLevelResult.Value && t.ProgenyTime < DateTime.UtcNow).OrderBy(t => t.ProgenyTime)];
+                .Where(t => t.ProgenyTime < DateTime.UtcNow).OrderBy(t => t.ProgenyTime)];
 
-            List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(id);
+            List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsLatestPosts(id, 0, currentUserInfo);
             foreach (CalendarItem calendarItem in calendarItems)
             {
-                if (calendarItem.AccessLevel >= accessLevelResult.Value && calendarItem.StartTime.HasValue)
+                if (calendarItem.StartTime.HasValue)
                 {
+                    CalendarItem originalCalendarItem = await calendarService.GetCalendarItem(calendarItem.EventId, currentUserInfo);
+                    if (originalCalendarItem == null)
+                    {
+                        continue;
+                    }
                     TimeLineItem timeLineItem = new();
                     timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
                     timeLineList.Add(timeLineItem);
@@ -179,17 +257,12 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id:int}")]
         public async Task<IActionResult> ProgenyYearAgo(int id)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
-            List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(id);
+            List<TimeLineItem> timeLineList = await timelineService.GetTimeLineList(id, 0, currentUserInfo);
 
             timeLineList = [.. timeLineList
-                .Where(t => t.AccessLevel >= accessLevelResult.Value && t.ProgenyTime.Year < DateTime.UtcNow.Year && t.ProgenyTime.Month == DateTime.UtcNow.Month && t.ProgenyTime.Day == DateTime.UtcNow.Day)
+                .Where(t => t.ProgenyTime.Year < DateTime.UtcNow.Year && t.ProgenyTime.Month == DateTime.UtcNow.Month && t.ProgenyTime.Day == DateTime.UtcNow.Day)
                 .OrderBy(t => t.ProgenyTime)];
 
             if (timeLineList.Count == 0) return Ok(new List<TimeLineItem>());
@@ -204,35 +277,68 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]")]
         public async Task<IActionResult> ProgeniesYearAgo([FromBody] List<int> progenies)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             List<TimeLineItem> timeLineList = [];
             foreach (int progenyId in progenies)
             {
-                UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
-                if (userAccess != null)
+                // Todo: Rewrite, this is inefficient. We should not get the full timeline for each progeny, just to filter it down to a few items.
+                List<TimeLineItem> progenyTimeLineList = await timelineService.GetYearAgoList(progenyId, 0, currentUserInfo);
+                
+                timeLineList.AddRange(progenyTimeLineList);
+                List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsOnThisDay(progenyId, 0, currentUserInfo);
+                foreach (CalendarItem calendarItem in calendarItems)
                 {
-                    List<TimeLineItem> progenyTimeLineList = await timelineService.GetTimeLineList(progenyId);
-                    progenyTimeLineList = [.. progenyTimeLineList
-                        .Where(t => t.AccessLevel >= userAccess.AccessLevel 
-                                    && t.ProgenyTime.Year < DateTime.UtcNow.Year 
-                                    && t.ProgenyTime.Month == DateTime.UtcNow.Month 
-                                    && t.ProgenyTime.Day == DateTime.UtcNow.Day)];
-                    timeLineList.AddRange(progenyTimeLineList);
-                    List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsOnThisDay(progenyId);
-                    foreach (CalendarItem calendarItem in calendarItems)
+                    if (calendarItem.StartTime.HasValue)
                     {
-                        if (calendarItem.AccessLevel >= userAccess.AccessLevel && calendarItem.StartTime.HasValue)
+                        CalendarItem originalCalendarItem = await calendarService.GetCalendarItem(calendarItem.EventId, currentUserInfo);
+                        if (originalCalendarItem == null)
                         {
-                            TimeLineItem timeLineItem = new();
-                            timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
-                            timeLineList.Add(timeLineItem);
+                            continue;
                         }
+                        TimeLineItem timeLineItem = new();
+                        timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
+                        timeLineList.Add(timeLineItem);
                     }
                 }
             }
 
             timeLineList = [.. timeLineList.OrderByDescending(t => t.ProgenyTime)];
             
+            return Ok(timeLineList.Count != 0 ? timeLineList : []);
+        }
+
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> FamiliesYearAgo([FromBody] List<int> families)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            List<TimeLineItem> timeLineList = [];
+            foreach (int familyId in families)
+            {
+                // Todo: Rewrite, this is inefficient. We should not get the full timeline for each progeny, just to filter it down to a few items.
+                List<TimeLineItem> familyTimeLineList = await timelineService.GetYearAgoList(0, familyId, currentUserInfo);
+                
+                timeLineList.AddRange(familyTimeLineList);
+                List<CalendarItem> calendarItems = await calendarService.GetRecurringCalendarItemsOnThisDay(0, familyId, currentUserInfo);
+                foreach (CalendarItem calendarItem in calendarItems)
+                {
+                    if (calendarItem.StartTime.HasValue)
+                    {
+                        CalendarItem originalCalendarItem = await calendarService.GetCalendarItem(calendarItem.EventId, currentUserInfo);
+                        if (originalCalendarItem == null)
+                        {
+                            continue;
+                        }
+
+                        TimeLineItem timeLineItem = new();
+                        timeLineItem.CopyCalendarItemPropertiesForRecurringEvent(calendarItem);
+                        timeLineList.Add(timeLineItem);
+                    }
+                }
+            }
+
+            timeLineList = [.. timeLineList.OrderByDescending(t => t.ProgenyTime)];
+
             return Ok(timeLineList.Count != 0 ? timeLineList : []);
         }
 
@@ -246,15 +352,13 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{itemId}/{itemType:int}")]
         public async Task<IActionResult> GetTimeLineItemByItemId(string itemId, int itemType)
         {
-            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(itemId, itemType);
-
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(timeLineItem.ProgenyId, userEmail, timeLineItem.AccessLevel);
-            if (!accessLevelResult.IsSuccess)
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(itemId, itemType, currentUserInfo);
+            if (timeLineItem == null)
             {
-                return accessLevelResult.ToActionResult();
+                return NotFound();
             }
-            
+
             return Ok(timeLineItem);
         }
 
@@ -267,13 +371,11 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetTimeLineItem(int id)
         {
-            TimeLineItem timeLineItem = await timelineService.GetTimeLineItem(id);
-
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(timeLineItem.ProgenyId, userEmail, timeLineItem.AccessLevel);
-            if (!accessLevelResult.IsSuccess)
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItem(id, currentUserInfo);
+            if (timeLineItem == null)
             {
-                return accessLevelResult.ToActionResult();
+                return NotFound();
             }
 
             return Ok(timeLineItem);
@@ -289,21 +391,13 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] TimeLineItem value)
         {
-            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            
+            TimeLineItem timeLineItem = await timelineService.AddTimeLineItem(value, currentUserInfo);
+            if (timeLineItem == null)
             {
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
+                return Unauthorized();
             }
-            else
-            {
-                return NotFound();
-            }
-
-            TimeLineItem timeLineItem = await timelineService.AddTimeLineItem(value);
 
             return Ok(timeLineItem);
         }
@@ -318,30 +412,20 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] TimeLineItem value)
         {
-            TimeLineItem timeLineItem = await timelineService.GetTimeLineItem(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItem(id, currentUserInfo);
             if (timeLineItem == null)
             {
                 return NotFound();
             }
-
-            Progeny progeny = await progenyService.GetProgeny(timeLineItem.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-
-            if (progeny != null)
+            
+            TimeLineItem updatedTimelineItem = await timelineService.UpdateTimeLineItem(value, currentUserInfo);
+            if (updatedTimelineItem == null)
             {
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
-            }
-            else
-            {
-                return NotFound();
+                return Unauthorized();
             }
 
-            _ = await timelineService.UpdateTimeLineItem(value);
-
-            return Ok(timeLineItem);
+            return Ok(updatedTimelineItem);
         }
 
         /// <summary>
@@ -353,24 +437,12 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            TimeLineItem timeLineItem = await timelineService.GetTimeLineItem(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItem(id, currentUserInfo);
             if (timeLineItem == null) return NotFound();
-
-            Progeny progeny = await progenyService.GetProgeny(timeLineItem.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
-            {
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
-            }
-            else
-            {
-                return NotFound();
-            }
-
-            _ = await timelineService.DeleteTimeLineItem(timeLineItem);
+            
+            TimeLineItem deletedTimelineItem = await timelineService.DeleteTimeLineItem(timeLineItem, currentUserInfo);
+            if (deletedTimelineItem == null) return Unauthorized();
 
             return NoContent();
 
@@ -386,32 +458,15 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]")]
         public async Task<IActionResult> GetOnThisDayTimeLineItems([FromBody] OnThisDayRequest onThisDayRequest)
         {
-            Progeny progeny = await progenyService.GetProgeny(onThisDayRequest.ProgenyId);
-            if (progeny == null) return Ok(new OnThisDayResponse());
-
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-
-            UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(onThisDayRequest.ProgenyId, userEmail);
-            if (userAccess == null) return Ok(new OnThisDayResponse());
-            UserInfo currentUser = await userInfoService.GetUserInfoByEmail(userEmail);
-            onThisDayRequest.AccessLevel = userAccess.AccessLevel;
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            
             if (onThisDayRequest.SortOrder == 1)
             {
                 DateTime updateTime = new(onThisDayRequest.ThisDayDateTime.Year, onThisDayRequest.ThisDayDateTime.Month, onThisDayRequest.ThisDayDateTime.Day, 23, 59, 59);
                 onThisDayRequest.ThisDayDateTime = updateTime;
             }
-
-            List<UserAccess> userAccessList = [];
-            foreach (int progenyId in onThisDayRequest.Progenies)
-            {
-                UserAccess userAccessItem = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
-                if (userAccessItem != null)
-                {
-                    userAccessList.Add(userAccessItem);
-                }
-            }
-
-            OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest, currentUser, userAccessList);
+            
+            OnThisDayResponse onThisDayResponse = await timelineService.GetOnThisDayData(onThisDayRequest, currentUserInfo);
             
             return Ok(onThisDayResponse);
         }

@@ -1,6 +1,5 @@
 ﻿using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,6 +14,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using KinaUnaWeb.Services.HttpClients;
+using System.Text.Json;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -51,7 +51,7 @@ namespace KinaUnaWeb.Controllers
         /// <returns>View.</returns>
         public async Task<IActionResult> Index()
         {
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
 
             List<UserInfo> deletedUserInfosList = await userInfosHttpClient.GetDeletedUserInfos();
@@ -79,7 +79,7 @@ namespace KinaUnaWeb.Controllers
         [Authorize]
         public async Task<IActionResult> ManageLanguages()
         {
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
@@ -98,7 +98,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<ActionResult> AddLanguage()
         {
 
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
@@ -119,7 +119,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<ActionResult> AddLanguage(KinaUnaLanguage model)
         {
 
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
@@ -140,7 +140,7 @@ namespace KinaUnaWeb.Controllers
         [Authorize]
         public async Task<ActionResult> EditLanguage(int languageId)
         {
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
@@ -161,7 +161,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<ActionResult> EditLanguage(KinaUnaLanguage model)
         {
 
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
@@ -182,7 +182,7 @@ namespace KinaUnaWeb.Controllers
         [Authorize]
         public async Task<ActionResult> DeleteLanguage(int languageId)
         {
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
@@ -203,7 +203,7 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> DeleteLanguage(KinaUnaLanguage model)
         {
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
@@ -223,7 +223,7 @@ namespace KinaUnaWeb.Controllers
         [Authorize]
         public async Task<IActionResult> ManageTranslations()
         {
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
@@ -263,7 +263,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> LoadPageTranslations([FromBody] TextTranslationPageListModel model)
         {
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
@@ -288,7 +288,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdatePageTranslation([FromBody] TextTranslation translation)
         {
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
@@ -322,7 +322,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> DeletePageTranslation([FromBody] TextTranslation translation)
         {
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
@@ -353,7 +353,7 @@ namespace KinaUnaWeb.Controllers
         [Authorize]
         public async Task<IActionResult> EditText(int id, string returnUrl = "")
         {
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
 
             KinaUnaText model = await pageTextsHttpClient.GetPageTextById(id);
@@ -373,7 +373,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> EditText([FromForm] KinaUnaText model)
         {
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
 
             KinaUnaText updateText = await pageTextsHttpClient.GetPageTextById(model.Id);
@@ -408,7 +408,7 @@ namespace KinaUnaWeb.Controllers
         [Produces("application/json")]
         public async Task<IActionResult> EditTextTranslation(int textId, int languageId)
         {
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
 
             List<KinaUnaText> allTexts = await pageTextsHttpClient.GetAllKinaUnaTexts(languageId, true);
@@ -430,7 +430,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> EditTextTranslation([FromForm] KinaUnaText model)
         {
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
 
             KinaUnaText updateText = await pageTextsHttpClient.GetPageTextById(model.Id);
@@ -498,7 +498,7 @@ namespace KinaUnaWeb.Controllers
         [Authorize]
         public async Task<IActionResult> ManageTexts()
         {
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
 
             ManageKinaUnaTextsViewModel model = new()
@@ -541,7 +541,7 @@ namespace KinaUnaWeb.Controllers
         /// <returns>View with WebNotification model.</returns>
         public async Task<IActionResult> SendAdminMessage()
         {
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
 
             WebNotification model = new();
@@ -556,7 +556,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> SendAdminMessage(WebNotification notification)
         {
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
 
             if (notification.To == "OnlineUsers")
@@ -565,7 +565,7 @@ namespace KinaUnaWeb.Controllers
                 notification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
                     TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
                 notification.DateTimeString = notification.DateTime.ToString("dd-MMM-yyyy HH:mm");
-                await hubContext.Clients.All.SendAsync("ReceiveMessage", JsonConvert.SerializeObject(notification));
+                await hubContext.Clients.All.SendAsync("ReceiveMessage", JsonSerializer.Serialize(notification, JsonSerializerOptions.Web));
             }
             else
             {
@@ -577,14 +577,14 @@ namespace KinaUnaWeb.Controllers
                 }
                 else
                 {
-                    userinfo = await userInfosHttpClient.GetUserInfoByUserId(notification.To);
+                    userinfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(notification.To);
                 }
 
                 notification.DateTime = DateTime.UtcNow;
 
                 notification = await webNotificationsService.SaveNotification(notification);
 
-                await hubContext.Clients.User(userinfo.UserId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(notification));
+                await hubContext.Clients.User(userinfo.UserId).SendAsync("ReceiveMessage", JsonSerializer.Serialize(notification, JsonSerializerOptions.Web));
 
                 WebNotification webNotification = new()
                 {
@@ -597,7 +597,7 @@ namespace KinaUnaWeb.Controllers
                 webNotification.DateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow,
                     TimeZoneInfo.FindSystemTimeZoneById(userinfo.Timezone));
                 webNotification.DateTimeString = webNotification.DateTime.ToString("dd-MMM-yyyy HH:mm");
-                await hubContext.Clients.User(userInfo.UserId).SendAsync("ReceiveMessage", JsonConvert.SerializeObject(webNotification));
+                await hubContext.Clients.User(userInfo.UserId).SendAsync("ReceiveMessage", JsonSerializer.Serialize(webNotification, JsonSerializerOptions.Web));
             }
 
             notification.Title = "Notification Added";
@@ -612,7 +612,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> SendPush()
         {
 
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
 
             PushNotification notification = new()
@@ -631,7 +631,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> SendPush(PushNotification notification)
         {
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
 
             if (notification.UserId.Contains('@'))
@@ -653,7 +653,7 @@ namespace KinaUnaWeb.Controllers
         /// <returns>View</returns>
         public async Task<IActionResult> ScheduledTasks()
         {
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin) return RedirectToAction("Index", "Home");
             
             return View();
@@ -668,7 +668,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> LoadScheduledTasks()
         {
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
@@ -695,7 +695,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> AddScheduledTask([FromBody] BackgroundTaskDto task)
         {
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
@@ -719,7 +719,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> UpdateScheduledTask([FromBody] BackgroundTaskDto task)
         {
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
@@ -743,7 +743,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> DeleteScheduledTask([FromBody] int taskId)
         {
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");
@@ -763,7 +763,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> GetCommands()
         {
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.IsKinaUnaAdmin)
             {
                 return RedirectToAction("Index", "Home");

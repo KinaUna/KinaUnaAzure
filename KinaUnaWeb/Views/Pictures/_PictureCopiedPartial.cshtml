@@ -1,5 +1,6 @@
 ﻿@using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.UploadPictureViewModel
 @inject ILocaleManager LocaleManager
@@ -57,12 +58,15 @@
                 </div>
 
             </div>
-            @if (Model.IsCurrentUserProgenyAdmin)
+            @if (Model.Picture.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
             {
                 <div class="space-20"></div>
                 <div class="col-12">
                     <a data-edit-item-type="picture" data-edit-item-item-id="@Model.Picture.PictureId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
-                    <a asp-controller="Pictures" asp-action="DeletePicture" asp-route-pictureId="@Model.Picture.PictureId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    @if (Model.Picture.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
+                    {
+                        <a asp-controller="Pictures" asp-action="DeletePicture" asp-route-pictureId="@Model.Picture.PictureId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    }
                 </div>
 
             }

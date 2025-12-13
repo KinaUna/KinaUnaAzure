@@ -17,12 +17,10 @@
     {
         statusItem.Text = await LocaleManager.GetTranslation(statusItem.Text, PageNames.Todos, Model.LanguageId);
     }
-
-    foreach (SelectListItem accessLevelItem in Model.AccessLevelListEn)
-    {
-        accessLevelItem.Text = await LocaleManager.GetTranslation(accessLevelItem.Text, PageNames.AccessManagement, Model.LanguageId);
-    }
+    int permissionsDataType = (int)KinaUnaTypes.TimeLineType.TodoItem;
 }
+<div class="d-none" id="item-progeny-id-div" data-progeny-id="@Model.KanbanItem.TodoItem.ProgenyId"></div>
+<div class="d-none" id="item-family-id-div" data-family-id="@Model.KanbanItem.TodoItem.FamilyId"></div>
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="add-todo-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
 <div id="long-date-time-format-moment-div" class="d-none" data-long-date-time-format-moment="@longDateTimeFormatMoment"></div>
@@ -36,23 +34,30 @@
         </div>
         <div class="space-20"></div>
         <form id="save-kanban-card-form" asp-action="EditKanbanItem" asp-controller="KanbanItems" role="form" method="post">
-            @if (Model.ProgenyList.Count > 1)
+            <div class="space-20"></div>
+            <div class="form-group">
+                <label class="col-auto control-label">@assignedToString</label>
+                <div class="col-auto">
+                    <button id="add-item-for-individual-button" class="btn btn-primary" type="button">Individual</button>
+                    <button id="add-item-for-family-button" class="btn btn-outline-primary" type="button">Family</button>
+                </div>
+            </div>
+            @if (Model.ProgenyList.Count > 0)
             {
-                <div class="form-group">
+                <div id="individual-select-from-group" class="form-group">
                     <label asp-for="KanbanItem.TodoItem.ProgenyId" class="col-auto control-label">@assignedToString </label>
                     <div class="col-auto">
                         <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="KanbanItem.TodoItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
                     </div>
                 </div>
             }
-            else
+            @if (Model.FamilyList.Count > 0)
             {
-                <div class="form-group">
-                    <label asp-for="KanbanItem.TodoItem.ProgenyId" class="col-auto control-label">@assignedToString</label>
+                <div id="family-select-from-group" class="form-group d-none">
+                    <label asp-for="KanbanItem.TodoItem.FamilyId" class="col-auto control-label">@assignedToString </label>
                     <div class="col-auto">
-                        <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
+                        <select id="item-family-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.FamilyList.Count" asp-for="KanbanItem.TodoItem.FamilyId" asp-items="@Model.FamilyList"></select>
                     </div>
-                    <input asp-for="KanbanItem.TodoItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
                 </div>
             }
             <div class="form-group">
@@ -131,12 +136,9 @@
                     <textarea rows="4" asp-for="KanbanItem.TodoItem.Notes" class="form-control">@Model.KanbanItem.TodoItem.Notes</textarea>
                 </div>
             </div>
-            <div class="form-group">
-                <label asp-for="KanbanItem.TodoItem.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-                <div class="col-auto">
-                    <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="KanbanItem.TodoItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
-                </div>
-            </div>
+            <div id="item-permissions-editor-div" class="d-none" data-item-type="@permissionsDataType" data-item-id="@Model.KanbanItem.TodoItem.TodoItemId"></div>
+            <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
+            <input id="inherit-permissions-input" asp-for="InheritPermissions" value="@Model.InheritPermissions" type="hidden"/>
             <input asp-for="KanbanItem.KanbanItemId" value="@Model.KanbanItem.KanbanItemId" type="hidden" />
             <input asp-for="KanbanItem.KanbanBoardId" value="@Model.KanbanItem.KanbanBoardId" type="hidden" />
             <input asp-for="KanbanItem.ColumnId" value="@Model.KanbanItem.ColumnId" type="hidden" />

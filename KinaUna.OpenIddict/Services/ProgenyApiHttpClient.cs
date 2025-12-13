@@ -1,8 +1,8 @@
 ﻿using Duende.IdentityModel.Client;
 using KinaUna.Data;
 using KinaUna.Data.Models;
-using Newtonsoft.Json;
 using System.Net.Http.Headers;
+using System.Text.Json;
 
 namespace KinaUna.OpenIddict.Services
 {
@@ -41,11 +41,11 @@ namespace KinaUna.OpenIddict.Services
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string userInfoApiPath = "api/UserInfo/ByUserIdPost/";
-            HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userInfoApiPath, new StringContent(JsonConvert.SerializeObject(userId), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage userInfoResponse = await _httpClient.PostAsync(userInfoApiPath, new StringContent(JsonSerializer.Serialize(userId, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!userInfoResponse.IsSuccessStatusCode) return new UserInfo();
 
             string userinfoAsString = await userInfoResponse.Content.ReadAsStringAsync();
-            UserInfo? userInfo = JsonConvert.DeserializeObject<UserInfo>(userinfoAsString);
+            UserInfo? userInfo = JsonSerializer.Deserialize<UserInfo>(userinfoAsString, JsonSerializerOptions.Web);
 
             return userInfo ?? new UserInfo();
         }
@@ -62,7 +62,7 @@ namespace KinaUna.OpenIddict.Services
             const string updateAccesslistsWithNewEmailPath = "/api/Access/UpdateUsersEmail";
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync();
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
-            HttpResponseMessage addResponse = await _httpClient.PostAsync(updateAccesslistsWithNewEmailPath, new StringContent(JsonConvert.SerializeObject(model), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage addResponse = await _httpClient.PostAsync(updateAccesslistsWithNewEmailPath, new StringContent(JsonSerializer.Serialize(model, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
 
             if (addResponse.IsSuccessStatusCode)
             {
@@ -82,7 +82,7 @@ namespace KinaUna.OpenIddict.Services
             if (addResponse.IsSuccessStatusCode)
             {
                 string responseContent = await addResponse.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<List<UserInfo>>(responseContent) ?? [];
+                return JsonSerializer.Deserialize<List<UserInfo>>(responseContent, JsonSerializerOptions.Web) ?? [];
             }
 
             return [];
@@ -93,7 +93,7 @@ namespace KinaUna.OpenIddict.Services
             const string addPath = "/api/UserInfo/AddUserInfoToDeletedUserInfos";
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync();
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
-            HttpResponseMessage addResponse = await _httpClient.PostAsync(addPath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage addResponse = await _httpClient.PostAsync(addPath, new StringContent(JsonSerializer.Serialize(userInfo, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (addResponse.IsSuccessStatusCode)
             {
                 UserInfo? addedUserInfo = await addResponse.Content.ReadFromJsonAsync<UserInfo>();
@@ -108,7 +108,7 @@ namespace KinaUna.OpenIddict.Services
             const string updatePath = "/api/UserInfo/UpdateDeletedUserInfo";
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync();
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
-            HttpResponseMessage updateResponse = await _httpClient.PostAsync(updatePath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage updateResponse = await _httpClient.PostAsync(updatePath, new StringContent(JsonSerializer.Serialize(userInfo, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (updateResponse.IsSuccessStatusCode)
             {
                 UserInfo? updatedUserInfo = await updateResponse.Content.ReadFromJsonAsync<UserInfo>();
@@ -123,7 +123,7 @@ namespace KinaUna.OpenIddict.Services
             const string removePath = "/api/UserInfo/RemoveUserInfoFromDeletedUserInfos";
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync();
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
-            HttpResponseMessage removeResponse = await _httpClient.PostAsync(removePath, new StringContent(JsonConvert.SerializeObject(userInfo), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage removeResponse = await _httpClient.PostAsync(removePath, new StringContent(JsonSerializer.Serialize(userInfo, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
 
             if (removeResponse.IsSuccessStatusCode)
             {

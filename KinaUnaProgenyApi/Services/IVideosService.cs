@@ -11,16 +11,18 @@ namespace KinaUnaProgenyApi.Services
         /// First checks the cache, if not found, gets the Video from the database and adds it to the cache.
         /// </summary>
         /// <param name="id">The VideoId of the Video to get.</param>
+        /// <param name="currentUserInfo">The UserInfo object of the current user.For checking permissions.</param>
         /// <returns>The Video object with the given VideoId. Null if the Video item doesn't exist.</returns>
-        Task<Video> GetVideo(int id);
+        Task<Video> GetVideo(int id, UserInfo currentUserInfo);
 
         /// <summary>
         /// Gets a Video entity with the specified VideoLink.
         /// </summary>
         /// <param name="link">The VideoLink of the Video item to get.</param>
         /// <param name="progenyId">The ProgenyId of the Video item to get.</param>
+        /// <param name="currentUserInfo">The UserInfo object of the current user.For checking permissions.</param>
         /// <returns>The Video with the given VideoLink and ProgenyId. Null if the Video doesn't exist.</returns>
-        Task<Video> GetVideoByLink(string link, int progenyId);
+        Task<Video> GetVideoByLink(string link, int progenyId, UserInfo currentUserInfo);
 
         /// <summary>
         /// Gets a Video entity with the specified VideoId from the database and adds it to the cache.
@@ -33,22 +35,25 @@ namespace KinaUnaProgenyApi.Services
         /// Adds a new Video entity to the database and adds it to the cache.
         /// </summary>
         /// <param name="video">The Video object to add.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The added Video object.</returns>
-        Task<Video> AddVideo(Video video);
+        Task<Video> AddVideo(Video video, UserInfo currentUserInfo);
 
         /// <summary>
         /// Updates a Video entity in the database and the cache.
         /// </summary>
         /// <param name="video">The Video object with the updated properties.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The updated Video object.</returns>
-        Task<Video> UpdateVideo(Video video);
+        Task<Video> UpdateVideo(Video video, UserInfo currentUserInfo);
 
         /// <summary>
         /// Deletes a Video entity from the database and the cache.
         /// </summary>
         /// <param name="video">The Video object to delete.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The deleted Video object.</returns>
-        Task<Video> DeleteVideo(Video video);
+        Task<Video> DeleteVideo(Video video, UserInfo currentUserInfo);
 
         /// <summary>
         /// Removes a Video entity from the cache.
@@ -63,17 +68,27 @@ namespace KinaUnaProgenyApi.Services
         /// Gets a list of all Videos for a Progeny.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Videos for.</param>
-        /// <param name="accessLevel">The access level of the user.</param>
+        /// <param name="currentUserInfo">The UserInfo object of the current user.For checking permissions.</param>
         /// <returns>List of Video objects.</returns>
-        Task<List<Video>> GetVideosList(int progenyId, int accessLevel);
+        Task<List<Video>> GetVideosList(int progenyId, UserInfo currentUserInfo);
 
-        Task<List<Video>> GetVideosWithTag(int progenyId, string tag, int accessLevel);
+        /// <summary>
+        /// Retrieves a list of videos associated with the specified progeny that match the given tag.
+        /// </summary>
+        /// <remarks>The method filters videos by the specified tag in a case-insensitive manner. If no
+        /// tag is provided, all videos for the specified progeny are returned.</remarks>
+        /// <param name="progenyId">The unique identifier of the progeny whose videos are to be retrieved.</param>
+        /// <param name="tag">The tag to filter videos by. If null or empty, all videos for the specified progeny are returned.</param>
+        /// <param name="currentUserInfo">The user information of the caller, used to determine access permissions.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see cref="Video"/>
+        /// objects that match the specified criteria.</returns>
+        Task<List<Video>> GetVideosWithTag(int progenyId, string tag, UserInfo currentUserInfo);
 
         /// <summary>
         /// Gets a list of all Videos for a Progeny from the database and adds it to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get and set Videos for.</param>
         /// <returns>List of Video objects.</returns>
-        Task<List<Video>> SetVideosListInCache(int progenyId);
+        Task<Video[]> SetVideosListInCache(int progenyId);
     }
 }

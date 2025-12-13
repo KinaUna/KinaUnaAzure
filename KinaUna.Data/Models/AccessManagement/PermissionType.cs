@@ -10,5 +10,6 @@
         TimelineItem = 0,
         Progeny = 1,
         Family = 2,
+        // Todo: Administrative permissions? I.e. translator, text editor, etc.
     }
 }

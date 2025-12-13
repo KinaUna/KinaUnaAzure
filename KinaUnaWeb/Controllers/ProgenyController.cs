@@ -1,22 +1,27 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using KinaUna.Data;
+﻿using KinaUna.Data;
 using KinaUna.Data.Extensions;
+using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.DTOs;
+using KinaUna.Data.Models.Family;
 using KinaUnaWeb.Models;
-using KinaUnaWeb.Models.FamilyViewModels;
+using KinaUnaWeb.Models.FamiliesViewModels;
+using KinaUnaWeb.Models.ProgeniesViewModels;
 using KinaUnaWeb.Models.TypeScriptModels;
 using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Controllers
 {
     public class ProgenyController(
         IProgenyHttpClient progenyHttpClient,
+        IFamiliesHttpClient familiesHttpClient,
         IMediaHttpClient mediaHttpClient,
         ImageStore imageStore,
         IUserInfosHttpClient userInfosHttpClient,
@@ -37,24 +42,25 @@ namespace KinaUnaWeb.Controllers
     {
         public IActionResult Index()
         {
-            return RedirectToAction("Index", "Family");
+            return RedirectToAction("Index", "Families");
         }
 
         [HttpGet]
         public async Task<IActionResult> Details(int progenyId)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
-
-            if (baseModel.CurrentAccessLevel > (int)AccessLevel.Friends)
-            {
-                return PartialView("_AccessDeniedPartial");
-            }
-
+            ProgenyInfo progenyInfo = await progenyHttpClient.GetProgenyInfo(progenyId);
+            
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId, 0, false);
+            
             ProgenyDetailsViewModel model = new(baseModel)
             {
-                ProgenyInfo = await progenyHttpClient.GetProgenyInfo(progenyId)
+                ProgenyInfo = progenyInfo
             };
-            model.UserAccess = model.CurrentProgenyAccessList.First(u => u.UserId.Equals(model.CurrentUser.UserEmail, System.StringComparison.CurrentCultureIgnoreCase));
+
+            if (model.CurrentProgeny.Id == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
 
             return PartialView("_ProgenyDetailsPartial", model);
         }
@@ -69,9 +75,9 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         public async Task<FileContentResult> ProfilePicture(int id)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), id);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), id, 0, false);
             
-            if (string.IsNullOrEmpty(baseModel.CurrentProgeny.PictureLink) || baseModel.CurrentAccessLevel > (int)AccessLevel.Friends)
+            if (baseModel.CurrentProgeny == null || baseModel.CurrentProgeny.Id == 0 || string.IsNullOrEmpty(baseModel.CurrentProgeny.PictureLink))
             {
                 MemoryStream fileContentNoAccess = await imageStore.GetStream("868b62e2-6978-41a1-97dc-1cc1116f65a6.jpg");
                 byte[] fileContentBytesNoAccess = fileContentNoAccess.ToArray();
@@ -91,6 +97,7 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> AddProgeny()
         {
+            // Todo: Check if user is allowed to add Progeny.
             ProgenyViewModel model = new()
             {
                 LanguageId = Request.GetLanguageIdFromCookie()
@@ -112,6 +119,7 @@ namespace KinaUnaWeb.Controllers
         [RequestSizeLimit(100_000_000)]
         public async Task<IActionResult> AddProgeny(ProgenyViewModel model)
         {
+            // Todo: Check if user is allowed to add Progeny.
             string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
 
             if (userEmail == Constants.DefaultUserEmail)
@@ -128,7 +136,8 @@ namespace KinaUnaWeb.Controllers
                 Name = model.Name,
                 NickName = model.NickName,
                 PictureLink = model.PictureLink,
-                TimeZone = model.TimeZone
+                TimeZone = model.TimeZone,
+                Email = model.Email
             };
             
             if (model.File != null)
@@ -164,7 +173,7 @@ namespace KinaUnaWeb.Controllers
             model.CurrentUser = await userInfosHttpClient.GetUserInfo(userEmail);
 
             Progeny progeny = await progenyHttpClient.GetProgeny(progenyId);
-            if (!progeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (progeny == null || progeny.Id == 0 || progeny.ProgenyPerMission.PermissionLevel < PermissionLevel.Edit)
             {
                 return PartialView("_AccessDeniedPartial");
             }
@@ -176,7 +185,8 @@ namespace KinaUnaWeb.Controllers
             model.TimeZone = progeny.TimeZone;
             model.Admins = progeny.Admins.ToUpper();
             model.PictureLink = progeny.GetProfilePictureUrl();
-            
+            model.Email = progeny.Email;
+
             model.ProgenyInfo = await progenyHttpClient.GetProgenyInfo(progenyId);
 
             return PartialView("_EditProgenyPartial", model);
@@ -192,21 +202,19 @@ namespace KinaUnaWeb.Controllers
         [RequestSizeLimit(100_000_000)]
         public async Task<IActionResult> EditProgeny(ProgenyViewModel model)
         {
-            string userEmail = User.GetEmail();
-            UserInfo userinfo = await userInfosHttpClient.GetUserInfo(userEmail);
             Progeny progeny = await progenyHttpClient.GetProgeny(model.ProgenyId);
-            if (!progeny.IsInAdminList(userinfo.UserEmail))
+            if (progeny == null || progeny.Id == 0 || progeny.ProgenyPerMission.PermissionLevel < PermissionLevel.Edit)
             {
-                // Todo: Show no access info.
                 return PartialView("_AccessDeniedPartial");
             }
-            
+
             progeny.BirthDay = model.BirthDay;
             progeny.Admins = model.Admins.ToUpper();
             progeny.Name = model.Name;
             progeny.NickName = model.NickName;
             progeny.TimeZone = model.TimeZone;
-            
+            progeny.Email = model.Email;
+
             if (model.File != null && model.File.Name != string.Empty)
             {
                 await using Stream stream = model.File.OpenReadStream();
@@ -231,16 +239,13 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> DeleteProgeny(int progenyId)
         {
-            string userEmail = User.GetEmail();
-            UserInfo userinfo = await userInfosHttpClient.GetUserInfo(userEmail);
-            Progeny prog = await progenyHttpClient.GetProgeny(progenyId);
-            if (!prog.IsInAdminList(userinfo.UserEmail))
+            Progeny progeny = await progenyHttpClient.GetProgeny(progenyId);
+            if (progeny == null || progeny.Id == 0 || progeny.ProgenyPerMission.PermissionLevel < PermissionLevel.Admin)
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
-            return View(prog);
+            return View(progeny);
         }
 
         // Todo: This will take a relative long time, and may time out. Use split it up and use ajax to delete Progeny and related data.
@@ -256,11 +261,10 @@ namespace KinaUnaWeb.Controllers
         {
             string userEmail = User.GetEmail();
             UserInfo userinfo = await userInfosHttpClient.GetUserInfo(userEmail);
-            Progeny prog = await progenyHttpClient.GetProgeny(model.Id);
-            if (!prog.IsInAdminList(userinfo.UserEmail))
+            Progeny progeny = await progenyHttpClient.GetProgeny(model.Id);
+            if (progeny == null || progeny.Id == 0 || progeny.ProgenyPerMission.PermissionLevel < PermissionLevel.Admin)
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_AccessDeniedPartial");
             }
 
             List<Picture> photoList = await mediaHttpClient.GetPictureList(model.Id, userinfo.Timezone);
@@ -416,7 +420,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            List<Contact> contactsList = await contactsHttpClient.GetContactsList(model.Id);
+            List<Contact> contactsList = await contactsHttpClient.GetContactsList(model.Id, 0);
             
             if (contactsList.Count != 0)
             {
@@ -452,7 +456,7 @@ namespace KinaUnaWeb.Controllers
                 }
             }
 
-            List<Location> locationsList = await locationsHttpClient.GetLocationsList(model.Id);
+            List<Location> locationsList = await locationsHttpClient.GetLocationsList(model.Id, 0);
             if (locationsList.Count != 0)
             {
                 foreach (Location location in locationsList)
@@ -484,11 +488,16 @@ namespace KinaUnaWeb.Controllers
             {
                 suggestionsList.Progenies = [Constants.DefaultChildId];
             }
-
+            
             List<string> tagsList = [];
             foreach (int progenyId in suggestionsList.Progenies)
             {
-                tagsList.AddRange(await autoSuggestsHttpClient.GetTagsList(progenyId));
+                tagsList.AddRange(await autoSuggestsHttpClient.GetTagsList(progenyId, 0));
+            }
+
+            foreach (int familyId in suggestionsList.Families)
+            {
+                tagsList.AddRange(await autoSuggestsHttpClient.GetTagsList(0, familyId));
             }
 
             suggestionsList.Suggestions = [.. tagsList.Distinct()];
@@ -513,7 +522,11 @@ namespace KinaUnaWeb.Controllers
             List<string> contextsList = [];
             foreach (int progenyId in suggestionsList.Progenies)
             {
-                contextsList.AddRange(await autoSuggestsHttpClient.GetContextsList(progenyId));
+                contextsList.AddRange(await autoSuggestsHttpClient.GetContextsList(progenyId, 0));
+            }
+            foreach (int familyId in suggestionsList.Families)
+            {
+                contextsList.AddRange(await autoSuggestsHttpClient.GetContextsList(0, familyId));
             }
 
             suggestionsList.Suggestions = [.. contextsList.Distinct()];
@@ -538,7 +551,11 @@ namespace KinaUnaWeb.Controllers
             List<string> locationsList = [];
             foreach (int progenyId in suggestionsList.Progenies)
             {
-                locationsList.AddRange(await autoSuggestsHttpClient.GetLocationsList(progenyId));
+                locationsList.AddRange(await autoSuggestsHttpClient.GetLocationsList(progenyId, 0));
+            }
+            foreach (int familyId in suggestionsList.Families)
+            {
+                locationsList.AddRange(await autoSuggestsHttpClient.GetLocationsList(0, familyId));
             }
 
             suggestionsList.Suggestions = [.. locationsList.Distinct()];
@@ -565,7 +582,7 @@ namespace KinaUnaWeb.Controllers
             {
                 categoriesList.AddRange(await autoSuggestsHttpClient.GetCategoriesList(progenyId));
             }
-
+            
             suggestionsList.Suggestions = [.. categoriesList.Distinct()];
 
 
@@ -595,6 +612,148 @@ namespace KinaUnaWeb.Controllers
 
 
             return Json(suggestionsList);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> OtherPeopleAndPets()
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0, false);
+            FamiliesViewModel model = new(baseModel);
+            
+            return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> OtherPeopleAndPetsList()
+        {
+            List<Progeny> allMyProgenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.View);
+            
+            return Json(allMyProgenies);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> OtherPeopleElement(int progenyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId, 0, false);
+            baseModel.CurrentProgeny = await progenyHttpClient.GetProgeny(progenyId);
+            if (baseModel.CurrentProgeny == null || baseModel.CurrentProgeny.Id == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+
+            return PartialView("_OtherPeopleElementPartial", baseModel);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> AddOtherPersonToFamily(int progenyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId, 0, false);
+            if (baseModel.CurrentProgeny == null || baseModel.CurrentProgeny.Id == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            
+            AddProgenyToFamilyViewModel model = new(baseModel)
+            {
+                FamilyList = await viewModelSetupService.GetFamilySelectList()
+            };
+
+            List<Family> progenysFamilies = await familiesHttpClient.GetFamiliesForProgeny(progenyId);
+            foreach (Family family in progenysFamilies)
+            {
+                model.FamilyList = model.FamilyList.Where(f => f.Value != family.FamilyId.ToString()).ToList();
+            }
+
+            model.SetMemberTypeList();
+            
+            return PartialView("_AddOtherPersonToFamilyPartial", model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddOtherPersonToFamily([FromForm] AddProgenyToFamilyViewModel model)
+        {
+            Progeny progenyToAddToFamily = await progenyHttpClient.GetProgeny(model.CurrentProgenyId);
+            if (progenyToAddToFamily == null || progenyToAddToFamily.Id == 0)
+            {
+                return NotFound();
+            }
+            Family familyToAddProgenyTo = await familiesHttpClient.GetFamily(model.CurrentFamilyId);
+            if (familyToAddProgenyTo == null || familyToAddProgenyTo.FamilyId == 0)
+            {
+                return NotFound();
+            }
+            if(familyToAddProgenyTo.FamilyPermission.PermissionLevel < PermissionLevel.Edit)
+            {
+                return Unauthorized();
+            }
+            FamilyMember newFamilyMember = new()
+            {
+                ProgenyId = progenyToAddToFamily.Id,
+                FamilyId = familyToAddProgenyTo.FamilyId,
+                MemberType = model.MemberType,
+                Email = progenyToAddToFamily.Email,
+                PermissionLevel = PermissionLevel.View,  // Todo: Let user select permission level?
+            };
+            FamilyMember addedFamilyMember = await familiesHttpClient.AddFamilyMember(newFamilyMember);
+
+            return Json(addedFamilyMember);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ProgenySelectorElement([FromBody] TimelineRequest request)
+        {
+            List<int> allowedProgenies = [];
+            if (request.Progenies.Count > 0)
+            {
+                foreach (int progenyId in request.Progenies)
+                {
+                    Progeny progeny = await progenyHttpClient.GetProgeny(progenyId);
+                    if (progeny != null && progeny.Id > 0)
+                    {
+                        allowedProgenies.Add(progeny.Id);
+                    }
+                }
+
+                request.Progenies = allowedProgenies;
+            }
+
+            if (User.Identity == null || !User.Identity.IsAuthenticated)
+            {
+                request.ProgenyId = Constants.DefaultChildId;
+            }
+            else
+            {
+                if (request.ProgenyId == 0)
+                {
+                    // Select a random Progeny if none is selected.
+                    if (request.Progenies.Count > 0)
+                    {
+                        Random rand = new();
+                        request.ProgenyId = request.Progenies[rand.Next(request.Progenies.Count)];
+                    }
+                    else
+                    {
+                        request.ProgenyId = Constants.DefaultChildId;
+                    }
+                }
+            }
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), request.ProgenyId, 0, false);
+            ProgenySelectorViewModel model = new(baseModel);
+            model.Progenies = [];
+            if (request.Progenies.Count > 0)
+            {
+                foreach (int requestProgenyId in request.Progenies)
+                {
+                    Progeny progeny = await progenyHttpClient.GetProgeny(requestProgenyId);
+                    if (progeny != null && progeny.Id > 0)
+                    {
+                        model.Progenies.Add(progeny);
+                    }
+                }
+            }
+
+            return PartialView("_ProgenySelectorElementPartial", model);
         }
     }
 }

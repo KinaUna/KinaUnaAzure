@@ -1,23 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class VocabularyItemViewModel: BaseItemsViewModel
     {
-        public List<SelectListItem> ProgenyList { get; set; } = [];
         public VocabularyItem VocabularyItem { get; set; } = new();
-        public List<SelectListItem> AccessLevelListEn { get; set; }
-        public List<SelectListItem> AccessLevelListDa { get; set; }
-        public List<SelectListItem> AccessLevelListDe { get; set; }
 
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
         public VocabularyItemViewModel()
         {
-            AccessLevelList aclList = new();
-            AccessLevelListEn = aclList.AccessLevelListEn;
-            AccessLevelListDa = aclList.AccessLevelListDa;
-            AccessLevelListDe = aclList.AccessLevelListDe;
+            
         }
 
         public VocabularyItemViewModel(BaseItemsViewModel baseItemsViewModel)
@@ -43,39 +38,13 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 }
             }
         }
-
-        /// <summary>
-        /// Set the AccessLevelList with the current AccessLevel selected.
-        /// </summary>
-        public void SetAccessLevelList()
-        {
-            AccessLevelList accessLevelList = new();
-            AccessLevelListEn = accessLevelList.AccessLevelListEn;
-            AccessLevelListDa = accessLevelList.AccessLevelListDa;
-            AccessLevelListDe = accessLevelList.AccessLevelListDe;
-
-            AccessLevelListEn[VocabularyItem.AccessLevel].Selected = true;
-            AccessLevelListDa[VocabularyItem.AccessLevel].Selected = true;
-            AccessLevelListDe[VocabularyItem.AccessLevel].Selected = true;
-
-            if (LanguageId == 2)
-            {
-                AccessLevelListEn = AccessLevelListDe;
-            }
-
-            if (LanguageId == 3)
-            {
-                AccessLevelListEn = AccessLevelListDa;
-            }
-        }
-
+        
         /// <summary>
         /// Set the VocabularyItem properties from a VocabularyItem object.
         /// </summary>
         /// <param name="vocabularyItem">The VocabularyItem to copy properties from.</param>
         public void SetPropertiesFromVocabularyItem(VocabularyItem vocabularyItem)
         {
-            VocabularyItem.AccessLevel = vocabularyItem.AccessLevel;
             VocabularyItem.Author = vocabularyItem.Author;
             VocabularyItem.Date = vocabularyItem.Date ?? TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
             VocabularyItem.ProgenyId = vocabularyItem.ProgenyId;
@@ -85,6 +54,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             VocabularyItem.SoundsLike = vocabularyItem.SoundsLike;
             VocabularyItem.Word = vocabularyItem.Word;
             VocabularyItem.WordId = vocabularyItem.WordId;
+            VocabularyItem.ItemPermission = vocabularyItem.ItemPermission;
         }
     }
 

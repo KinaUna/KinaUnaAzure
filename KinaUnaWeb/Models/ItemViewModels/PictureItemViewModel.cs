@@ -8,9 +8,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
     {
         public Picture Picture { get; init; } = new();
         
-        public List<SelectListItem> AccessLevelListEn { get; set; }
-        public List<SelectListItem> AccessLevelListDa { get; set; }
-        public List<SelectListItem> AccessLevelListDe { get; set; }
         public int CommentThreadNumber { get; set; }
         public List<Comment> CommentsList { get; set; }
         public int CommentsCount { get; set; }
@@ -23,7 +20,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public int NextPicture { get; set; }
         public string PicTime { get; set; }
         public bool PicTimeValid { get; set; }
-        public string PicYears { get; set; }
+        public List<string> PicYearsDataList { get; set; }
         public string PicMonths { get; set; }
         public string[] PicWeeks { get; set; }
         public string PicDays { get; set; }
@@ -33,18 +30,18 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public bool PartialView { get; set; }
         public string HereMapsApiKey { get; init; } = "";
 
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
         public PictureItemViewModel()
         {
-            AccessLevelList aclList = new();
-            AccessLevelListEn = aclList.AccessLevelListEn;
-            AccessLevelListDa = aclList.AccessLevelListDa;
-            AccessLevelListDe = aclList.AccessLevelListDe;
-
+            ProgenyList = [];
         }
 
         public PictureItemViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
+            ProgenyList = [];
         }
 
         public void SetPropertiesFromPictureViewModel(PictureViewModel pictureViewModel)
@@ -52,7 +49,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
             Picture.PictureId = pictureViewModel.PictureId;
             Picture.ProgenyId = pictureViewModel.ProgenyId;
             Picture.Progeny = CurrentProgeny;
-            Picture.AccessLevel = pictureViewModel.AccessLevel;
             Picture.Author = pictureViewModel.Author;
             CommentThreadNumber = Picture.CommentThreadNumber = pictureViewModel.CommentThreadNumber;
             CommentsList = Picture.Comments = pictureViewModel.CommentsList ?? [];
@@ -68,7 +64,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             PictureNumber = Picture.PictureNumber = pictureViewModel.PictureNumber;
             Picture.PictureTime = pictureViewModel.PictureTime;
             Tags = Picture.Tags = pictureViewModel.Tags;
-            
+            Picture.ItemPerMission = pictureViewModel.ItemPerMission;
             CommentsCount = CommentsList?.Count ?? 0;
             TagFilter = pictureViewModel.TagFilter;
             TagsList = pictureViewModel.TagsList;
@@ -83,7 +79,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                     TimeZoneInfo.FindSystemTimeZoneById(CurrentProgeny.TimeZone));
                 PicTimeValid = true;
                 PicTime = Picture.PictureTime.Value.ToString("dd MMMM yyyy HH:mm"); // Todo: Replace format string with global constant or user defined value
-                PicYears = picTime.CalcYears();
+                PicYearsDataList = picTime.CalcYears();
                 PicMonths = picTime.CalcMonths();
                 PicWeeks = picTime.CalcWeeks();
                 PicDays = picTime.CalcDays();
@@ -103,30 +99,26 @@ namespace KinaUnaWeb.Models.ItemViewModels
             Picture.PictureId = picture.PictureId;
             Picture.PictureLink = picture.PictureLink600;
             Picture.PictureTime = picture.PictureTime;
+            Picture.ItemPerMission = picture.ItemPerMission;
             if (Picture.PictureTime.HasValue)
             {
                 Picture.PictureTime = TimeZoneInfo.ConvertTimeFromUtc(Picture.PictureTime.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
             }
         }
-        public void SetAccessLevelList()
+
+        public void SetProgenyList()
         {
-            AccessLevelList accessLevelList = new();
-            AccessLevelListEn = accessLevelList.AccessLevelListEn;
-            AccessLevelListDa = accessLevelList.AccessLevelListDa;
-            AccessLevelListDe = accessLevelList.AccessLevelListDe;
-
-            AccessLevelListEn[Picture.AccessLevel].Selected = true;
-            AccessLevelListDa[Picture.AccessLevel].Selected = true;
-            AccessLevelListDe[Picture.AccessLevel].Selected = true;
-
-            if (LanguageId == 2)
+            Picture.ProgenyId = CurrentProgenyId;
+            foreach (SelectListItem item in ProgenyList)
             {
-                AccessLevelListEn = AccessLevelListDe;
-            }
-
-            if (LanguageId == 3)
-            {
-                AccessLevelListEn = AccessLevelListDa;
+                if (item.Value == CurrentProgenyId.ToString())
+                {
+                    item.Selected = true;
+                }
+                else
+                {
+                    item.Selected = false;
+                }
             }
         }
     }

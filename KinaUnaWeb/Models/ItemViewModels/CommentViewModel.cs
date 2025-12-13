@@ -16,6 +16,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public int ItemId { get; set; }
         public bool PartialView { get; set; }
 
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
         public CommentViewModel()
         {
             

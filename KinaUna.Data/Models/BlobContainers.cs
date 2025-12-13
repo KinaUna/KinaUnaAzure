@@ -38,5 +38,10 @@
         /// Container for attachments and embedded images in KinaUnaTexts.
         /// </summary>
         public const string KinaUnaTexts = "kinaunatexts";
+
+        /// <summary>
+        /// Container for Family profile pictures.
+        /// </summary>
+        public const string Family = "family";
     }
 }

@@ -1,15 +1,16 @@
-﻿using KinaUna.Data;
-using KinaUna.Data.Extensions;
+﻿using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.TodosServices;
-using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.FamiliesServices;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -19,7 +20,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// <remarks>This controller allows users to perform operations such as retrieving, creating, updating,
     /// and deleting subtasks. Access to these endpoints is restricted based on user roles and permissions, as defined
     /// by the "UserOrClient" policy.</remarks>
-    /// <param name="userAccessService">User access service to validate user permissions.</param>
     /// <param name="subtasksService">Service for managing subtasks.</param>
     /// <param name="todosService">TodoItems service to manage Todo items.</param>
     /// <param name="progenyService">Provides access to Progeny data.</param>
@@ -28,10 +28,12 @@ namespace KinaUnaProgenyApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class SubtasksController(
-        IUserAccessService userAccessService,
         ISubtasksService subtasksService,
         ITodosService todosService,
-        IProgenyService progenyService) : ControllerBase
+        IProgenyService progenyService,
+        IFamiliesService familiesService,
+        IUserInfoService userInfoService,
+        IAccessManagementService accessManagementService) : ControllerBase
     {
         /// <summary>
         /// Retrieves the subtasks associated with a specified parent TodoItem.
@@ -47,39 +49,33 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]")]
         public async Task<IActionResult> GetSubtasksForTodoItem([FromBody] SubtasksRequest request)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+
             // Check if the TodoItem exists
-            TodoItem existingTodoItem = await todosService.GetTodoItem(request.ParentTodoItemId);
+            TodoItem existingTodoItem = await todosService.GetTodoItem(request.ParentTodoItemId, currentUserInfo);
             if (existingTodoItem == null)
             {
                 return NotFound("TodoItem not found.");
             }
 
             request.ProgenyId = existingTodoItem.ProgenyId;
-            
-            // Check if the user has access to the TodoItem
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(request.ProgenyId, userEmail, existingTodoItem.AccessLevel);
-            if (accessLevelResult.IsFailure)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-            
-            Progeny progeny = await progenyService.GetProgeny(request.ProgenyId);
-            if (progeny == null)
-            {
-                return NotFound("Progeny not found.");
-            }
-
-            
-            List<TodoItem> subtasks = await subtasksService.GetSubtasksForTodoItem(request.ParentTodoItemId);
+            request.FamilyId = existingTodoItem.FamilyId;
+            List<TodoItem> subtasks = await subtasksService.GetSubtasksForTodoItem(request.ParentTodoItemId, currentUserInfo);
 
             foreach (TodoItem subtask in subtasks)
             {
-                subtask.Progeny = progeny; // Ensure the Progeny is set for each subtask
+                if (subtask.ProgenyId > 0)
+                {
+                    subtask.Progeny = await progenyService.GetProgeny(subtask.ProgenyId, currentUserInfo);
+                }
+
+                if (subtask.FamilyId > 0)
+                {
+                    subtask.Family = await familiesService.GetFamilyById(subtask.FamilyId, currentUserInfo);
+                }
             }
 
-            SubtasksResponse subtasksResponse = subtasksService.CreateSubtaskResponseForTodoItem(subtasks, request);
+            SubtasksResponse subtasksResponse = subtasksService.CreateSubtaskResponseForTodoItem(subtasks, request, currentUserInfo);
 
             // Return the list of subtasks
             return Ok(subtasksResponse);
@@ -98,16 +94,12 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetSubtask(int id)
         {
-            TodoItem result = await subtasksService.GetSubtask(id);
-            if (result == null) return NotFound();
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
 
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(result.ProgenyId, userEmail, result.AccessLevel);
+            TodoItem result = await subtasksService.GetSubtask(id, currentUserInfo);
+            if (result == null || result.TodoItemId == 0) return NotFound();
 
-            if (accessLevelResult.IsSuccess) return Ok(result);
-
-            return accessLevelResult.ToActionResult();
-
+            return Ok(result);
         }
         
         /// <summary>
@@ -124,43 +116,55 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] TodoItem value)
         {
-            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
-            {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            bool hasAccess = false;
 
-                if (!progeny.IsInAdminList(userEmail))
+            if (value.ProgenyId > 0)
+            {
+                if (await accessManagementService.HasProgenyPermission(value.ProgenyId, currentUserInfo, PermissionLevel.Add))
                 {
-                    return Unauthorized();
+                    hasAccess = true;
                 }
             }
-            else
+
+            if (value.FamilyId > 0)
             {
-                return BadRequest();
+                if (await accessManagementService.HasFamilyPermission(value.FamilyId, currentUserInfo, PermissionLevel.Add))
+                {
+                    hasAccess = true;
+                }
+            }
+
+            if (!hasAccess)
+            {
+                return Unauthorized();
             }
 
             value.CreatedBy = User.GetUserId();
+            value.ModifiedBy = User.GetUserId();
             if (string.IsNullOrWhiteSpace(value.UId))
             {
                 value.UId = Guid.NewGuid().ToString();
             }
 
-            TodoItem parentTodoItem = await todosService.GetTodoItem(value.ParentTodoItemId);
+            TodoItem parentTodoItem = await todosService.GetTodoItem(value.ParentTodoItemId, currentUserInfo);
             if (parentTodoItem == null)
             {
                 return BadRequest("Parent TodoItem not found");
             }
             // Ensure the subtask inherits the access level of the parent TodoItem
-            value.AccessLevel = parentTodoItem.AccessLevel;
             value.ProgenyId = parentTodoItem.ProgenyId;
+            
 
-            TodoItem subtask = await subtasksService.AddSubtask(value);
+            TodoItem subtask = await subtasksService.AddSubtask(value, currentUserInfo);
 
             if (subtask == null)
             {
-                return BadRequest();
+                return Unauthorized();
             }
-            
+
+            subtask = await subtasksService.GetSubtask(subtask.TodoItemId, currentUserInfo);
+
             return Ok(subtask);
         }
 
@@ -182,25 +186,18 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] TodoItem value)
         {
-            TodoItem subtask = await subtasksService.GetSubtask(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            TodoItem subtask = await subtasksService.GetSubtask(id, currentUserInfo);
             if (subtask == null)
             {
                 return NotFound();
             }
 
-            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
+            if (!await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, value.TodoItemId, currentUserInfo, PermissionLevel.Edit))
             {
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
+                return Unauthorized();
             }
-            else
-            {
-                return BadRequest();
-            }
+
 
             value.ModifiedBy = User.GetUserId();
             if (string.IsNullOrWhiteSpace(value.UId))
@@ -208,17 +205,21 @@ namespace KinaUnaProgenyApi.Controllers
                 value.UId = Guid.NewGuid().ToString();
             }
 
-            TodoItem parentTodoItem = await todosService.GetTodoItem(value.ParentTodoItemId);
+            TodoItem parentTodoItem = await todosService.GetTodoItem(value.ParentTodoItemId, currentUserInfo);
             if (parentTodoItem == null)
             {
                 return BadRequest("Parent TodoItem not found.");
             }
 
-            // Ensure the subtask inherits the access level of the parent TodoItem
-            value.AccessLevel = parentTodoItem.AccessLevel;
             value.ProgenyId = parentTodoItem.ProgenyId;
 
-            subtask = await subtasksService.UpdateSubtask(value);
+            subtask = await subtasksService.UpdateSubtask(value, currentUserInfo);
+            if (subtask == null)
+            {
+                return Unauthorized();
+            }
+
+            subtask = await subtasksService.GetSubtask(subtask.TodoItemId, currentUserInfo);
 
             return Ok(subtask);
         }
@@ -239,33 +240,19 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            TodoItem subtask = await subtasksService.GetSubtask(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+
+            TodoItem subtask = await subtasksService.GetSubtask(id, currentUserInfo);
             if (subtask == null)
             {
                 return NotFound();
             }
-
-            // Check if the user has access to the Progeny associated with the TodoItem
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-
-            Progeny progeny = await progenyService.GetProgeny(subtask.ProgenyId);
-            if (progeny != null)
-            {
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
-            }
-            else
-            {
-                return BadRequest();
-            }
             
             subtask.ModifiedBy = User.GetUserId();
-            bool isDeleted = await subtasksService.DeleteSubtask(subtask);
+            bool isDeleted = await subtasksService.DeleteSubtask(subtask, currentUserInfo);
             if (!isDeleted)
             {
-                return BadRequest();
+                return Unauthorized();
             }
             return NoContent();
         }

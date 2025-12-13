@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using KinaUna.Data.Models.AccessManagement;
 
 namespace KinaUna.Data.Models
 {
@@ -12,15 +13,34 @@ namespace KinaUna.Data.Models
     {
         [Key]
         public int TimeLineId { get; init; }
-        public int ProgenyId { get; set; }
+        public int ProgenyId { get; set; } = 0;
+        public int FamilyId { get; set; } = 0;
         public DateTime ProgenyTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date and time when the entity was created.
+        /// </summary>
         public DateTime CreatedTime { get; set; }
         public int ItemType { get; set; }
-        public string ItemId { get; set; }
+        [MaxLength(256)]
+        public string ItemId { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Gets or sets the identifier of the user or system that created the entity.
+        /// </summary>
         [MaxLength(256)]
         public string CreatedBy { get; set; }
-        public int AccessLevel { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the identifier of the user or system that last modified the entity.
+        /// </summary>
+        [MaxLength(256)]
+        public string ModifiedBy { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the date and time when the object was last modified.
+        /// </summary>
+        public DateTime ModifiedTime { get; set; }
 
         [NotMapped]
         public int ItemYear { get; set; } // For recurring events.
@@ -30,5 +50,11 @@ namespace KinaUna.Data.Models
 
         [NotMapped]
         public int ItemDay { get; set; } // For recurring events.
+
+        /// <summary>
+        /// The current user's permissions for this item.
+        /// </summary>
+        [NotMapped]
+        public TimelineItemPermission ItemPerMission { get; set; } = new();
     }
 }

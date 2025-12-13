@@ -314,7 +314,7 @@ namespace KinaUnaWeb.Controllers
             string userId = User.GetUserId();
             _ = DateTime.TryParse(User.FindFirst("joindate")?.Value, out DateTime joinDate);
             
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(userId) ?? throw new ApplicationException($"Unable to load user with ID '{userId}'.");
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(userId) ?? throw new ApplicationException($"Unable to load user with ID '{userId}'.");
             if (string.IsNullOrEmpty(userInfo.ProfilePicture))
             {
                 userInfo.ProfilePicture = Constants.ProfilePictureUrl;
@@ -358,7 +358,7 @@ namespace KinaUnaWeb.Controllers
         {
             model.LanguageId = Request.GetLanguageIdFromCookie();
 
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(User.GetUserId());
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
             if (userInfo == null || !userInfo.UserEmail.Equals(User.GetEmail(), StringComparison.CurrentCultureIgnoreCase)) return Redirect(model.ChangeLink);
 
             model.UserId = userInfo.UserId;
@@ -395,7 +395,7 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> UnDeleteAccount()
         {
             string userId = User.GetUserId();
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(userId) ?? throw new ApplicationException($"Unable to load user with ID '{userId}'.");
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(userId) ?? throw new ApplicationException($"Unable to load user with ID '{userId}'.");
             if (userInfo.UserId != userId) return RedirectToAction("Index", "Home");
 
             userInfo.Deleted = false;
@@ -415,7 +415,7 @@ namespace KinaUnaWeb.Controllers
         {
             // Todo: Access control.
 
-            UserInfo userInfo = await userInfosHttpClient.GetUserInfoByUserId(id);
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(id);
             if (userInfo == null || string.IsNullOrEmpty(userInfo.ProfilePicture))
             {
                 MemoryStream fileContentNoAccess = await imageStore.GetStream("868b62e2-6978-41a1-97dc-1cc1116f65a6.jpg");

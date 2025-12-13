@@ -1,25 +1,25 @@
 ﻿using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
-using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Models;
 using KinaUnaProgenyApi.Services;
-using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.Family;
+using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.FamiliesServices;
 
 namespace KinaUnaProgenyApi.Controllers
 {
     /// <summary>
     /// API endpoints for Locations.
     /// </summary>
-    /// <param name="azureNotifications"></param>
     /// <param name="userInfoService"></param>
-    /// <param name="userAccessService"></param>
     /// <param name="locationService"></param>
     /// <param name="timelineService"></param>
     /// <param name="progenyService"></param>
@@ -29,13 +29,13 @@ namespace KinaUnaProgenyApi.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class LocationsController(
-        IAzureNotifications azureNotifications,
         IUserInfoService userInfoService,
-        IUserAccessService userAccessService,
         ILocationService locationService,
         ITimelineService timelineService,
         IProgenyService progenyService,
-        IWebNotificationsService webNotificationsService)
+        IFamiliesService familiesService,
+        IWebNotificationsService webNotificationsService,
+        IAccessManagementService accessManagementService)
         : ControllerBase
     {
         /// <summary>
@@ -48,15 +48,25 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{id:int}")]
         public async Task<IActionResult> Progeny(int id)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-
-            List<Location> locationsList = await locationService.GetLocationsList(id, accessLevelResult.Value);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            List<Location> locationsList = await locationService.GetLocationsList(id, 0, currentUserInfo);
             
+            return Ok(locationsList);
+        }
+
+        /// <summary>
+        /// Retrieves all locations for a given family that a user with a given access level has access to.
+        /// </summary>
+        /// <param name="id">The FamilyId of the Family to get Location items for.</param>
+        /// <returns>List of Locations, or NotFound if no Locations are found.</returns>
+        // GET api/locations/family/[id]
+        [HttpGet]
+        [Route("[action]/{id:int}")]
+        public async Task<IActionResult> Family(int id)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            List<Location> locationsList = await locationService.GetLocationsList(0, id, currentUserInfo);
+
             return Ok(locationsList);
         }
 
@@ -69,18 +79,12 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetLocationItem(int id)
         {
-            Location location = await locationService.GetLocation(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Location location = await locationService.GetLocation(id, currentUserInfo);
 
             if (location == null)
             {
                 return NotFound();
-            }
-
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(location.ProgenyId, userEmail, location.AccessLevel);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
             }
             
             return Ok(location);
@@ -97,33 +101,71 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Location value)
         {
-            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
+
+            // Either ProgenyId or FamilyId must be set, but not both.
+            if (value.ProgenyId > 0 && value.FamilyId > 0)
             {
-                if (!progeny.IsInAdminList(userEmail))
+                return BadRequest("A location must have either a ProgenyId or a FamilyId set, but not both.");
+            }
+
+            if (value.ProgenyId == 0 && value.FamilyId == 0)
+            {
+                return BadRequest("A location board must have either a ProgenyId or a FamilyId set.");
+            }
+
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            if (value.ProgenyId > 0)
+            {
+                if (!await accessManagementService.HasProgenyPermission(value.ProgenyId, currentUserInfo, PermissionLevel.Add))
                 {
                     return Unauthorized();
                 }
             }
-            else
+
+            if (value.FamilyId > 0)
             {
-                return NotFound();
+                if (!await accessManagementService.HasFamilyPermission(value.FamilyId, currentUserInfo, PermissionLevel.Add))
+                {
+                    return Unauthorized();
+                }
             }
 
             value.Author = User.GetUserId();
+            value.CreatedBy = User.GetUserId();
+            value.ModifiedBy = User.GetUserId();
 
-            Location location = await locationService.AddLocation(value);
+            Location location = await locationService.AddLocation(value, currentUserInfo);
+            if (location == null)
+            {
+                return Unauthorized();
+            }
 
             TimeLineItem tItem = new();
             tItem.CopyLocationPropertiesForAdd(location);
-            _ = await timelineService.AddTimeLineItem(tItem);
+            _ = await timelineService.AddTimeLineItem(tItem, currentUserInfo);
 
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-            string notificationTitle = "Location added for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " added a new location for " + progeny.NickName;
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, tItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendLocationNotification(location, userInfo, notificationTitle);
+            string nameString = "";
+            if (location.ProgenyId > 0)
+            {
+                Progeny progeny = await progenyService.GetProgeny(location.ProgenyId, currentUserInfo);
+                if (progeny != null)
+                {
+                    nameString = progeny.NickName;
+                }
+            }
+            if (location.FamilyId > 0)
+            {
+                Family family = await familiesService.GetFamilyById(location.FamilyId, currentUserInfo);
+                if (family != null)
+                {
+                    nameString = family.Name;
+                }
+            }
+
+            string notificationTitle = "Location added for " + nameString; // Todo: Localize.
+            await webNotificationsService.SendLocationNotification(location, currentUserInfo, notificationTitle);
+
+            location = await locationService.GetLocation(location.LocationId, currentUserInfo);
 
             return Ok(location);
         }
@@ -139,35 +181,44 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Location value)
         {
-            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            if (id != value.LocationId)
             {
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
+                return BadRequest("LocationId in the URL must match the LocationId in the body of the request.");
             }
-            else
+
+            if (value.ProgenyId > 0 && value.FamilyId > 0)
+            {
+                return BadRequest("A location must have either a ProgenyId or a FamilyId set, but not both.");
+            }
+            if (value.ProgenyId == 0 && value.FamilyId == 0)
+            {
+                return BadRequest("A location board must have either a ProgenyId or a FamilyId set.");
+            }
+
+            
+            Location location = await locationService.GetLocation(id, currentUserInfo);
+            if (location == null || location.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
             {
                 return NotFound();
             }
 
-            Location location = await locationService.GetLocation(id);
+            location.ModifiedBy = User.GetUserId();
+
+            location = await locationService.UpdateLocation(value, currentUserInfo);
             if (location == null)
             {
-                return NotFound();
+                return Unauthorized();
             }
 
-            location = await locationService.UpdateLocation(value);
-
-            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(location.LocationId.ToString(), (int)KinaUnaTypes.TimeLineType.Location);
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(location.LocationId.ToString(), (int)KinaUnaTypes.TimeLineType.Location, currentUserInfo);
             if (timeLineItem != null)
             {
                 timeLineItem.CopyLocationPropertiesForUpdate(location);
-                await timelineService.UpdateTimeLineItem(timeLineItem);
+                await timelineService.UpdateTimeLineItem(timeLineItem, currentUserInfo);
             }
 
+            location = await locationService.GetLocation(location.LocationId, currentUserInfo);
             location.Author = User.GetUserId();
             
             return Ok(location);
@@ -184,74 +235,73 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            Location location = await locationService.GetLocation(id);
-            if (location == null) return NotFound();
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Location location = await locationService.GetLocation(id, currentUserInfo);
+            if (location == null || location.ItemPerMission.PermissionLevel < PermissionLevel.Admin) return NotFound();
+            
+            location.ModifiedBy = User.GetUserId();
 
-            Progeny progeny = await progenyService.GetProgeny(location.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
+            Location deletedLocation = await locationService.DeleteLocation(location, currentUserInfo);
+            if (deletedLocation == null)
             {
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
+                return Unauthorized();
             }
-            else
-            {
-                return NotFound();
-            }
-
-            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(location.LocationId.ToString(), (int)KinaUnaTypes.TimeLineType.Location);
+            
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(location.LocationId.ToString(), (int)KinaUnaTypes.TimeLineType.Location, currentUserInfo);
             if (timeLineItem != null)
             {
-                _ = await timelineService.DeleteTimeLineItem(timeLineItem);
+                _ = await timelineService.DeleteTimeLineItem(timeLineItem, currentUserInfo);
             }
-
-            _ = await locationService.DeleteLocation(location);
-
             if (timeLineItem == null) return NoContent();
 
             location.Author = User.GetUserId();
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
+            string nameString = "";
+            if (location.ProgenyId > 0)
+            {
+                Progeny progeny = await progenyService.GetProgeny(location.ProgenyId, currentUserInfo);
+                if (progeny != null)
+                {
+                    nameString = progeny.NickName;
+                }
+            }
 
-            string notificationTitle = "Location deleted for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " deleted a location for " + progeny.NickName + ". Location: " + location.Name;
-            location.AccessLevel = timeLineItem.AccessLevel = 0;
-
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendLocationNotification(location, userInfo, notificationTitle);
+            if (location.FamilyId > 0)
+            {
+                Family family = await familiesService.GetFamilyById(location.FamilyId, currentUserInfo);
+                if (family != null)
+                {
+                    nameString = family.Name;
+                }
+            }
+            string notificationTitle = "Location deleted for " + nameString;
+            
+            await webNotificationsService.SendLocationNotification(location, currentUserInfo, notificationTitle);
 
             return NoContent();
 
         }
-        
+
         /// <summary>
         /// Retrieves the list of Location items to display on a page for a given Progeny.
         /// </summary>
         /// <param name="pageSize">The number of Location items per page.</param>
         /// <param name="pageIndex">The current page number.</param>
         /// <param name="progenyId">The ProgenyId of the Progeny to display Locations for.</param>
+        /// <param name="familyId">The FamilyId of the Family to display Locations for.</param>
         /// <param name="sortBy">int: Sort order for the Location items. 0 = oldest first, 1 = newest first.</param>
         /// <returns></returns>
         [HttpGet("[action]")]
         public async Task<IActionResult> GetLocationsListPage([FromQuery] int pageSize = 8,
             [FromQuery] int pageIndex = 1, [FromQuery] int progenyId = Constants.DefaultChildId,
-            [FromQuery] int sortBy = 1)
+            [FromQuery] int familyId = 0, [FromQuery] int sortBy = 1)
         {
-
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-            
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             if (pageIndex < 1)
             {
                 pageIndex = 1;
             }
 
-            List<Location> allItems = await locationService.GetLocationsList(progenyId, accessLevelResult.Value);
+            List<Location> allItems = await locationService.GetLocationsList(progenyId, familyId, currentUserInfo);
             allItems = [.. allItems.OrderBy(v => v.Date)];
 
             if (sortBy == 1)

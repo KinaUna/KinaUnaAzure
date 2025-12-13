@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
+using KinaUna.Data.Extensions;
 
 namespace KinaUnaWeb.Models
 {
@@ -9,15 +11,21 @@ namespace KinaUnaWeb.Models
         private readonly DateTime _currentDateTime = DateTime.UtcNow;
 
         public string CurrentTime => TimeZoneInfo.ConvertTimeFromUtc(_currentDateTime, birthdayTimezone).ToString("dd MMMM yyyy HH:mm:ss"); // Todo: Custom format
-
-
-        public string CalcYears()
+        
+        public List<string> CalcYears()
         {
+            List<string> ageYearsList = [];
+            
+            _birthDay.GetElapsedTime(_currentDateTime, out int ageYears, out int ageMonths, out int ageDays, out int ageHours, out int ageMinutes, out int ageSeconds);
 
-            TimeSpan age = _currentDateTime - _birthDay;
-            double ageYears = age.TotalSeconds / (365.0 * 24.0 * 60.0 * 60.0);
+            ageYearsList.Add(ageYears.ToString());
+            ageYearsList.Add(ageMonths.ToString());
+            ageYearsList.Add(ageDays.ToString());
+            ageYearsList.Add(ageHours.ToString());
+            ageYearsList.Add(ageMinutes.ToString());
+            ageYearsList.Add(ageSeconds.ToString());
 
-            return ageYears.ToString("F6");
+            return ageYearsList;
         }
 
         public string CalcMonths()

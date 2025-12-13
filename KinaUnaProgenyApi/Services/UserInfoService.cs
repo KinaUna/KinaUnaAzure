@@ -3,25 +3,37 @@ using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.FamiliesServices;
+using System.Text.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
     public class UserInfoService : IUserInfoService
     {
         private readonly ProgenyDbContext _context;
+        private readonly IProgenyService _progenyService;
+        private readonly IAccessManagementService _accessManagementService;
+        private readonly IUserGroupsService _userGroupsService;
+        private readonly IFamilyMembersService _familyMembersService;
         private readonly IImageStore _imageStore;
         private readonly IDistributedCache _cache;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
-        public UserInfoService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore)
+        public UserInfoService(ProgenyDbContext context, IDistributedCache cache, IImageStore imageStore,
+            IProgenyService progenyService, IAccessManagementService accessManagementService,
+            IUserGroupsService userGroupsService, IFamilyMembersService familyMembersService)
         {
             _context = context;
+            _progenyService = progenyService;
+            _accessManagementService = accessManagementService;
+            _userGroupsService = userGroupsService;
+            _familyMembersService = familyMembersService;
             _cache = cache;
             _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(7, 0, 0, 0)); // Expire after a week.
@@ -86,7 +98,16 @@ namespace KinaUnaProgenyApi.Services
             }
             _ = _context.UserInfoDb.Add(userInfo);
             _ = await _context.SaveChangesAsync();
-            _ = await SetUserInfoByEmail(userInfo.UserEmail);
+            UserInfo newUserInfo = await SetUserInfoByEmail(userInfo.UserEmail);
+
+            // Update Progenies for this user.
+            await _progenyService.UpdateProgeniesForNewUser(newUserInfo);
+
+            await _accessManagementService.UpdatePermissionsForNewUser(newUserInfo);
+
+            await _userGroupsService.UpdateUserGroupMembersForNewUser(newUserInfo);
+
+            await _familyMembersService.UpdateFamilyMembersForNewUser(newUserInfo);
 
             return userInfo;
         }
@@ -102,10 +123,9 @@ namespace KinaUnaProgenyApi.Services
             if (string.IsNullOrEmpty(cachedUserInfo))
             {
                 return null;
-                
             }
 
-            UserInfo userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
+            UserInfo userinfo = JsonSerializer.Deserialize<UserInfo>(cachedUserInfo, JsonSerializerOptions.Web);
             return userinfo;
         }
 
@@ -121,7 +141,7 @@ namespace KinaUnaProgenyApi.Services
             string cachedUserInfo = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + id);
             if (!string.IsNullOrEmpty(cachedUserInfo))
             {
-                userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
+                userinfo = JsonSerializer.Deserialize<UserInfo>(cachedUserInfo, JsonSerializerOptions.Web);
             }
 
             return userinfo;
@@ -140,7 +160,7 @@ namespace KinaUnaProgenyApi.Services
                 return null;
             }
 
-            UserInfo userinfo = JsonConvert.DeserializeObject<UserInfo>(cachedUserInfo);
+            UserInfo userinfo = JsonSerializer.Deserialize<UserInfo>(cachedUserInfo, JsonSerializerOptions.Web);
             return userinfo;
         }
 
@@ -156,9 +176,9 @@ namespace KinaUnaProgenyApi.Services
             UserInfo userinfo = await _context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == userEmail.ToUpper());
             if (userinfo == null) return null;
 
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail.ToUpper(), JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + userinfo.UserId, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + userinfo.Id, JsonConvert.SerializeObject(userinfo), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobymail" + userEmail.ToUpper(), JsonSerializer.Serialize(userinfo, JsonSerializerOptions.Web), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyuserid" + userinfo.UserId, JsonSerializer.Serialize(userinfo, JsonSerializerOptions.Web), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "userinfobyid" + userinfo.Id, JsonSerializer.Serialize(userinfo, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return userinfo;
         }
@@ -209,7 +229,11 @@ namespace KinaUnaProgenyApi.Services
             if (userInfoToUpdate == null) return null;
 
             string oldPictureLink = userInfoToUpdate.ProfilePicture;
-                
+            if (string.IsNullOrEmpty(userInfo.ProfilePicture))
+            {
+                userInfo.ProfilePicture = Constants.ProfilePictureUrl;
+            }
+
             userInfoToUpdate.UserEmail = userInfo.UserEmail;
             userInfoToUpdate.UserId = userInfo.UserId;
             userInfoToUpdate.UserName = userInfo.UserName;
@@ -226,14 +250,8 @@ namespace KinaUnaProgenyApi.Services
             userInfoToUpdate.IsKinaUnaAdmin = userInfo.IsKinaUnaAdmin;
             userInfoToUpdate.UpdateIsAdmin = userInfo.UpdateIsAdmin;
             userInfoToUpdate.ProgenyList = userInfo.ProgenyList;
-            userInfoToUpdate.AccessList = userInfo.AccessList;
             userInfoToUpdate.UpdatedTime = DateTime.UtcNow;
-
-            if (string.IsNullOrEmpty(userInfo.ProfilePicture))
-            {
-                userInfo.ProfilePicture = Constants.ProfilePictureUrl;
-            }
-                
+            
             _ = _context.UserInfoDb.Update(userInfoToUpdate);
             _ = await _context.SaveChangesAsync();
 
@@ -241,6 +259,8 @@ namespace KinaUnaProgenyApi.Services
             {
                 await _imageStore.DeleteImage(oldPictureLink, BlobContainers.Profiles);
             }
+
+            
 
             _ = await SetUserInfoByEmail(userInfo.UserEmail);
 
@@ -314,7 +334,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 userinfo = await SetUserInfoByUserId(id);
             }
-
+            // Todo: Check if current user should be allowed access.
             return userinfo;
         }
 
@@ -341,7 +361,7 @@ namespace KinaUnaProgenyApi.Services
                 userInfoToAddToDelete.Deleted = false;
                 userInfoToAddToDelete.DeletedTime = DateTime.UtcNow;
                 userInfoToAddToDelete.UpdatedTime = DateTime.UtcNow;
-                userInfoToAddToDelete.ProfilePicture = JsonConvert.SerializeObject(userInfo);
+                userInfoToAddToDelete.ProfilePicture = JsonSerializer.Serialize(userInfo, JsonSerializerOptions.Web);
                 _ = _context.DeletedUsers.Update(userInfoToAddToDelete);
             }
             else
@@ -354,7 +374,7 @@ namespace KinaUnaProgenyApi.Services
                     Deleted = false,
                     DeletedTime = DateTime.UtcNow,
                     UpdatedTime = DateTime.UtcNow,
-                    ProfilePicture = JsonConvert.SerializeObject(userInfo)
+                    ProfilePicture = JsonSerializer.Serialize(userInfo, JsonSerializerOptions.Web)
                 };
                 _ = _context.DeletedUsers.Add(userInfoToAddToDelete);
             }

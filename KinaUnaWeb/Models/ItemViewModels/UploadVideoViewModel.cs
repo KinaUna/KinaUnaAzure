@@ -1,9 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using KinaUna.Data;
+﻿using KinaUna.Data;
+using KinaUna.Data.Models.DTOs;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
@@ -11,23 +13,18 @@ namespace KinaUnaWeb.Models.ItemViewModels
     {
         public Video Video { get; set; } = new();
         public IFormFile File { get; init; }
-        public List<SelectListItem> ProgenyList { get; set; }
         public string FileName { get; init; }
         public string FileLink { get; init; }
-        public List<SelectListItem> AccessLevelListEn { get; set; }
-        public List<SelectListItem> AccessLevelListDa { get; set; }
-        public List<SelectListItem> AccessLevelListDe { get; set; }
         public List<SelectListItem> LocationsList { get; set; } = [];
         public List<Location> ProgenyLocations { get; set; } = [];
 
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
         public UploadVideoViewModel()
         {
             ProgenyList = [];
             
-            AccessLevelList aclList = new();
-            AccessLevelListEn = aclList.AccessLevelListEn;
-            AccessLevelListDa = aclList.AccessLevelListDa;
-            AccessLevelListDe = aclList.AccessLevelListDe;
         }
 
         public UploadVideoViewModel(BaseItemsViewModel baseItemsViewModel)
@@ -35,28 +32,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             Video = new Video();
             SetBaseProperties(baseItemsViewModel);
         }
-
-        public void SetAccessLevelList()
-        {
-            AccessLevelList accessLevelList = new();
-            AccessLevelListEn = accessLevelList.AccessLevelListEn;
-            AccessLevelListDa = accessLevelList.AccessLevelListDa;
-            AccessLevelListDe = accessLevelList.AccessLevelListDe;
-
-            AccessLevelListEn[Video.AccessLevel].Selected = true;
-            AccessLevelListDa[Video.AccessLevel].Selected = true;
-            AccessLevelListDe[Video.AccessLevel].Selected = true;
-
-            if (LanguageId == 2)
-            {
-                AccessLevelListEn = AccessLevelListDe;
-            }
-
-            if (LanguageId == 3)
-            {
-                AccessLevelListEn = AccessLevelListDa;
-            }
-        }
+        
 
         public void SetProgenyList()
         {
@@ -79,11 +55,11 @@ namespace KinaUnaWeb.Models.ItemViewModels
             Video video = new()
             {
                 ProgenyId = Video.ProgenyId,
-                AccessLevel = Video.AccessLevel,
                 Author = CurrentUser.UserId,
                 Owners = CurrentUser.UserEmail,
                 ThumbLink = Constants.WebAppUrl + "/videodb/moviethumb.png",
-                VideoTime = DateTime.UtcNow
+                VideoTime = DateTime.UtcNow,
+                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString, JsonSerializerOptions.Web)
             };
             if (Video.VideoTime != null)
             {

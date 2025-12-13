@@ -81,7 +81,13 @@ namespace KinaUna.Data.Models
         /// storage.</remarks>
         [NotMapped]
         public TodoItem TodoItem { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Kanban board associated with this entity.
+        /// </summary>
         [NotMapped]
-        public KanbanBoard KanbanBoard { get; set; } = new KanbanBoard();
+        public KanbanBoard KanbanBoard { get; set; } = new();
+
+        [NotMapped] public bool CanUserEdit { get; set; } = false;
     }
 }

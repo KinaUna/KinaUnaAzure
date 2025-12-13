@@ -132,7 +132,7 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
         /// <returns>List of CalendarReminder objects.</returns>
         public async Task SendExpiredCalendarReminders()
         {
-            List<CalendarReminder> expiredReminders = await context.CalendarRemindersDb.AsNoTracking().Where(c => c.NotifyTime < DateTime.UtcNow && !c.Notified && c.RecurrenceRuleId > 0).ToListAsync();
+            List<CalendarReminder> expiredReminders = await context.CalendarRemindersDb.AsNoTracking().Where(c => c.NotifyTime < DateTime.UtcNow && !c.Notified && c.RecurrenceRuleId == 0).ToListAsync();
 
             foreach (CalendarReminder calendarReminder in expiredReminders)
             {
@@ -162,8 +162,8 @@ namespace KinaUnaProgenyApi.Services.CalendarServices
                     startDateTime = DateTime.UtcNow + reminderOffset;
                     endDateTime = DateTime.UtcNow - reminderOffset;
                 }
-
-                List<CalendarItem> recurringEvents = await calendarRecurrencesService.GetCalendarItemsForRecurrenceRule(recurrenceRule, startDateTime, endDateTime, true);
+                UserInfo userInfo = await context.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserId == calendarReminder.UserId);
+                List<CalendarItem> recurringEvents = await calendarRecurrencesService.GetCalendarItemsForRecurrenceRule(recurrenceRule, startDateTime, endDateTime, true, userInfo);
                 if (recurringEvents.Count <= 0) continue;
 
                 foreach (CalendarItem recurringCalendarItem in recurringEvents)

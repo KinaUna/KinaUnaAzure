@@ -3,11 +3,11 @@ using KinaUna.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients;
@@ -53,7 +53,7 @@ public class TasksHttpClient : ITasksHttpClient
 
         string tasksListAsString = await tasksResponseMessage.Content.ReadAsStringAsync();
 
-        return JsonConvert.DeserializeObject<List<KinaUnaBackgroundTask>>(tasksListAsString);
+        return JsonSerializer.Deserialize<List<KinaUnaBackgroundTask>>(tasksListAsString, JsonSerializerOptions.Web);
     }
 
     public async Task<List<KinaUnaBackgroundTask>> ResetTasks()
@@ -68,7 +68,7 @@ public class TasksHttpClient : ITasksHttpClient
 
         string tasksListAsString = await tasksResponseMessage.Content.ReadAsStringAsync();
 
-        return JsonConvert.DeserializeObject<List<KinaUnaBackgroundTask>>(tasksListAsString);
+        return JsonSerializer.Deserialize<List<KinaUnaBackgroundTask>>(tasksListAsString, JsonSerializerOptions.Web);
     }
 
     public async Task<KinaUnaBackgroundTask> ExecuteTask(KinaUnaBackgroundTask task)
@@ -81,12 +81,12 @@ public class TasksHttpClient : ITasksHttpClient
 
         try
         {
-            HttpResponseMessage tasksResponseMessage = await _httpClient.PostAsync(tasksApiPath, new StringContent(JsonConvert.SerializeObject(task), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage tasksResponseMessage = await _httpClient.PostAsync(tasksApiPath, new StringContent(JsonSerializer.Serialize(task, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!tasksResponseMessage.IsSuccessStatusCode) return new KinaUnaBackgroundTask();
 
             string tasksAsString = await tasksResponseMessage.Content.ReadAsStringAsync();
 
-            return JsonConvert.DeserializeObject<KinaUnaBackgroundTask>(tasksAsString);
+            return JsonSerializer.Deserialize<KinaUnaBackgroundTask>(tasksAsString, JsonSerializerOptions.Web);
         }
         catch (Exception)
         {
@@ -103,11 +103,11 @@ public class TasksHttpClient : ITasksHttpClient
         _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
         string tasksApiPath = "/api/BackgroundTasks/";
-        HttpResponseMessage tasksResponseMessage = await _httpClient.PostAsync(tasksApiPath, new StringContent(JsonConvert.SerializeObject(task), System.Text.Encoding.UTF8, "application/json"));
+        HttpResponseMessage tasksResponseMessage = await _httpClient.PostAsync(tasksApiPath, new StringContent(JsonSerializer.Serialize(task, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
         if (!tasksResponseMessage.IsSuccessStatusCode) return new KinaUnaBackgroundTask();
 
         string addTaskResponseAsString = await tasksResponseMessage.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<KinaUnaBackgroundTask>(addTaskResponseAsString);
+        return JsonSerializer.Deserialize<KinaUnaBackgroundTask>(addTaskResponseAsString, JsonSerializerOptions.Web);
     }
 
     public async Task<KinaUnaBackgroundTask> UpdateTask(KinaUnaBackgroundTask task)
@@ -117,11 +117,11 @@ public class TasksHttpClient : ITasksHttpClient
         _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
         string tasksApiPath = "/api/BackgroundTasks/" + task.TaskId;
-        HttpResponseMessage tasksResponseMessage = await _httpClient.PutAsync(tasksApiPath, new StringContent(JsonConvert.SerializeObject(task), System.Text.Encoding.UTF8, "application/json"));
+        HttpResponseMessage tasksResponseMessage = await _httpClient.PutAsync(tasksApiPath, new StringContent(JsonSerializer.Serialize(task, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
         if (!tasksResponseMessage.IsSuccessStatusCode) return new KinaUnaBackgroundTask();
 
         string updateTaskResponseAsString = await tasksResponseMessage.Content.ReadAsStringAsync();
-        return JsonConvert.DeserializeObject<KinaUnaBackgroundTask>(updateTaskResponseAsString);
+        return JsonSerializer.Deserialize<KinaUnaBackgroundTask>(updateTaskResponseAsString, JsonSerializerOptions.Web);
     }
 
     public async Task<bool> DeleteTask(int taskId)
@@ -148,6 +148,6 @@ public class TasksHttpClient : ITasksHttpClient
 
         string tasksAsString = await tasksResponseMessage.Content.ReadAsStringAsync();
 
-        return JsonConvert.DeserializeObject<List<string>>(tasksAsString);
+        return JsonSerializer.Deserialize<List<string>>(tasksAsString, JsonSerializerOptions.Web);
     }
 }

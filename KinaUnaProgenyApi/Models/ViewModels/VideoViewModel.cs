@@ -1,7 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using KinaUna.Data.Models;
+﻿using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
+using System.Collections.Generic;
 
 namespace KinaUnaProgenyApi.Models.ViewModels
 {
@@ -19,9 +20,6 @@ namespace KinaUnaProgenyApi.Models.ViewModels
         public string Owners { get; set; } // Comma separated list of emails.
         public int AccessLevel { get; set; } // 0 = Hidden/Parents only, 1=Family, 2= Friends, 3=DefaultUSers, 4= public.
         public string Author { get; set; }
-        public List<SelectListItem> AccessLevelListEn { get; set; }
-        public List<SelectListItem> AccessLevelListDa { get; set; }
-        public List<SelectListItem> AccessLevelListDe { get; set; }
         public bool IsAdmin { get; set; }
         public int CommentThreadNumber { get; set; }
         public List<Comment> CommentsList { get; set; }
@@ -48,15 +46,7 @@ namespace KinaUnaProgenyApi.Models.ViewModels
         public int VideoCount { get; set; }
         public int PrevVideo { get; set; }
         public int NextVideo { get; set; }
-
-        public VideoViewModel()
-        {
-            AccessLevelList aclList = new();
-            AccessLevelListEn = aclList.AccessLevelListEn;
-            AccessLevelListDa = aclList.AccessLevelListDa;
-            AccessLevelListDe = aclList.AccessLevelListDe;
-
-        }
+        public TimelineItemPermission ItemPerMission { get; set; }
 
         public void SetVideoPropertiesFromVideoItem(Video video)
         {
@@ -70,11 +60,7 @@ namespace KinaUnaProgenyApi.Models.ViewModels
             DurationHours = video.DurationHours;
             DurationMinutes = video.DurationMinutes;
             DurationSeconds = video.DurationSeconds;
-            AccessLevel = video.AccessLevel;
             Author = video.Author;
-            AccessLevelListEn[video.AccessLevel].Selected = true;
-            AccessLevelListDa[video.AccessLevel].Selected = true;
-            AccessLevelListDe[video.AccessLevel].Selected = true;
             Tags = video.Tags;
             Location = video.Location;
             Latitude = video.Latitude;

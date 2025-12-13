@@ -9,17 +9,17 @@ namespace KinaUnaWeb.Models.Kanbans
         public int PopUpKanbanBoardId = 0;
         public KanbanBoardsListViewModel(BaseItemsViewModel baseItemsViewModel)
         {
-            SetBaseProperties(baseItemsViewModel);
             KanbanBoardsList = [];
             KanbanBoardsPageParameters = new KanbanBoardsPageParameters
             {
-                ProgenyId = CurrentProgenyId,
+                ProgenyId = baseItemsViewModel.CurrentProgenyId,
+                FamilyId = baseItemsViewModel.CurrentFamilyId,
                 CurrentPageNumber = 0,
                 ItemsPerPage = 10,
                 TotalPages = 0,
                 TotalItems = 0,
                 LanguageId = LanguageId,
-                Sort = 0,
+                Sort = 0
             };
         }
     }

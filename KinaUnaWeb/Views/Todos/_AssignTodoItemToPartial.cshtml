@@ -1,5 +1,7 @@
 ﻿@model KinaUnaWeb.Models.ItemViewModels.TodoViewModel;
 @using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @inject ILocaleManager LocaleManager
 @{
@@ -8,9 +10,12 @@
     {
         assignToString = await LocaleManager.GetTranslation("Assign subtask to", PageNames.Todos, Model.LanguageId);
     }
+
+    int minHeight = Model.ProgenyList.Count * 40;
+    string minHeightString = minHeight + "px";
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
-    <div class="timeline-card-body bg-dark modal-content item-details-content" style="width: fit-content;">
+    <div class="timeline-card-body bg-dark modal-content item-details-content" style="width: fit-content; min-height: @minHeightString">
         <div class="row text-white m-0 item-details-header">
             <div class="col-12">
                 <div class="space-20">
@@ -21,20 +26,20 @@
             </div>
             <div class="col">
                 <div class="h4 mr-3 align-bottom">
-                    @assignToString
+                    @Model.TodoItem.Title
                 </div>
             </div>
         </div>
-        <div class="space-20"></div>
         <div class="row m-0">
             <div class="col-12">
                 <div class="row m-0">
                     <div class="col-12">
-                        <div class="h5">@Model.TodoItem.Title</div>
+                        <div class="space-20"></div>
+                        <div class="h5">@assignToString</div>
                     </div>
                 </div>
                 <div class="space-20"></div>
-                @if (Model.IsCurrentUserProgenyAdmin)
+                @if (Model.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Add || Model.TodoItem.Progeny?.UserId == User.GetUserId())
                 {
                     <form id="assign-todo-item-to-form" asp-action="AssignTodoItemTo" asp-controller="Todos" role="form" method="post">
                         <div class="form-group">
@@ -42,9 +47,15 @@
                                 <select id="assign-todo-item-to-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="TodoItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
                             </div>
                         </div>
+                        @* <div class="form-group">
+                            <div class="col-auto">
+                                <select id="assign-todo-item-to-family-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.FamilyList.Count" asp-for="TodoItem.FamilyId" asp-items="@Model.FamilyList"></select>
+                            </div>
+                        </div> *@
                         <div class="form-group">
                             <input type="hidden" asp-for="TodoItem.TodoItemId" value="@Model.TodoItem.TodoItemId"/>
                             <div class="col">
+                                <div class="space-20"></div>
                                 <button id="assign-todo-item-to-submit-button" type="submit" class="btn btn-success" data-todo-item-id="@Model.TodoItem.TodoItemId">@assignToString</button>
                                 <button type="button" class="btn btn-danger assign-todo-item-to-cancel-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</button>
                             </div>

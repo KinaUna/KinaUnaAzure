@@ -14,6 +14,11 @@ namespace KinaUna.Data.Extensions
         /// <returns>string: The full name as a single string</returns>
         public static string FullName(this UserInfo userInfo)
         {
+            if (userInfo == null)
+            {
+                return string.Empty;
+            }
+
             string fullName = "";
             if (!string.IsNullOrEmpty(userInfo.FirstName))
             {

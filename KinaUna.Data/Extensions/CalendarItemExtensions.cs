@@ -18,7 +18,6 @@ namespace KinaUna.Data.Extensions
             currentCalendarItem.EventId = otherCalendarItem.EventId;
             currentCalendarItem.UId = otherCalendarItem.UId;
             currentCalendarItem.Author = otherCalendarItem.Author;
-            currentCalendarItem.AccessLevel = otherCalendarItem.AccessLevel;
             currentCalendarItem.AllDay = otherCalendarItem.AllDay;
             currentCalendarItem.Context = otherCalendarItem.Context;
             currentCalendarItem.EndString = otherCalendarItem.EndString;
@@ -28,6 +27,7 @@ namespace KinaUna.Data.Extensions
             currentCalendarItem.Location = otherCalendarItem.Location;
             currentCalendarItem.Notes = otherCalendarItem.Notes;
             currentCalendarItem.ProgenyId = otherCalendarItem.ProgenyId;
+            currentCalendarItem.FamilyId = otherCalendarItem.FamilyId;
             currentCalendarItem.StartString = otherCalendarItem.StartString;
             currentCalendarItem.Title = otherCalendarItem.Title;
             currentCalendarItem.Progeny = otherCalendarItem.Progeny;
@@ -44,7 +44,6 @@ namespace KinaUna.Data.Extensions
         {
             currentCalendarItem.UId = otherCalendarItem.UId;
             currentCalendarItem.Author = otherCalendarItem.Author;
-            currentCalendarItem.AccessLevel = otherCalendarItem.AccessLevel;
             currentCalendarItem.AllDay = otherCalendarItem.AllDay;
             currentCalendarItem.Context = otherCalendarItem.Context;
             currentCalendarItem.EndString = otherCalendarItem.EndString;
@@ -53,12 +52,13 @@ namespace KinaUna.Data.Extensions
             currentCalendarItem.IsReadonly = otherCalendarItem.IsReadonly;
             currentCalendarItem.Location = otherCalendarItem.Location;
             currentCalendarItem.Notes = otherCalendarItem.Notes;
-            currentCalendarItem.ProgenyId = otherCalendarItem.ProgenyId;
             currentCalendarItem.StartString = otherCalendarItem.StartString;
             currentCalendarItem.Title = otherCalendarItem.Title;
-            currentCalendarItem.Progeny = otherCalendarItem.Progeny;
             currentCalendarItem.RecurrenceRuleId = otherCalendarItem.RecurrenceRuleId;
             currentCalendarItem.RecurrenceRule = otherCalendarItem.RecurrenceRule;
+            currentCalendarItem.ModifiedBy = otherCalendarItem.ModifiedBy;
+            currentCalendarItem.ModifiedTime = DateTime.UtcNow;
+            currentCalendarItem.ItemPermissionsDtoList = otherCalendarItem.ItemPermissionsDtoList;
         }
 
         /// <summary>
@@ -69,16 +69,21 @@ namespace KinaUna.Data.Extensions
         public static void CopyPropertiesForAdd(this CalendarItem currentCalendarItem, CalendarItem otherCalendarItem)
         {
             currentCalendarItem.UId = otherCalendarItem.UId;
-            currentCalendarItem.AccessLevel = otherCalendarItem.AccessLevel;
+            currentCalendarItem.CreatedBy = otherCalendarItem.CreatedBy;
             currentCalendarItem.Author = otherCalendarItem.Author;
             currentCalendarItem.Notes = otherCalendarItem.Notes;
             currentCalendarItem.ProgenyId = otherCalendarItem.ProgenyId;
+            currentCalendarItem.FamilyId = otherCalendarItem.FamilyId;
             currentCalendarItem.AllDay = otherCalendarItem.AllDay;
             currentCalendarItem.Context = otherCalendarItem.Context;
             currentCalendarItem.Location = otherCalendarItem.Location;
             currentCalendarItem.Title = otherCalendarItem.Title;
             currentCalendarItem.StartTime = otherCalendarItem.StartTime;
             currentCalendarItem.EndTime = otherCalendarItem.EndTime;
+            currentCalendarItem.CreatedTime = DateTime.UtcNow;
+            currentCalendarItem.ModifiedBy = otherCalendarItem.ModifiedBy;
+            currentCalendarItem.ModifiedTime = DateTime.UtcNow;
+            currentCalendarItem.ItemPermissionsDtoList = otherCalendarItem.ItemPermissionsDtoList;
         }
 
         /// <summary>
@@ -93,7 +98,7 @@ namespace KinaUna.Data.Extensions
             {
                 ItemId = calendarItem.EventId.ToString(),
                 ProgenyId = calendarItem.ProgenyId,
-                AccessLevel = calendarItem.AccessLevel,
+                FamilyId = calendarItem.FamilyId,
                 ItemType = (int)KinaUnaTypes.TimeLineType.Calendar,
                 CreatedBy = calendarItem.Author,
                 CreatedTime = DateTime.UtcNow,

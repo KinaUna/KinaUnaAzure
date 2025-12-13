@@ -1,5 +1,8 @@
-﻿using KinaUna.Data.Models.ItemInterfaces;
+﻿using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.DTOs;
+using KinaUna.Data.Models.ItemInterfaces;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -15,59 +18,94 @@ namespace KinaUna.Data.Models
         public bool Active { get; set; }
 
         [MaxLength(256)]
-        public string FirstName { get; set; }
+        public string FirstName { get; set; } = string.Empty;
 
         [MaxLength(256)]
-        public string MiddleName { get; set; }
+        public string MiddleName { get; set; } = string.Empty;
 
         [MaxLength(256)]
-        public string LastName { get; set; }
+        public string LastName { get; set; } = string.Empty;
 
         [MaxLength(256)]
-        public string DisplayName { get; set; }
+        public string DisplayName { get; set; } = string.Empty;
 
-        public int? AddressIdNumber { get; set; }
-
-        [MaxLength(256)]
-        public string Email1 { get; set; }
+        public int? AddressIdNumber { get; set; } 
 
         [MaxLength(256)]
-        public string Email2 { get; set; }
+        public string Email1 { get; set; } = string.Empty;
 
         [MaxLength(256)]
-        public string PhoneNumber { get; set; }
+        public string Email2 { get; set; } = string.Empty;
 
         [MaxLength(256)]
-        public string MobileNumber { get; set; }
+        public string PhoneNumber { get; set; } = string.Empty;
 
         [MaxLength(256)]
-        public string Context { get; set; }
+        public string MobileNumber { get; set; } = string.Empty;
 
         [MaxLength(256)]
-        public string Notes { get; set; }
+        public string Context { get; set; } = string.Empty;
+
+        [MaxLength(4096)]
+        public string Notes { get; set; } = string.Empty;
 
         [MaxLength(1024)]
-        public string PictureLink { get; set; }
+        public string PictureLink { get; set; } = string.Empty;
 
         [MaxLength(1024)]
-        public string Website { get; set; }
-        public int AccessLevel { get; set; }
-        public int ProgenyId { get; set; }
+        public string Website { get; set; } = string.Empty;
+        
+        public int ProgenyId { get; set; } = 0; // Which Progeny this contact belongs to. 0 if it belongs to a family
+        public int FamilyId { get; set; } = 0; // Which Family this contact belongs to. 0 if it belongs to a Progeny
 
         [MaxLength(512)]
-        public string Tags { get; set; }
+        public string Tags { get; set; } = string.Empty; // Comma separated list of tags.
         public DateTime? DateAdded { get; set; }
 
         [MaxLength(256)]
-        public string Author { get; set; }
+        public string Author { get; set; } // Todo: Replace with CreatedBy?
 
         [NotMapped]
         public Progeny Progeny { get; set; }
+
+        [NotMapped] public Family.Family Family { get; set; }
 
         [NotMapped]
         public Address Address { get; set; }
 
         [NotMapped]
-        public string AddressString { get; set; }
+        public string AddressString { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the identifier of the user or system that created the entity.
+        /// </summary>
+        [MaxLength(256)]
+        public string CreatedBy { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the date and time when the entity was created.
+        /// </summary>
+        public DateTime CreatedTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifier of the user or system that last modified the entity.
+        /// </summary>
+        [MaxLength(256)]
+        public string ModifiedBy { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the date and time when the object was last modified.
+        /// </summary>
+        public DateTime ModifiedTime { get; set; }
+
+        /// <summary>
+        /// The current user's permissions for this item.
+        /// </summary>
+        [NotMapped] public TimelineItemPermission ItemPerMission { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of item permissions associated with the current entity. For adding or updating item permissions.
+        /// </summary>
+        [NotMapped] public List<ItemPermissionDto> ItemPermissionsDtoList { get; set; } = new List<ItemPermissionDto>();
     }
 }

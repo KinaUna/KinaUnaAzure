@@ -1,5 +1,6 @@
 ﻿@using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.TypeScriptModels.TodoItems.TodoItemResponse
 @inject ILocaleManager LocaleManager
@@ -12,8 +13,8 @@
     string showDetailsString = await LocaleManager.GetTranslation("Show details", PageNames.Todos, Model.LanguageId);
     string assignToString = await LocaleManager.GetTranslation("Assign to ..", PageNames.Todos, Model.LanguageId);
 }
-<div class="col-12 cols-sm-10 col-md-9 col-lg-7 col-xl-6 col-xxl-4">
-    <div class="card-compact bg-todos todo-item m-1" data-todo-id="@Model.TodoItemId" align="left" style="background: @Model.TodoItem.StatusBackgroundColor()">
+<div class="col-12 col-sm-10 col-md-9 col-lg-7 col-xl-6 col-xxl-4">
+    <div class="card-compact bg-todos todo-item m-1 item-element-button" data-todo-id="@Model.TodoItemId" align="left" style="background: @Model.TodoItem.StatusBackgroundColor()">
         @if (Model.TodoItem.TodoItemId == 0)
         {
             <div>@await LocaleManager.GetTranslation("Nothing to see here yet.", PageNames.Notes, Model.LanguageId)</div>
@@ -21,7 +22,14 @@
         else
         {
             <div class="row m-0">
-                <img src="@Model.TodoItem.Progeny.GetProfilePictureUrl()" style="position: absolute; right: 0; top: 0; max-height: 32px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px; z-index: 10;" />
+                @if (Model.TodoItem.ProgenyId > 0)
+                {
+                    <img src="@Model.TodoItem.Progeny.GetProfilePictureUrl()" style="position: absolute; right: 0; top: 0; max-height: 32px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px; z-index: 10;" />
+                }
+                @if (Model.TodoItem.FamilyId > 0)
+                {
+                    <img src="@Model.TodoItem.Family.GetProfilePictureUrl()" style="position: absolute; right: 0; top: 0; max-height: 32px; margin-top: 2px; margin-right: 6px; margin-left: 4px; border-radius: 10px; z-index: 10;" />
+                }
                 <div class="col p-0 card-compact-title text-left">
                     <div class="row m-0">
                         <div class="col-auto pl-1 pr-2"><i class="material-icons kinauna-icon-medium" style="font-size: 32px">@Model.TodoItem.StatusIcon()</i> </div>
@@ -36,7 +44,7 @@
                         </div>
                     </div>
                 </div>
-                
+
             </div>
             <div id="todo-item-more-div-@Model.TodoItem.TodoItemId" class="row m-0 d-none todo-item-more-info" data-todo-item-more-id="@Model.TodoItem.TodoItemId">
                 <div class="col-12 p-0 card-compact-body">
@@ -112,7 +120,7 @@
             <button class="kanban-card-menu-item-button" data-show-details-todo-item-id="@Model.TodoItem.TodoItemId">
                 <i class="material-icons kanban-menu-material-icons">fact_check</i> @showDetailsString
             </button>
-            @if (Model.IsCurrentUserProgenyAdmin)
+            @if (Model.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Add || Model.TodoItem.Progeny?.UserId == User.GetUserId())
             {
                 <div class="item-menu-divider"></div>
                 @if (Model.TodoItem.Status != (int)KinaUnaTypes.TodoStatusType.NotStarted)
@@ -147,19 +155,24 @@
                 <button class="kanban-card-menu-item-button" data-todo-add-to-kanban-id="@Model.TodoItem.TodoItemId">
                     <i class="material-icons kanban-menu-material-icons">view_kanban</i> @addToKanbanBoardString
                 </button>
-                <div class="item-menu-divider"></div>
-                <button class="kanban-card-menu-item-button edit-item-button" data-edit-item-type="todo" data-edit-item-item-id="@Model.TodoItem.TodoItemId">
-                    <i class="material-icons kanban-menu-material-icons">edit</i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
-                </button>
-
-                <button class="kanban-card-menu-item-button delete-item-button" data-delete-item-type="todo" data-delete-item-item-id="@Model.TodoItem.TodoItemId">
-                    <i class="material-icons kanban-menu-material-icons">delete</i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
-                </button>
+                @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit) 
+                {
+                    <div class="item-menu-divider"></div>
+                    <button class="kanban-card-menu-item-button edit-item-button" data-edit-item-type="todo" data-edit-item-item-id="@Model.TodoItem.TodoItemId">
+                        <i class="material-icons kanban-menu-material-icons">edit</i> @await LocaleManager.GetTranslation("Edit", PageNames.AddItem, Model.LanguageId)
+                    </button>
+                    @if (Model.TodoItem.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
+                    {
+                        <button class="kanban-card-menu-item-button delete-item-button" data-delete-item-type="todo" data-delete-item-item-id="@Model.TodoItem.TodoItemId">
+                            <i class="material-icons kanban-menu-material-icons">delete</i> @await LocaleManager.GetTranslation("Delete", PageNames.AddItem, Model.LanguageId)
+                        </button>
+                    }
+                }
             }
         </div>
     </div>
 </div>
-@if (Model.IsCurrentUserProgenyAdmin)
+@if (Model.TodoItem.ItemPerMission.PermissionLevel > PermissionLevel.Add || Model.TodoItem.Progeny?.UserId == User.GetUserId())
 {
     <div id="add-todo-item-to-kanban-board-modal-@Model.TodoItem.TodoItemId" class="d-none settings-modal" tabindex="-1" role="dialog"></div>
 }

@@ -1,0 +1,35 @@
+﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.HomeViewModels.HomeFeedViewModel
+@inject ILocaleManager LocaleManager
+@if (User.Identity != null && User.Identity.IsAuthenticated && ViewBag.OriginalProgeny != null)
+{
+    <div class="col-12">
+        @await LocaleManager.GetTranslation("You don't have access to data for", PageNames.Home, Model.LanguageId) @ViewBag.OriginalProgeny.NickName<br/>
+
+        @await LocaleManager.GetTranslation("To request access click here:", PageNames.Home, Model.LanguageId)
+        <a asp-controller="Home" asp-action="RequestAccess" asp-route-childId="@ViewBag.OriginalProgeny.Id" class="btn btn-success btn-round leave-page">
+            <i class="fas fa-plus"></i> @await LocaleManager.GetTranslation("Request access", PageNames.Home, Model.LanguageId)
+        </a><br/>
+        @await LocaleManager.GetTranslation("Displaying data for KinaUna.com instead.", PageNames.Home, Model.LanguageId)<br/>
+    </div>
+}
+<div id="progeny-trivia-select-wrapper" class="col-12">
+    @foreach (Progeny progeny in Model.TriviaProgenies)
+    {
+        string selectProgenyClass = "select-trivia-progeny-link";
+        if (Model.CurrentProgeny.Id == progeny.Id)
+        {
+            selectProgenyClass = "select-trivia-progeny-link active";
+        }
+        <a id="progeny-trivia-select-@progeny.Id" class="@selectProgenyClass" data-progeny-id="@progeny.Id">
+            <img src="@progeny.GetProfilePictureUrl()" class="select-trivia-progeny-picture" alt="@progeny.NickName" />
+        </a>
+    }
+    <div class="space-10"></div>
+    
+</div>
+<div id="progeny-trivia-content" class="col-12">
+    @await Html.PartialAsync("_RandomPicturePartial", Model)
+</div>

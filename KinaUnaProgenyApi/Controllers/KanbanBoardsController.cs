@@ -1,15 +1,17 @@
-﻿using KinaUna.Data;
-using KinaUna.Data.Extensions;
+﻿using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.KanbanServices;
-using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.Family;
+using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.FamiliesServices;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -22,13 +24,13 @@ namespace KinaUnaProgenyApi.Controllers
     /// controller ensures that users have the appropriate access level to perform operations on a Kanban board  and
     /// validates their permissions against the associated progeny data.</remarks>
     /// <param name="kanbanBoardsService">The service for managing Kanban boards.</param>
-    /// <param name="userAccessService">The service for validating user access levels.</param>
     /// <param name="progenyService">The service for managing progeny data.</param>
     [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class KanbanBoardsController(IKanbanBoardsService kanbanBoardsService, IUserAccessService userAccessService, IProgenyService progenyService) : ControllerBase
+    public class KanbanBoardsController(IKanbanBoardsService kanbanBoardsService, IProgenyService progenyService, IFamiliesService familiesService,
+        IUserInfoService userInfoService, IAccessManagementService accessManagementService) : ControllerBase
     {
         /// <summary>
         /// Retrieves a Kanban board by its unique identifier.
@@ -43,36 +45,38 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{kanbanBoardId:int}")]
         public async Task<IActionResult> GetKanbanBoard(int kanbanBoardId)
         {
-            KanbanBoard kanbanBoard = await kanbanBoardsService.GetKanbanBoardById(kanbanBoardId);
-            if (kanbanBoard == null)
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            KanbanBoard kanbanBoard = await kanbanBoardsService.GetKanbanBoardById(kanbanBoardId, currentUserInfo);
+            if (kanbanBoard == null || kanbanBoard.KanbanBoardId == 0)
             {
                 return NotFound();
             }
             
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(kanbanBoard.ProgenyId, userEmail, kanbanBoard.AccessLevel);
-
-            if (accessLevelResult.IsSuccess) return Ok(kanbanBoard);
-
-            return accessLevelResult.ToActionResult();
+            return Ok(kanbanBoard);
         }
 
         [HttpPost]
         [Route("[action]")]
-        public async Task<IActionResult> GetProgeniesKanbanBoardsList([FromBody] KanbanBoardsRequest request)
+        public async Task<IActionResult> GetKanbanBoardsList([FromBody] KanbanBoardsRequest request)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             List<Progeny> progenyList = [];
+            List<Family> familyList = [];
             foreach (int progenyId in request.ProgenyIds)
             {
-                Progeny progeny = await progenyService.GetProgeny(progenyId);
+                Progeny progeny = await progenyService.GetProgeny(progenyId, currentUserInfo);
                 if (progeny != null)
                 {
-                    UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
-                    if (userAccess != null)
-                    {
-                        progenyList.Add(progeny);
-                    }
+                    progenyList.Add(progeny);
+                }
+            }
+
+            foreach (int familyId in request.FamilyIds)
+            {
+                Family family = await familiesService.GetFamilyById(familyId, currentUserInfo);
+                if (family != null)
+                {
+                    familyList.Add(family);
                 }
             }
 
@@ -82,9 +86,13 @@ namespace KinaUnaProgenyApi.Controllers
             if (progenyList.Count == 0) return NotFound();
             foreach (Progeny progeny in progenyList)
             {
-                UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progeny.Id, userEmail);
-                List<KanbanBoard> progenyKanbanBoards = await kanbanBoardsService.GetKanbanBoardsForProgeny(progeny.Id, userAccess.AccessLevel, request);
+                List<KanbanBoard> progenyKanbanBoards = await kanbanBoardsService.GetKanbanBoardsForProgenyOrFamily(progeny.Id, 0, currentUserInfo, request);
                 kanbanBoards.AddRange(progenyKanbanBoards);
+            }
+            foreach (Family family in familyList)
+            {
+                List<KanbanBoard> familyKanbanBoards = await kanbanBoardsService.GetKanbanBoardsForProgenyOrFamily(0, family.FamilyId, currentUserInfo, request);
+                kanbanBoards.AddRange(familyKanbanBoards);
             }
 
             KanbanBoardsResponse kanbanBoardsResponse = kanbanBoardsService.CreateKanbanBoardsResponse(kanbanBoards, request);
@@ -107,30 +115,40 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] KanbanBoard kanbanBoard)
         {
-            if (kanbanBoard == null)
+            // Either ProgenyId or FamilyId must be set, but not both.
+            if (kanbanBoard.ProgenyId > 0 && kanbanBoard.FamilyId > 0)
             {
-                return BadRequest();
+                return BadRequest("A Kanban board must have either a ProgenyId or a FamilyId set, but not both.");
+            }
+            if (kanbanBoard.ProgenyId == 0 && kanbanBoard.FamilyId == 0)
+            {
+                return BadRequest("A Kanban board must have either a ProgenyId or a FamilyId set.");
             }
 
-            Progeny progeny = await progenyService.GetProgeny(kanbanBoard.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            if (kanbanBoard.ProgenyId > 0)
             {
-
-                if (!progeny.IsInAdminList(userEmail))
+                if (!await accessManagementService.HasProgenyPermission(kanbanBoard.ProgenyId, currentUserInfo, PermissionLevel.Add)) 
                 {
                     return Unauthorized();
                 }
             }
-            else
+            
+            if (kanbanBoard.FamilyId > 0)
             {
-                return BadRequest();
+                if (!await accessManagementService.HasFamilyPermission(kanbanBoard.FamilyId, currentUserInfo, PermissionLevel.Add)) 
+                {
+                    return Unauthorized();
+                }
+            }
+            
+            KanbanBoard savedKanbanItem = await kanbanBoardsService.AddKanbanBoard(kanbanBoard, currentUserInfo);
+            if (savedKanbanItem == null)
+            {
+                return Unauthorized();
             }
 
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(kanbanBoard.ProgenyId, userEmail, kanbanBoard.AccessLevel);
-            if (!accessLevelResult.IsSuccess) return accessLevelResult.ToActionResult();
-
-            KanbanBoard savedKanbanItem = await kanbanBoardsService.AddKanbanBoard(kanbanBoard);
+            savedKanbanItem = await kanbanBoardsService.GetKanbanBoardById(savedKanbanItem.KanbanBoardId, currentUserInfo);
 
             return Ok(savedKanbanItem);
         }
@@ -152,39 +170,25 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] KanbanBoard kanbanBoard)
         {
-            if (kanbanBoard == null || id != kanbanBoard.KanbanBoardId)
+            // Either ProgenyId or FamilyId must be set, but not both.
+            if (kanbanBoard == null || id != kanbanBoard.KanbanBoardId || (kanbanBoard.ProgenyId > 0 && kanbanBoard.FamilyId > 0))
             {
                 return BadRequest();
             }
 
-            KanbanBoard existingKanbanBoard = await kanbanBoardsService.GetKanbanBoardById(id);
-            if (existingKanbanBoard == null)
-            {
-                return BadRequest();
-            }
-
-            Progeny progeny = await progenyService.GetProgeny(existingKanbanBoard.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
-            {
-
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
-            }
-            else
-            {
-                return BadRequest();
-            }
-
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(kanbanBoard.ProgenyId, userEmail, kanbanBoard.AccessLevel);
-            if (!accessLevelResult.IsSuccess) return accessLevelResult.ToActionResult();
-
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            
             kanbanBoard.ModifiedBy = User.GetUserId();
             kanbanBoard.ModifiedTime = DateTime.UtcNow;
 
-            KanbanBoard resultKanbanItem = await kanbanBoardsService.UpdateKanbanBoard(kanbanBoard);
+            KanbanBoard resultKanbanItem = await kanbanBoardsService.UpdateKanbanBoard(kanbanBoard, currentUserInfo);
+            if (resultKanbanItem == null)
+            {
+                return Unauthorized();
+            }
+
+            resultKanbanItem = await kanbanBoardsService.GetKanbanBoardById(resultKanbanItem.KanbanBoardId, currentUserInfo);
+
             return Ok(resultKanbanItem);
         }
 
@@ -205,31 +209,19 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id, [FromQuery] bool hardDelete = false)
         {
-            KanbanBoard existingKanbanBoard = await kanbanBoardsService.GetKanbanBoardById(id);
-            if (existingKanbanBoard == null)
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            KanbanBoard existingKanbanBoard = await kanbanBoardsService.GetKanbanBoardById(id, currentUserInfo);
+            if (existingKanbanBoard == null || existingKanbanBoard.KanbanBoardId == 0)
             {
                 return NotFound();
             }
             
-            Progeny progeny = await progenyService.GetProgeny(existingKanbanBoard.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
+            KanbanBoard deletedKanbanItem = await kanbanBoardsService.DeleteKanbanBoard(existingKanbanBoard, currentUserInfo, hardDelete);
+            if (deletedKanbanItem == null)
             {
-
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
-            }
-            else
-            {
-                return BadRequest();
+                return Unauthorized();
             }
 
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(existingKanbanBoard.ProgenyId, userEmail, existingKanbanBoard.AccessLevel);
-            if (!accessLevelResult.IsSuccess) return accessLevelResult.ToActionResult();
-
-            KanbanBoard deletedKanbanItem = await kanbanBoardsService.DeleteKanbanBoard(existingKanbanBoard, hardDelete);
             return Ok(deletedKanbanItem);
         }
     }

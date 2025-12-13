@@ -3,11 +3,11 @@ using KinaUna.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -62,7 +62,7 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string measurementAsString = await measurementResponse.Content.ReadAsStringAsync();
 
-            measurementItem = JsonConvert.DeserializeObject<Measurement>(measurementAsString);
+            measurementItem = JsonSerializer.Deserialize<Measurement>(measurementAsString, JsonSerializerOptions.Web);
 
             return measurementItem;
         }
@@ -79,11 +79,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string measurementsApiPath = "/api/Measurements/";
-            HttpResponseMessage measurementsResponse = await _httpClient.PostAsync(measurementsApiPath, new StringContent(JsonConvert.SerializeObject(measurement), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage measurementsResponse = await _httpClient.PostAsync(measurementsApiPath, new StringContent(JsonSerializer.Serialize(measurement, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!measurementsResponse.IsSuccessStatusCode) return new Measurement();
 
             string measurementsAsString = await measurementsResponse.Content.ReadAsStringAsync();
-            measurement = JsonConvert.DeserializeObject<Measurement>(measurementsAsString);
+            measurement = JsonSerializer.Deserialize<Measurement>(measurementsAsString, JsonSerializerOptions.Web);
             return measurement;
 
         }
@@ -100,11 +100,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateMeasurementsApiPath = "/api/Measurements/" + measurement.MeasurementId;
-            HttpResponseMessage measurementResponse = await _httpClient.PutAsync(updateMeasurementsApiPath, new StringContent(JsonConvert.SerializeObject(measurement), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage measurementResponse = await _httpClient.PutAsync(updateMeasurementsApiPath, new StringContent(JsonSerializer.Serialize(measurement, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!measurementResponse.IsSuccessStatusCode) return new Measurement();
 
             string measurementAsString = await measurementResponse.Content.ReadAsStringAsync();
-            measurement = JsonConvert.DeserializeObject<Measurement>(measurementAsString);
+            measurement = JsonSerializer.Deserialize<Measurement>(measurementAsString, JsonSerializerOptions.Web);
             return measurement;
 
         }
@@ -138,12 +138,12 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string measurementsApiPath = "/api/measurements/progeny/" + progenyId;
-            HttpResponseMessage measurementsResponse = await _httpClient.GetAsync(measurementsApiPath).ConfigureAwait(false);
+            HttpResponseMessage measurementsResponse = await _httpClient.GetAsync(measurementsApiPath);
             if (!measurementsResponse.IsSuccessStatusCode) return progenyMeasurementsList;
 
-            string measurementsAsString = await measurementsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string measurementsAsString = await measurementsResponse.Content.ReadAsStringAsync();
 
-            progenyMeasurementsList = JsonConvert.DeserializeObject<List<Measurement>>(measurementsAsString);
+            progenyMeasurementsList = JsonSerializer.Deserialize<List<Measurement>>(measurementsAsString, JsonSerializerOptions.Web);
 
             return progenyMeasurementsList;
         }

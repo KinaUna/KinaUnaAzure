@@ -1551,6 +1551,10 @@ input-group.e-control-wrapper:not(.e-float-icon-left):not(.e-float-input)::after
     opacity: 0.75;
 }
 
+.text-opacity-50 {
+    opacity: 0.5;
+}
+
 .bg-primary {
     background: linear-gradient(60deg, #ab47bc, #7b1fa2);
 }
@@ -3726,6 +3730,17 @@ noUi-handle:after, .noUi-handle:before {
     max-height: 100vh;
 }
 
+.item-element-button {
+    cursor: pointer;
+    border: solid 1px;
+    border-color: transparent;
+}
+    .item-element-button:hover {
+        color: #ffef2f;
+        border: solid 1px;
+        box-shadow: 0 14px 26px -12px rgb(76 175 80 / 42%), 0 4px 23px 0 rgb(0 0 0 / 12%), 0 8px 10px -5px rgb(76 175 80 / 20%);
+    }
+
 .modal {
     position: fixed;
     top: 0;
@@ -4481,7 +4496,7 @@ noUi-handle:after, .noUi-handle:before {
 
 @media (min-width: 576px) {
     .page-tab {
-        padding-top: 46px;
+        padding-top: 42px;
         padding-bottom: 10px;
         padding-left: 0;
         padding-right: 0;
@@ -4506,6 +4521,7 @@ noUi-handle:after, .noUi-handle:before {
     border-top-left-radius: 0;
     border-bottom-right-radius: 15px;
     border-bottom-left-radius: 0;
+    line-height: 1.9;
 }
 
     .btn-page-tab:hover {
@@ -4538,4 +4554,77 @@ noUi-handle:after, .noUi-handle:before {
             color: #fbd10d;
             font-size: larger;
         }
+}
+
+.profile-picture-small {
+    max-height: 32px;
+    max-width: 40px;
+    border-radius: 10px;
+}
+
+.select-trivia-progeny-link {
+    display: inline-block;
+    text-decoration: none;
+    color: #ffffff;
+    margin: 6px;
+    padding: 4px;
+    cursor: pointer;
+    border-top: 1px solid transparent;
+    border-bottom: 1px solid transparent;
+    border-radius: 5px;
+}
+.select-trivia-progeny-link:hover {
+    text-decoration: none;
+    color: #ffef2f;
+}
+
+.select-trivia-progeny-link:focus {
+    text-decoration: none;
+    color: #ffef2f;
+}
+
+    .select-trivia-progeny-link.active {
+        border-top: 1px solid #fbd10d;
+        border-bottom: 1px solid #fbd10d;
+    }
+
+.select-trivia-progeny-picture {
+    border-radius: 10px;
+    height: 42px;
+    max-width: 42px;
+    object-fit: contain;
+}
+
+.progeny-selector-link {
+    display: inline-block;
+    text-decoration: none;
+    color: #ffffff;
+    margin: 6px;
+    padding: 4px;
+    cursor: pointer;
+    border-top: 1px solid transparent;
+    border-bottom: 1px solid transparent;
+    border-radius: 5px;
+}
+
+    .progeny-selector-link:hover {
+        text-decoration: none;
+        color: #ffef2f;
+    }
+
+    .progeny-selector-link:focus {
+        text-decoration: none;
+        color: #ffef2f;
+    }
+
+    .progeny-selector-link.active {
+        border-top: 1px solid #fbd10d;
+        border-bottom: 1px solid #fbd10d;
+    }
+
+.progeny-selector-picture {
+    border-radius: 10px;
+    height: 42px;
+    max-width: 42px;
+    object-fit: contain;
 }

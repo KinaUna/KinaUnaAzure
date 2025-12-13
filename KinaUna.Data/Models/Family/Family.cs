@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using KinaUna.Data.Models.AccessManagement;
 
 namespace KinaUna.Data.Models.Family
 {
@@ -29,6 +30,12 @@ namespace KinaUna.Data.Models.Family
         /// </summary>
         [MaxLength(4096)]
         public string Description { get; set; } = string.Empty;
+
+        /// <summary>
+        /// The filename of the picture for the family icon.
+        /// </summary>
+        [MaxLength(512)]
+        public string PictureLink { get; set; }
 
         /// <summary>
         /// Gets or sets a comma-separated list of administrator email addresses.
@@ -63,5 +70,7 @@ namespace KinaUna.Data.Models.Family
 
         [NotMapped]
         public List<FamilyMember> FamilyMembers { get; set; } = [];
+        [NotMapped]
+        public FamilyPermission FamilyPermission { get; set; } = new FamilyPermission();
     }
 }

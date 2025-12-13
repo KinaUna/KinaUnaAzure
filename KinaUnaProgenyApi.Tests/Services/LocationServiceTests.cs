@@ -1,762 +1,1149 @@
 ﻿using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.CacheManagement;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.CacheServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
+using Moq;
 
 namespace KinaUnaProgenyApi.Tests.Services
 {
     public class LocationServiceTests
     {
-        [Fact]
-        public async Task GetLocation_Should_Return_Location_Object_When_Id_Is_Valid()
+        private readonly Mock<IAccessManagementService> _mockAccessManagementService;
+        private readonly Mock<IKinaUnaCacheService> _mockKinaUnaCacheService;
+
+        public LocationServiceTests()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetLocation_Should_Return_Location_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new(dbOptions);
-
-            Location location1 = new()
-            {
-                Name = "Location1", ProgenyId = 1, Author = "User1", AccessLevel = 0, City = "City1", Country = "Country1", County = "County1", Date = DateTime.UtcNow, DateAdded = DateTime.UtcNow,
-                District = "District1", HouseNumber = "1", Latitude = 0.0, Longitude = 0.0, LocationNumber = 1, Notes = "Note1", PostalCode = "PostalCode1", State = "State1", StreetName = "Street1", Tags = "Tag1, Tag2"
-            };
-
-
-            Location location2 = new()
-            {
-                Name = "Location2",
-                ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                City = "City2",
-                Country = "Country2",
-                County = "County2",
-                Date = DateTime.UtcNow,
-                DateAdded = DateTime.UtcNow,
-                District = "District2",
-                HouseNumber = "2",
-                Latitude = 0.0,
-                Longitude = 0.0,
-                LocationNumber = 2,
-                Notes = "Note2",
-                PostalCode = "PostalCode2",
-                State = "State2",
-                StreetName = "Street2",
-                Tags = "Tag1, Tag3"
-            };
-
-            context.Add(location1);
-            context.Add(location2);
-            await context.SaveChangesAsync();
-
-            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new(context, memoryCache);
-
-            Location resultLocation1 = await locationService.GetLocation(1);
-            Location resultLocation2 = await locationService.GetLocation(1); // Uses cache
-
-            Assert.NotNull(resultLocation1);
-            Assert.IsType<Location>(resultLocation1);
-            Assert.Equal(location1.Author, resultLocation1.Author);
-            Assert.Equal(location1.Name, resultLocation1.Name);
-            Assert.Equal(location1.AccessLevel, resultLocation1.AccessLevel);
-            Assert.Equal(location1.ProgenyId, resultLocation1.ProgenyId);
-
-            Assert.NotNull(resultLocation2);
-            Assert.IsType<Location>(resultLocation2);
-            Assert.Equal(location1.Author, resultLocation2.Author);
-            Assert.Equal(location1.Name, resultLocation2.Name);
-            Assert.Equal(location1.AccessLevel, resultLocation2.AccessLevel);
-            Assert.Equal(location1.ProgenyId, resultLocation2.ProgenyId);
+            _mockAccessManagementService = new Mock<IAccessManagementService>();
+            _mockKinaUnaCacheService = new Mock<IKinaUnaCacheService>();
         }
 
-        [Fact]
-        public async Task GetLocation_Should_Return_Null_When_Id_Is_Invalid()
+        private static ProgenyDbContext GetInMemoryDbContext(string dbName)
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetLocation_Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new(dbOptions);
-
-            Location location1 = new()
-            {
-                Name = "Location1",
-                ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                City = "City1",
-                Country = "Country1",
-                County = "County1",
-                Date = DateTime.UtcNow,
-                DateAdded = DateTime.UtcNow,
-                District = "District1",
-                HouseNumber = "1",
-                Latitude = 0.0,
-                Longitude = 0.0,
-                LocationNumber = 1,
-                Notes = "Note1",
-                PostalCode = "PostalCode1",
-                State = "State1",
-                StreetName = "Street1",
-                Tags = "Tag1, Tag2"
-            };
-            
-            context.Add(location1);
-            await context.SaveChangesAsync();
-
-            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new(context, memoryCache);
-
-            Location resultLocation1 = await locationService.GetLocation(2);
-            Location resultLocation2 = await locationService.GetLocation(2); // Using cache
-            
-            Assert.Null(resultLocation1);
-            Assert.Null(resultLocation2);
+            DbContextOptions<ProgenyDbContext> options = new DbContextOptionsBuilder<ProgenyDbContext>()
+                .UseInMemoryDatabase(databaseName: dbName)
+                .Options;
+            return new ProgenyDbContext(options);
         }
 
-        [Fact]
-        public async Task AddLocation_Should_Save_Location()
+        private static IDistributedCache GetMemoryCache()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddLocation_Should_Save_Location").Options;
-            await using ProgenyDbContext context = new(dbOptions);
-
-            Location location1 = new()
-            {
-                Name = "Location1",
-                ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                City = "City1",
-                Country = "Country1",
-                County = "County1",
-                Date = DateTime.UtcNow,
-                DateAdded = DateTime.UtcNow,
-                District = "District1",
-                HouseNumber = "1",
-                Latitude = 0.0,
-                Longitude = 0.0,
-                LocationNumber = 1,
-                Notes = "Note1",
-                PostalCode = "PostalCode1",
-                State = "State1",
-                StreetName = "Street1",
-                Tags = "Tag1, Tag2"
-            };
-            
-            context.Add(location1);
-            await context.SaveChangesAsync();
-
-            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new(context, memoryCache);
-
-            Location locationToAdd = new()
-            {
-                Name = "Location1",
-                ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                City = "City1",
-                Country = "Country1",
-                County = "County1",
-                Date = DateTime.UtcNow,
-                DateAdded = DateTime.UtcNow,
-                District = "District1",
-                HouseNumber = "1",
-                Latitude = 0.0,
-                Longitude = 0.0,
-                LocationNumber = 1,
-                Notes = "Note1",
-                PostalCode = "PostalCode1",
-                State = "State1",
-                StreetName = "Street1",
-                Tags = "Tag1, Tag2"
-            };
-            
-            Location addedLocation = await locationService.AddLocation(locationToAdd);
-            Location? dbLocation = await context.LocationsDb.AsNoTracking().SingleOrDefaultAsync(f => f.LocationId == addedLocation.LocationId);
-            Location savedLocation = await locationService.GetLocation(addedLocation.LocationId);
-
-            Assert.NotNull(addedLocation);
-            Assert.IsType<Location>(addedLocation);
-            Assert.Equal(locationToAdd.Author, addedLocation.Author);
-            Assert.Equal(locationToAdd.Name, addedLocation.Name);
-            Assert.Equal(locationToAdd.AccessLevel, addedLocation.AccessLevel);
-            Assert.Equal(locationToAdd.ProgenyId, addedLocation.ProgenyId);
-
-            if (dbLocation != null)
-            {
-                Assert.IsType<Location>(dbLocation);
-                Assert.Equal(locationToAdd.Author, dbLocation.Author);
-                Assert.Equal(locationToAdd.Name, dbLocation.Name);
-                Assert.Equal(locationToAdd.AccessLevel, dbLocation.AccessLevel);
-                Assert.Equal(locationToAdd.ProgenyId, dbLocation.ProgenyId);
-            }
-            Assert.NotNull(savedLocation);
-            Assert.IsType<Location>(savedLocation);
-            Assert.Equal(locationToAdd.Author, savedLocation.Author);
-            Assert.Equal(locationToAdd.Name, savedLocation.Name);
-            Assert.Equal(locationToAdd.AccessLevel, savedLocation.AccessLevel);
-            Assert.Equal(locationToAdd.ProgenyId, savedLocation.ProgenyId);
-
+            IOptions<MemoryDistributedCacheOptions> options = Options.Create(new MemoryDistributedCacheOptions());
+            return new MemoryDistributedCache(options);
         }
 
-        [Fact]
-        public async Task UpdateLocation_Should_Save_Location()
+        private UserInfo CreateTestUserInfo(string userId = "testuser@test.com")
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateLocation_Should_Save_Location").Options;
-            await using ProgenyDbContext context = new(dbOptions);
-
-            Location location1 = new()
+            return new UserInfo
             {
-                Name = "Location1",
+                UserId = userId,
+                UserEmail = userId
+            };
+        }
+
+        #region GetLocation Tests
+
+        [Fact]
+        public async Task GetLocation_Should_Return_Location_When_User_Has_Permission()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetLocation_Valid");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            Location location = new()
+            {
+                LocationId = 1,
                 ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                City = "City1",
-                Country = "Country1",
-                County = "County1",
-                Date = DateTime.UtcNow,
-                DateAdded = DateTime.UtcNow,
-                District = "District1",
-                HouseNumber = "1",
-                Latitude = 0.0,
-                Longitude = 0.0,
-                LocationNumber = 1,
-                Notes = "Note1",
-                PostalCode = "PostalCode1",
-                State = "State1",
-                StreetName = "Street1",
+                FamilyId = 0,
+                Name = "Test Location",
+                Latitude = 40.7128,
+                Longitude = -74.0060,
+                City = "New York",
+                Country = "USA",
                 Tags = "Tag1, Tag2"
             };
 
+            context.LocationsDb.Add(location);
+            await context.SaveChangesAsync();
 
-            Location location2 = new()
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Location, 1, 1, 0, userInfo, null))
+                .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
+
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Location? result = await service.GetLocation(1, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(1, result.LocationId);
+            Assert.Equal("Test Location", result.Name);
+            Assert.NotNull(result.ItemPerMission);
+        }
+
+        [Fact]
+        public async Task GetLocation_Should_Return_Null_When_User_Has_No_Permission()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetLocation_NoPermission");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            Location location = new()
             {
-                Name = "Location2",
+                LocationId = 1,
                 ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                City = "City2",
-                Country = "Country2",
-                County = "County2",
-                Date = DateTime.UtcNow,
-                DateAdded = DateTime.UtcNow,
-                District = "District2",
-                HouseNumber = "2",
-                Latitude = 0.0,
-                Longitude = 0.0,
-                LocationNumber = 2,
-                Notes = "Note2",
-                PostalCode = "PostalCode2",
-                State = "State2",
-                StreetName = "Street2",
-                Tags = "Tag1, Tag3"
+                FamilyId = 0,
+                Name = "Test Location"
             };
 
-            context.Add(location1);
-            context.Add(location2);
+            context.LocationsDb.Add(location);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new(context, memoryCache);
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(false);
 
-            Location locationToUpdate = await locationService.GetLocation(1);
-            locationToUpdate.AccessLevel = 5;
-            Location updatedLocation = await locationService.UpdateLocation(locationToUpdate);
-            Location? dbLocation = await context.LocationsDb.AsNoTracking().SingleOrDefaultAsync(f => f.LocationId == 1);
-            Location savedLocation = await locationService.GetLocation(1);
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
-            Assert.NotNull(updatedLocation);
-            Assert.IsType<Location>(updatedLocation);
-            Assert.NotEqual(0, updatedLocation.LocationId);
-            Assert.Equal("User1", updatedLocation.Author);
-            Assert.Equal(5, updatedLocation.AccessLevel);
-            Assert.Equal(1, updatedLocation.ProgenyId);
+            // Act
+            Location? result = await service.GetLocation(1, userInfo);
 
-            if (dbLocation != null)
-            {
-                Assert.IsType<Location>(dbLocation);
-                Assert.NotEqual(0, dbLocation.LocationId);
-                Assert.Equal("User1", dbLocation.Author);
-                Assert.Equal(5, dbLocation.AccessLevel);
-                Assert.Equal(1, dbLocation.ProgenyId);
-            }
-
-            Assert.NotNull(savedLocation);
-            Assert.IsType<Location>(savedLocation);
-            Assert.NotEqual(0, savedLocation.LocationId);
-            Assert.Equal("User1", savedLocation.Author);
-            Assert.Equal(5, savedLocation.AccessLevel);
-            Assert.Equal(1, savedLocation.ProgenyId);
+            // Assert
+            Assert.Null(result);
         }
 
         [Fact]
-        public async Task DeleteLocation_Should_Remove_Location()
+        public async Task GetLocation_Should_Return_Null_When_Location_Does_Not_Exist()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteLocation_Should_Remove_Location").Options;
-            await using ProgenyDbContext context = new(dbOptions);
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetLocation_NotFound");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
 
-            Location location1 = new()
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, 999, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Location? result = await service.GetLocation(999, userInfo);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task GetLocation_Should_Use_Cache_On_Second_Call()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetLocation_Cache");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            Location location = new()
             {
-                Name = "Location1",
+                LocationId = 1,
                 ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                City = "City1",
-                Country = "Country1",
-                County = "County1",
-                Date = DateTime.UtcNow,
-                DateAdded = DateTime.UtcNow,
-                District = "District1",
-                HouseNumber = "1",
-                Latitude = 0.0,
-                Longitude = 0.0,
-                LocationNumber = 1,
-                Notes = "Note1",
-                PostalCode = "PostalCode1",
-                State = "State1",
-                StreetName = "Street1",
-                Tags = "Tag1, Tag2"
+                FamilyId = 0,
+                Name = "Test Location"
             };
 
+            context.LocationsDb.Add(location);
+            await context.SaveChangesAsync();
 
-            Location location2 = new()
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Location, 1, 1, 0, userInfo, null))
+                .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
+
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Location? result1 = await service.GetLocation(1, userInfo);
+            Location? result2 = await service.GetLocation(1, userInfo);
+
+            // Assert
+            Assert.NotNull(result1);
+            Assert.NotNull(result2);
+            Assert.Equal(result1.Name, result2.Name);
+        }
+
+        #endregion
+
+        #region AddLocation Tests
+
+        [Fact]
+        public async Task AddLocation_Should_Add_Location_When_User_Has_Progeny_Permission()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("AddLocation_ValidProgeny");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            Location location = new()
             {
-                Name = "Location2",
                 ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                City = "City2",
-                Country = "Country2",
-                County = "County2",
-                Date = DateTime.UtcNow,
-                DateAdded = DateTime.UtcNow,
-                District = "District2",
-                HouseNumber = "2",
-                Latitude = 0.0,
-                Longitude = 0.0,
-                LocationNumber = 2,
-                Notes = "Note2",
-                PostalCode = "PostalCode2",
-                State = "State2",
-                StreetName = "Street2",
-                Tags = "Tag1, Tag3"
+                FamilyId = 0,
+                Name = "New Location",
+                City = "Boston",
+                Country = "USA",
+                ItemPermissionsDtoList = []
             };
-            context.Add(location1);
-            context.Add(location2);
-            await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new(context, memoryCache);
+            _mockAccessManagementService
+                .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Add))
+                .ReturnsAsync(true);
 
-            int locationItemsCountBeforeDelete = context.LocationsDb.Count();
-            Location locationToDelete = await locationService.GetLocation(1);
+            _mockAccessManagementService
+                .Setup(x => x.AddItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
+                .Returns(Task.CompletedTask);
 
-            await locationService.DeleteLocation(locationToDelete);
-            Location? deletedLocation = await context.LocationsDb.AsNoTracking().SingleOrDefaultAsync(f => f.LocationId == 1);
-            int locationItemsCountAfterDelete = context.LocationsDb.Count();
+            _mockKinaUnaCacheService
+                .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<KinaUnaTypes.TimeLineType>()))
+                .Returns(Task.CompletedTask);
 
-            Assert.Null(deletedLocation);
-            Assert.Equal(2, locationItemsCountBeforeDelete);
-            Assert.Equal(1, locationItemsCountAfterDelete);
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Location? result = await service.AddLocation(location, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotEqual(0, result.LocationId);
+            Assert.Equal("New Location", result.Name);
+
+            Location? dbLocation = await context.LocationsDb.FindAsync(result.LocationId);
+            Assert.NotNull(dbLocation);
+            Assert.Equal("New Location", dbLocation.Name);
         }
 
         [Fact]
-        public async Task GetLocationsList_Should_Return_List_Of_Location_When_Progeny_Has_Saved_Locations()
+        public async Task AddLocation_Should_Add_Location_When_User_Has_Family_Permission()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetLocationsList_Should_Return_List_Of_Location_When_Progeny_Has_Saved_Locations").Options;
-            await using ProgenyDbContext context = new(dbOptions);
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("AddLocation_ValidFamily");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
 
-            Location location1 = new()
+            Location location = new()
             {
-                Name = "Location1",
+                ProgenyId = 0,
+                FamilyId = 1,
+                Name = "New Location",
+                City = "Boston",
+                ItemPermissionsDtoList = []
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasFamilyPermission(1, userInfo, PermissionLevel.Add))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.AddItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
+                .Returns(Task.CompletedTask);
+
+            _mockKinaUnaCacheService
+                .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<KinaUnaTypes.TimeLineType>()))
+                .Returns(Task.CompletedTask);
+
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Location? result = await service.AddLocation(location, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotEqual(0, result.LocationId);
+            Assert.Equal("New Location", result.Name);
+        }
+
+        [Fact]
+        public async Task AddLocation_Should_Return_Null_When_Both_ProgenyId_And_FamilyId_Are_Set()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("AddLocation_BothIds");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            Location location = new()
+            {
                 ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                City = "City1",
-                Country = "Country1",
-                County = "County1",
-                Date = DateTime.UtcNow,
-                DateAdded = DateTime.UtcNow,
-                District = "District1",
-                HouseNumber = "1",
-                Latitude = 0.0,
-                Longitude = 0.0,
-                LocationNumber = 1,
-                Notes = "Note1",
-                PostalCode = "PostalCode1",
-                State = "State1",
-                StreetName = "Street1",
-                Tags = "Tag1, Tag2"
+                FamilyId = 1,
+                Name = "Invalid Location"
             };
 
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
-            Location location2 = new()
+            // Act
+            Location? result = await service.AddLocation(location, userInfo);
+
+            // Assert
+            Assert.Null(result);
+            Assert.Empty(context.LocationsDb);
+        }
+
+        [Fact]
+        public async Task AddLocation_Should_Return_Null_When_Neither_ProgenyId_Nor_FamilyId_Are_Set()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("AddLocation_NoIds");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            Location location = new()
             {
-                Name = "Location2",
+                ProgenyId = 0,
+                FamilyId = 0,
+                Name = "Invalid Location"
+            };
+
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Location? result = await service.AddLocation(location, userInfo);
+
+            // Assert
+            Assert.Null(result);
+            Assert.Empty(context.LocationsDb);
+        }
+
+        [Fact]
+        public async Task AddLocation_Should_Return_Null_When_User_Has_No_Permission()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("AddLocation_NoPermission");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            Location location = new()
+            {
                 ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                City = "City2",
-                Country = "Country2",
-                County = "County2",
-                Date = DateTime.UtcNow,
-                DateAdded = DateTime.UtcNow,
-                District = "District2",
-                HouseNumber = "2",
-                Latitude = 0.0,
-                Longitude = 0.0,
-                LocationNumber = 2,
-                Notes = "Note2",
-                PostalCode = "PostalCode2",
-                State = "State2",
-                StreetName = "Street2",
-                Tags = "Tag1, Tag3"
+                FamilyId = 0,
+                Name = "New Location"
             };
 
-            context.Add(location1);
-            context.Add(location2);
-            await context.SaveChangesAsync();
+            _mockAccessManagementService
+                .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Add))
+                .ReturnsAsync(false);
 
-            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new(context, memoryCache);
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
-            List<Location> locationsList = await locationService.GetLocationsList(1, 0);
-            List<Location> locationsList2 = await locationService.GetLocationsList(1,0); // Test cached result.
-            Location firstLocation = locationsList.First();
+            // Act
+            Location? result = await service.AddLocation(location, userInfo);
 
-            Assert.NotNull(locationsList);
-            Assert.IsType<List<Location>>(locationsList);
-            Assert.Equal(2, locationsList.Count);
-            Assert.NotNull(locationsList2);
-            Assert.IsType<List<Location>>(locationsList2);
-            Assert.Equal(2, locationsList2.Count);
-            Assert.NotNull(firstLocation);
-            Assert.IsType<Location>(firstLocation);
+            // Assert
+            Assert.Null(result);
+            Assert.Empty(context.LocationsDb);
         }
 
-        [Fact]
-        public async Task GetLocationsList_Should_Return_Empty_List_Of_Location_When_Progeny_Has_No_Saved_Locations()
-        {
-            
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetLocationsList_Should_Return_Empty_List_Of_Location_When_Progeny_Has_No_Saved_Locations").Options;
-            await using ProgenyDbContext context = new(dbOptions);
+        #endregion
 
-            Location location1 = new()
+        #region UpdateLocation Tests
+
+        [Fact]
+        public async Task UpdateLocation_Should_Update_Location_When_User_Has_Permission()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("UpdateLocation_Valid");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            Location location = new()
             {
-                Name = "Location1",
+                LocationId = 1,
                 ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                City = "City1",
-                Country = "Country1",
-                County = "County1",
-                Date = DateTime.UtcNow,
-                DateAdded = DateTime.UtcNow,
-                District = "District1",
-                HouseNumber = "1",
-                Latitude = 0.0,
-                Longitude = 0.0,
-                LocationNumber = 1,
-                Notes = "Note1",
-                PostalCode = "PostalCode1",
-                State = "State1",
-                StreetName = "Street1",
-                Tags = "Tag1, Tag2"
+                FamilyId = 0,
+                Name = "Original Name",
+                City = "Original City"
             };
 
+            context.LocationsDb.Add(location);
+            await context.SaveChangesAsync();
+            context.Entry(location).State = EntityState.Detached;
 
-            Location location2 = new()
+            Location updatedLocation = new()
             {
-                Name = "Location2",
+                LocationId = 1,
                 ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                City = "City2",
-                Country = "Country2",
-                County = "County2",
-                Date = DateTime.UtcNow,
-                DateAdded = DateTime.UtcNow,
-                District = "District2",
-                HouseNumber = "2",
-                Latitude = 0.0,
-                Longitude = 0.0,
-                LocationNumber = 2,
-                Notes = "Note2",
-                PostalCode = "PostalCode2",
-                State = "State2",
-                StreetName = "Street2",
-                Tags = "Tag1, Tag3"
+                FamilyId = 0,
+                Name = "Updated Name",
+                City = "Updated City",
+                ItemPermissionsDtoList = []
             };
 
-            context.Add(location1);
-            context.Add(location2);
-            await context.SaveChangesAsync();
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, 1, userInfo, PermissionLevel.Edit))
+                .ReturnsAsync(true);
 
-            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new(context, memoryCache);
+            _mockAccessManagementService
+                .Setup(x => x.UpdateItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
+                .ReturnsAsync([]);
 
-            List<Location> locationsList = await locationService.GetLocationsList(2, 0);
-            List<Location> locationsList2 = await locationService.GetLocationsList(2, 0); // Test cached result.
+            _mockKinaUnaCacheService
+                .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<KinaUnaTypes.TimeLineType>()))
+                .Returns(Task.CompletedTask);
 
-            Assert.NotNull(locationsList);
-            Assert.IsType<List<Location>>(locationsList);
-            Assert.Empty(locationsList);
-            Assert.NotNull(locationsList2);
-            Assert.IsType<List<Location>>(locationsList2);
-            Assert.Empty(locationsList2);
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Location? result = await service.UpdateLocation(updatedLocation, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("Updated Name", result.Name);
+
+            Location? dbLocation = await context.LocationsDb.FindAsync(1);
+            Assert.NotNull(dbLocation);
+            Assert.Equal("Updated Name", dbLocation.Name);
         }
 
         [Fact]
-        public async Task GetAddress_Returns_Address_Object_When_Id_Is_Valid()
+        public async Task UpdateLocation_Should_Return_Null_When_Both_ProgenyId_And_FamilyId_Are_Set()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetAddress_Returns_Address_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new(dbOptions);
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("UpdateLocation_BothIds");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
 
-            Address address1 = new()
+            Location updatedLocation = new()
             {
-                AddressLine1 = "Address1 Line1",
-                AddressLine2 = "Address1 Line2",
-                PostalCode = "PostalCode1",
-                State = "State1",
-                City = "City1",
-                Country = "Country1"
+                LocationId = 1,
+                ProgenyId = 1,
+                FamilyId = 1,
+                Name = "Invalid Location"
             };
 
-            Address address2 = new()
-            {
-                AddressLine1 = "Address2 Line1",
-                AddressLine2 = "Address2 Line2",
-                PostalCode = "PostalCode2",
-                State = "State2",
-                City = "City2",
-                Country = "Country2"
-            };
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
-            context.Add(address1);
-            context.Add(address2);
-            await context.SaveChangesAsync();
+            // Act
+            Location? result = await service.UpdateLocation(updatedLocation, userInfo);
 
-            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new(context, memoryCache);
-
-            Address resultAddress1 = await locationService.GetAddressItem(1);
-            Address resultAddress2 = await locationService.GetAddressItem(1); // Uses cache
-
-            Assert.NotNull(resultAddress1);
-            Assert.IsType<Address>(resultAddress1);
-            Assert.Equal(address1.AddressLine1, resultAddress1.AddressLine1);
-            Assert.Equal(address1.AddressLine2, resultAddress1.AddressLine2);
-            Assert.Equal(address1.PostalCode, resultAddress1.PostalCode);
-            Assert.Equal(address1.City, resultAddress1.City);
-
-            Assert.NotNull(resultAddress2);
-            Assert.IsType<Address>(resultAddress2);
-            Assert.Equal(address1.AddressLine1, resultAddress2.AddressLine1);
-            Assert.Equal(address1.AddressLine2, resultAddress2.AddressLine2);
-            Assert.Equal(address1.PostalCode, resultAddress2.PostalCode);
-            Assert.Equal(address1.City, resultAddress2.City);
+            // Assert
+            Assert.Null(result);
         }
 
         [Fact]
-        public async Task GetAddress_Should_Return_Null_When_Id_Is_Invalid()
+        public async Task UpdateLocation_Should_Return_Null_When_Neither_ProgenyId_Nor_FamilyId_Are_Set()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetAddress_Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new(dbOptions);
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("UpdateLocation_NoIds");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
 
-            Address address1 = new()
+            Location updatedLocation = new()
             {
-                AddressLine1 = "Address1 Line1",
-                AddressLine2 = "Address1 Line2",
-                PostalCode = "PostalCode1",
-                State = "State1",
-                City = "City1",
-                Country = "Country1"
+                LocationId = 1,
+                ProgenyId = 0,
+                FamilyId = 0,
+                Name = "Invalid Location"
             };
-            
-            context.Add(address1);
-            await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new(context, memoryCache);
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
-            Address resultAddress1 = await locationService.GetAddressItem(2);
-            Address resultAddress2 = await locationService.GetAddressItem(2); // Using cache
+            // Act
+            Location? result = await service.UpdateLocation(updatedLocation, userInfo);
 
-            Assert.Null(resultAddress1);
-            Assert.Null(resultAddress2);
+            // Assert
+            Assert.Null(result);
         }
 
         [Fact]
-        public async Task AddAddress_Should_Save_Address()
+        public async Task UpdateLocation_Should_Return_Null_When_User_Has_No_Permission()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddAddress_Should_Save_Address").Options;
-            await using ProgenyDbContext context = new(dbOptions);
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("UpdateLocation_NoPermission");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
 
-            Address address1 = new()
+            Location location = new()
             {
-                AddressLine1 = "Address1 Line1",
-                AddressLine2 = "Address1 Line2",
-                PostalCode = "PostalCode1",
-                State = "State1",
-                City = "City1",
-                Country = "Country1"
+                LocationId = 1,
+                ProgenyId = 1,
+                FamilyId = 0,
+                Name = "Original Name"
             };
-            
-            context.Add(address1);
+
+            context.LocationsDb.Add(location);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new(context, memoryCache);
-
-            Address addressToAdd = new()
+            Location updatedLocation = new()
             {
-                AddressLine1 = "Address2 Line1",
-                AddressLine2 = "Address2 Line2",
-                PostalCode = "PostalCode2",
-                State = "State2",
-                City = "City2",
-                Country = "Country2"
+                LocationId = 1,
+                ProgenyId = 1,
+                FamilyId = 0,
+                Name = "Updated Name"
             };
 
-            Address addedAddress = await locationService.AddAddressItem(addressToAdd);
-            Address? dbAddress = await context.AddressDb.AsNoTracking().SingleOrDefaultAsync(f => f.AddressId == addedAddress.AddressId);
-            Address savedAddress = await locationService.GetAddressItem(addedAddress.AddressId);
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, 1, userInfo, PermissionLevel.Edit))
+                .ReturnsAsync(false);
 
-            Assert.NotNull(addedAddress);
-            Assert.IsType<Address>(addedAddress);
-            Assert.Equal(addressToAdd.AddressLine1, addedAddress.AddressLine1);
-            Assert.Equal(addressToAdd.AddressLine2, addedAddress.AddressLine2);
-            Assert.Equal(addressToAdd.PostalCode, addedAddress.PostalCode);
-            Assert.Equal(addressToAdd.City, addedAddress.City);
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
-            if (dbAddress != null)
-            {
-                Assert.IsType<Address>(dbAddress);
-                Assert.Equal(addressToAdd.AddressLine1, dbAddress.AddressLine1);
-                Assert.Equal(addressToAdd.AddressLine2, dbAddress.AddressLine2);
-                Assert.Equal(addressToAdd.PostalCode, dbAddress.PostalCode);
-                Assert.Equal(addressToAdd.City, dbAddress.City);
-            }
-            Assert.NotNull(savedAddress);
-            Assert.IsType<Address>(savedAddress);
-            Assert.Equal(addressToAdd.AddressLine1, savedAddress.AddressLine1);
-            Assert.Equal(addressToAdd.AddressLine2, savedAddress.AddressLine2);
-            Assert.Equal(addressToAdd.PostalCode, savedAddress.PostalCode);
-            Assert.Equal(addressToAdd.City, savedAddress.City);
+            // Act
+            Location? result = await service.UpdateLocation(updatedLocation, userInfo);
 
+            // Assert
+            Assert.Null(result);
         }
 
         [Fact]
-        public async Task UpdateAddress_Should_Save_Address()
+        public async Task UpdateLocation_Should_Return_Null_When_Location_Does_Not_Exist()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateAddress_Should_Save_Address").Options;
-            await using ProgenyDbContext context = new(dbOptions);
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("UpdateLocation_NotFound");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
 
-            Address address1 = new()
+            Location updatedLocation = new()
             {
-                AddressLine1 = "Address1 Line1",
-                AddressLine2 = "Address1 Line2",
-                PostalCode = "PostalCode1",
-                State = "State1",
-                City = "City1",
-                Country = "Country1"
+                LocationId = 999,
+                ProgenyId = 1,
+                FamilyId = 0,
+                Name = "Updated Name"
             };
 
-            Address address2 = new()
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, 999, userInfo, PermissionLevel.Edit))
+                .ReturnsAsync(true);
+
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Location? result = await service.UpdateLocation(updatedLocation, userInfo);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        #endregion
+
+        #region DeleteLocation Tests
+
+        [Fact]
+        public async Task DeleteLocation_Should_Delete_Location_When_User_Has_Permission()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("DeleteLocation_Valid");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            Location location = new()
             {
-                AddressLine1 = "Address2 Line1",
-                AddressLine2 = "Address2 Line2",
-                PostalCode = "PostalCode2",
-                State = "State2",
-                City = "City2",
-                Country = "Country2"
+                LocationId = 1,
+                ProgenyId = 1,
+                FamilyId = 0,
+                Name = "Test Location"
             };
-            context.Add(address1);
-            context.Add(address2);
+
+            context.LocationsDb.Add(location);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new(context, memoryCache);
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, 1, userInfo, PermissionLevel.Admin))
+                .ReturnsAsync(true);
 
-            Address addressToUpdate = await locationService.GetAddressItem(1);
-            addressToUpdate.PostalCode = "PostalCode3";
-            Address updatedAddress = await locationService.UpdateAddressItem(addressToUpdate);
-            Address? dbAddress = await context.AddressDb.AsNoTracking().SingleOrDefaultAsync(f => f.AddressId == 1);
-            Address savedAddress = await locationService.GetAddressItem(1);
+            _mockAccessManagementService
+                .Setup(x => x.GetTimelineItemPermissionsList(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), userInfo))
+                .ReturnsAsync([]);
 
-            Assert.NotNull(updatedAddress);
-            Assert.IsType<Address>(updatedAddress);
-            Assert.NotEqual(0, updatedAddress.AddressId);
-            Assert.Equal("State1", updatedAddress.State);
-            Assert.Equal("PostalCode3", updatedAddress.PostalCode);
-            Assert.Equal("City1", updatedAddress.City);
+            _mockKinaUnaCacheService
+                .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<KinaUnaTypes.TimeLineType>()))
+                .Returns(Task.CompletedTask);
 
-            if (dbAddress != null)
-            {
-                Assert.IsType<Address>(dbAddress);
-                Assert.NotEqual(0, dbAddress.AddressId);
-                Assert.Equal("State1", dbAddress.State);
-                Assert.Equal("PostalCode3", dbAddress.PostalCode);
-                Assert.Equal("City1", dbAddress.City);
-            }
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
-            Assert.NotNull(savedAddress);
-            Assert.IsType<Address>(savedAddress);
-            Assert.NotEqual(0, savedAddress.AddressId);
-            Assert.Equal("State1", savedAddress.State);
-            Assert.Equal("PostalCode3", savedAddress.PostalCode);
-            Assert.Equal("City1", savedAddress.City);
+            // Act
+            Location? result = await service.DeleteLocation(location, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(1, result.LocationId);
+
+            Location? dbLocation = await context.LocationsDb.FindAsync(1);
+            Assert.Null(dbLocation);
         }
 
         [Fact]
-        public async Task DeleteAddress_Should_Remove_Address()
+        public async Task DeleteLocation_Should_Return_Null_When_User_Has_No_Permission()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteAddress_Should_Remove_Address").Options;
-            await using ProgenyDbContext context = new(dbOptions);
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("DeleteLocation_NoPermission");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
 
-            Address address1 = new()
+            Location location = new()
             {
-                AddressLine1 = "Address1 Line1",
-                AddressLine2 = "Address1 Line2",
-                PostalCode = "PostalCode1",
-                State = "State1",
-                City = "City1",
-                Country = "Country1"
+                LocationId = 1,
+                ProgenyId = 1,
+                FamilyId = 0,
+                Name = "Test Location"
             };
 
-            Address address2 = new()
-            {
-                AddressLine1 = "Address2 Line1", AddressLine2 = "Address2 Line2", PostalCode = "PostalCode2", State = "State2", City = "City2", Country = "Country2"
-            };
-            context.Add(address1);
-            context.Add(address2);
+            context.LocationsDb.Add(location);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            LocationService locationService = new(context, memoryCache);
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, 1, userInfo, PermissionLevel.Admin))
+                .ReturnsAsync(false);
 
-            int addressItemsCountBeforeDelete = context.AddressDb.Count();
-            Address addressToDelete = await locationService.GetAddressItem(1);
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
-            await locationService.RemoveAddressItem(addressToDelete.AddressId);
-            Address? deletedAddress = await context.AddressDb.SingleOrDefaultAsync(f => f.AddressId == 1);
-            int addressItemsCountAfterDelete = context.AddressDb.Count();
+            // Act
+            Location? result = await service.DeleteLocation(location, userInfo);
 
-            Assert.Null(deletedAddress);
-            Assert.Equal(2, addressItemsCountBeforeDelete);
-            Assert.Equal(1, addressItemsCountAfterDelete);
+            // Assert
+            Assert.Null(result);
+            Location? dbLocation = await context.LocationsDb.FindAsync(1);
+            Assert.NotNull(dbLocation);
         }
+
+        [Fact]
+        public async Task DeleteLocation_Should_Return_Null_When_Location_Does_Not_Exist()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("DeleteLocation_NotFound");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            Location location = new()
+            {
+                LocationId = 999,
+                ProgenyId = 1,
+                FamilyId = 0,
+                Name = "Test Location"
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, 999, userInfo, PermissionLevel.Admin))
+                .ReturnsAsync(true);
+
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Location? result = await service.DeleteLocation(location, userInfo);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        #endregion
+
+        #region GetLocationsList Tests
+
+        [Fact]
+        public async Task GetLocationsList_Should_Return_List_Of_Accessible_Locations()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetLocationsList_Valid");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            List<Location> locations =
+            [
+                new() { LocationId = 1, ProgenyId = 1, FamilyId = 0, Name = "Location 1" },
+                new() { LocationId = 2, ProgenyId = 1, FamilyId = 0, Name = "Location 2" },
+                new() { LocationId = 3, ProgenyId = 1, FamilyId = 0, Name = "Location 3" }
+            ];
+
+            context.LocationsDb.AddRange(locations);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, It.IsAny<int>(), userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockKinaUnaCacheService
+                .Setup(x => x.GetLocationsListCache(userInfo.UserId, 1, 0))
+                .ReturnsAsync((LocationsListCacheEntry)null!);
+
+            _mockKinaUnaCacheService
+                .Setup(x => x.SetLocationsListCache(userInfo.UserId, 1, 0, It.IsAny<Location[]>()))
+                .Returns(Task.CompletedTask);
+
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            List<Location>? result = await service.GetLocationsList(1, 0, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(3, result.Count);
+        }
+
+        [Fact]
+        public async Task GetLocationsList_Should_Return_Only_Accessible_Locations()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetLocationsList_PartialAccess");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            List<Location> locations =
+            [
+                new() { LocationId = 1, ProgenyId = 1, FamilyId = 0, Name = "Location 1" },
+                new() { LocationId = 2, ProgenyId = 1, FamilyId = 0, Name = "Location 2" },
+                new() { LocationId = 3, ProgenyId = 1, FamilyId = 0, Name = "Location 3" }
+            ];
+
+            context.LocationsDb.AddRange(locations);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, 2, userInfo, PermissionLevel.View))
+                .ReturnsAsync(false);
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, 3, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockKinaUnaCacheService
+                .Setup(x => x.GetLocationsListCache(userInfo.UserId, 1, 0))
+                .ReturnsAsync((LocationsListCacheEntry)null!);
+
+            _mockKinaUnaCacheService
+                .Setup(x => x.SetLocationsListCache(userInfo.UserId, 1, 0, It.IsAny<Location[]>()))
+                .Returns(Task.CompletedTask);
+
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            List<Location>? result = await service.GetLocationsList(1, 0, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count);
+            Assert.Contains(result, l => l.LocationId == 1);
+            Assert.Contains(result, l => l.LocationId == 3);
+        }
+
+        [Fact]
+        public async Task GetLocationsList_Should_Return_Empty_List_When_No_Locations_Exist()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetLocationsList_Empty");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            _mockKinaUnaCacheService
+                .Setup(x => x.GetLocationsListCache(userInfo.UserId, 1, 0))
+                .ReturnsAsync((LocationsListCacheEntry)null!);
+
+            _mockKinaUnaCacheService
+                .Setup(x => x.SetLocationsListCache(userInfo.UserId, 1, 0, It.IsAny<Location[]>()))
+                .Returns(Task.CompletedTask);
+
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            List<Location>? result = await service.GetLocationsList(1, 0, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
+        }
+
+        [Fact]
+        public async Task GetLocationsList_Should_Use_Cache_On_Second_Call()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetLocationsList_Cache");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            Location location = new() { LocationId = 1, ProgenyId = 1, FamilyId = 0, Name = "Location 1" };
+            context.LocationsDb.Add(location);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockKinaUnaCacheService
+                .Setup(x => x.GetLocationsListCache(userInfo.UserId, 1, 0))
+                .ReturnsAsync((LocationsListCacheEntry)null!);
+
+            _mockKinaUnaCacheService
+                .Setup(x => x.SetLocationsListCache(userInfo.UserId, 1, 0, It.IsAny<Location[]>()))
+                .Returns(Task.CompletedTask);
+
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            List<Location>? result1 = await service.GetLocationsList(1, 0, userInfo);
+            List<Location>? result2 = await service.GetLocationsList(1, 0, userInfo);
+
+            // Assert
+            Assert.NotNull(result1);
+            Assert.NotNull(result2);
+            Assert.Single(result1);
+            Assert.Single(result2);
+        }
+
+        #endregion
+
+        #region GetLocationsWithTag Tests
+
+        [Fact]
+        public async Task GetLocationsWithTag_Should_Return_Locations_With_Matching_Tag()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetLocationsWithTag_Valid");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            List<Location> locations =
+            [
+                new() { LocationId = 1, ProgenyId = 1, FamilyId = 0, Name = "Location 1", Tags = "park, playground" },
+                new() { LocationId = 2, ProgenyId = 1, FamilyId = 0, Name = "Location 2", Tags = "museum, park" },
+                new() { LocationId = 3, ProgenyId = 1, FamilyId = 0, Name = "Location 3", Tags = "beach, outdoor" }
+            ];
+
+            context.LocationsDb.AddRange(locations);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, It.IsAny<int>(), userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockKinaUnaCacheService
+                .Setup(x => x.GetLocationsListCache(userInfo.UserId, 1, 0))
+                .ReturnsAsync((LocationsListCacheEntry)null!);
+
+            _mockKinaUnaCacheService
+                .Setup(x => x.SetLocationsListCache(userInfo.UserId, 1, 0, It.IsAny<Location[]>()))
+                .Returns(Task.CompletedTask);
+
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            List<Location>? result = await service.GetLocationsWithTag(1, 0, "park", userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count);
+            Assert.Contains(result, l => l.LocationId == 1);
+            Assert.Contains(result, l => l.LocationId == 2);
+        }
+
+        [Fact]
+        public async Task GetLocationsWithTag_Should_Return_All_Locations_When_Tag_Is_Null()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetLocationsWithTag_NoFilter");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            List<Location> locations =
+            [
+                new() { LocationId = 1, ProgenyId = 1, FamilyId = 0, Name = "Location 1", Tags = "park" },
+                new() { LocationId = 2, ProgenyId = 1, FamilyId = 0, Name = "Location 2", Tags = "beach" }
+            ];
+
+            context.LocationsDb.AddRange(locations);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, It.IsAny<int>(), userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockKinaUnaCacheService
+                .Setup(x => x.GetLocationsListCache(userInfo.UserId, 1, 0))
+                .ReturnsAsync((LocationsListCacheEntry)null!);
+
+            _mockKinaUnaCacheService
+                .Setup(x => x.SetLocationsListCache(userInfo.UserId, 1, 0, It.IsAny<Location[]>()))
+                .Returns(Task.CompletedTask);
+
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            List<Location>? result = await service.GetLocationsWithTag(1, 0, null, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count);
+        }
+
+        [Fact]
+        public async Task GetLocationsWithTag_Should_Be_Case_Insensitive()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetLocationsWithTag_CaseInsensitive");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+
+            Location location = new() { LocationId = 1, ProgenyId = 1, FamilyId = 0, Name = "Location 1", Tags = "Park, Beach" };
+            context.LocationsDb.Add(location);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockKinaUnaCacheService
+                .Setup(x => x.GetLocationsListCache(userInfo.UserId, 1, 0))
+                .ReturnsAsync((LocationsListCacheEntry)null!);
+
+            _mockKinaUnaCacheService
+                .Setup(x => x.SetLocationsListCache(userInfo.UserId, 1, 0, It.IsAny<Location[]>()))
+                .Returns(Task.CompletedTask);
+
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            List<Location>? result = await service.GetLocationsWithTag(1, 0, "park", userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Single(result);
+        }
+
+        #endregion
+
+        #region GetAddressItem Tests
+
+        [Fact]
+        public async Task GetAddressItem_Should_Return_Address_When_Valid_Id()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetAddressItem_Valid");
+            IDistributedCache cache = GetMemoryCache();
+
+            Address address = new()
+            {
+                AddressId = 1,
+                AddressLine1 = "123 Main St",
+                City = "Boston",
+                State = "MA",
+                PostalCode = "02101",
+                Country = "USA"
+            };
+
+            context.AddressDb.Add(address);
+            await context.SaveChangesAsync();
+
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Address? result = await service.GetAddressItem(1);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(1, result.AddressId);
+            Assert.Equal("123 Main St", result.AddressLine1);
+        }
+
+        [Fact]
+        public async Task GetAddressItem_Should_Return_Null_When_Address_Does_Not_Exist()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetAddressItem_NotFound");
+            IDistributedCache cache = GetMemoryCache();
+
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Address? result = await service.GetAddressItem(999);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task GetAddressItem_Should_Use_Cache_On_Second_Call()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetAddressItem_Cache");
+            IDistributedCache cache = GetMemoryCache();
+
+            Address address = new()
+            {
+                AddressId = 1,
+                AddressLine1 = "123 Main St",
+                City = "Boston"
+            };
+
+            context.AddressDb.Add(address);
+            await context.SaveChangesAsync();
+
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Address? result1 = await service.GetAddressItem(1);
+            Address? result2 = await service.GetAddressItem(1);
+
+            // Assert
+            Assert.NotNull(result1);
+            Assert.NotNull(result2);
+            Assert.Equal(result1.AddressLine1, result2.AddressLine1);
+        }
+
+        #endregion
+
+        #region AddAddressItem Tests
+
+        [Fact]
+        public async Task AddAddressItem_Should_Add_Address()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("AddAddressItem_Valid");
+            IDistributedCache cache = GetMemoryCache();
+
+            Address address = new()
+            {
+                AddressLine1 = "456 Oak Ave",
+                City = "Chicago",
+                State = "IL",
+                PostalCode = "60601",
+                Country = "USA"
+            };
+
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Address? result = await service.AddAddressItem(address);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotEqual(0, result.AddressId);
+            Assert.Equal("456 Oak Ave", result.AddressLine1);
+
+            Address? dbAddress = await context.AddressDb.FindAsync(result.AddressId);
+            Assert.NotNull(dbAddress);
+            Assert.Equal("456 Oak Ave", dbAddress.AddressLine1);
+        }
+
+        #endregion
+
+        #region UpdateAddressItem Tests
+
+        [Fact]
+        public async Task UpdateAddressItem_Should_Update_Address()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("UpdateAddressItem_Valid");
+            IDistributedCache cache = GetMemoryCache();
+
+            Address address = new()
+            {
+                AddressId = 1,
+                AddressLine1 = "Original Address",
+                City = "Original City"
+            };
+
+            context.AddressDb.Add(address);
+            await context.SaveChangesAsync();
+            context.Entry(address).State = EntityState.Detached;
+
+            Address updatedAddress = new()
+            {
+                AddressId = 1,
+                AddressLine1 = "Updated Address",
+                City = "Updated City"
+            };
+
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Address? result = await service.UpdateAddressItem(updatedAddress);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("Updated Address", result.AddressLine1);
+
+            Address? dbAddress = await context.AddressDb.FindAsync(1);
+            Assert.NotNull(dbAddress);
+            Assert.Equal("Updated Address", dbAddress.AddressLine1);
+        }
+
+        [Fact]
+        public async Task UpdateAddressItem_Should_Return_Null_When_Address_Does_Not_Exist()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("UpdateAddressItem_NotFound");
+            IDistributedCache cache = GetMemoryCache();
+
+            Address updatedAddress = new()
+            {
+                AddressId = 999,
+                AddressLine1 = "Updated Address"
+            };
+
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Address? result = await service.UpdateAddressItem(updatedAddress);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        #endregion
+
+        #region RemoveAddressItem Tests
+
+        [Fact]
+        public async Task RemoveAddressItem_Should_Remove_Address()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("RemoveAddressItem_Valid");
+            IDistributedCache cache = GetMemoryCache();
+
+            Address address = new()
+            {
+                AddressId = 1,
+                AddressLine1 = "Test Address"
+            };
+
+            context.AddressDb.Add(address);
+            await context.SaveChangesAsync();
+
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            await service.RemoveAddressItem(1);
+
+            // Assert
+            Address? dbAddress = await context.AddressDb.FindAsync(1);
+            Assert.Null(dbAddress);
+        }
+
+        [Fact]
+        public async Task RemoveAddressItem_Should_Not_Throw_When_Address_Does_Not_Exist()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("RemoveAddressItem_NotFound");
+            IDistributedCache cache = GetMemoryCache();
+
+            LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act & Assert
+            await service.RemoveAddressItem(999); // Should not throw
+        }
+
+        #endregion
     }
 }

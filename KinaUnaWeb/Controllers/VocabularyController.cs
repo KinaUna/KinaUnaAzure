@@ -1,17 +1,20 @@
-﻿using KinaUnaWeb.Models.ItemViewModels;
+﻿using KinaUna.Data.Extensions;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.DTOs;
+using KinaUnaWeb.Models;
+using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
+using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using KinaUna.Data.Extensions;
 using System;
-using KinaUnaWeb.Models;
-using KinaUnaWeb.Services.HttpClients;
+using System.Collections.Generic;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class VocabularyController(IWordsHttpClient wordsHttpClient, IViewModelSetupService viewModelSetupService) : Controller
+    public class VocabularyController(IWordsHttpClient wordsHttpClient, IViewModelSetupService viewModelSetupService, IProgenyHttpClient progenyHttpClient) : Controller
     {
         /// <summary>
         /// Vocabulary Index page. Shows a list of all vocabulary items for a progeny.
@@ -24,15 +27,38 @@ namespace KinaUnaWeb.Controllers
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             VocabularyListViewModel model = new(baseModel);
-
-            List<VocabularyItem> wordList = await wordsHttpClient.GetWordsList(model.CurrentProgenyId);
             
-            model.SetVocabularyList(wordList);
-            
-            model.SetChartData();
             model.VocabularyId = vocabularyId;
 
             return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> VocabularyTable(int progenyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
+            VocabularyListViewModel model = new(baseModel);
+
+            List<VocabularyItem> wordList = await wordsHttpClient.GetWordsList(model.CurrentProgenyId);
+
+            model.SetVocabularyList(wordList, baseModel);
+
+            return PartialView("_VocabularyTablePartial", model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetVocabularyData(int progenyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
+            VocabularyListViewModel model = new(baseModel);
+
+            List<VocabularyItem> wordList = await wordsHttpClient.GetWordsList(model.CurrentProgenyId);
+
+            model.SetVocabularyList(wordList, baseModel);
+
+            model.SetChartData();
+
+            return Json(model.ChartData);
         }
 
         /// <summary>
@@ -45,14 +71,17 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> ViewVocabularyItem(int vocabularyId, bool partialView = false)
         {
             VocabularyItem vocabularyItem = await wordsHttpClient.GetWord(vocabularyId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vocabularyItem.ProgenyId);
-            VocabularyItemViewModel model = new(baseModel);
-
-            if (vocabularyItem.AccessLevel < model.CurrentAccessLevel)
+            if (vocabularyItem == null || vocabularyItem.WordId == 0)
             {
-                return RedirectToAction("Index");
+                if (partialView)
+                {
+                    return PartialView("_NotFoundPartial");
+                }
+                return RedirectToAction("Index", "Vocabulary");
             }
-
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vocabularyItem.ProgenyId, 0, false);
+            VocabularyItemViewModel model = new(baseModel);
+            
             model.SetPropertiesFromVocabularyItem(vocabularyItem);
             model.VocabularyItem.Progeny = model.CurrentProgeny;
             model.VocabularyItem.Progeny.PictureLink = model.VocabularyItem.Progeny.GetProfilePictureUrl();
@@ -73,18 +102,13 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> AddVocabulary()
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
-            VocabularyItemViewModel model = new(baseModel);
-            
-            if (model.CurrentUser == null)
+            VocabularyItemViewModel model = new(baseModel)
             {
-                return RedirectToAction("Index");
-            }
+                ProgenyList = await viewModelSetupService.GetProgenySelectList()
+            };
 
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
             model.SetProgenyList();
-
-            model.SetAccessLevelList();
-
+            
             return PartialView("_AddVocabularyPartial", model);
         }
 
@@ -99,17 +123,26 @@ namespace KinaUnaWeb.Controllers
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.VocabularyItem.ProgenyId);
             model.SetBaseProperties(baseModel);
-
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            bool canUserAdd = false;
+            if (model.VocabularyItem.ProgenyId > 0)
             {
-                return PartialView("_AccessDeniedPartial");
+                List<Progeny> progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Add);
+                if (progenies.Exists(p => p.Id == model.VocabularyItem.ProgenyId))
+                {
+                    canUserAdd = true;
+                }
             }
 
+            if (!canUserAdd)
+            {
+                // Todo: Show that no entities are available to add note for.
+                return PartialView("_AccessDeniedPartial");
+            }
 
             model.VocabularyItem.Date ??= TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
             model.VocabularyItem.Author = model.CurrentUser.UserId;
-
+            model.VocabularyItem.ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString, JsonSerializerOptions.Web);
             model.VocabularyItem = await wordsHttpClient.AddWord(model.VocabularyItem);
             if (model.VocabularyItem.Date.HasValue)
             {
@@ -117,6 +150,8 @@ namespace KinaUnaWeb.Controllers
             }
 
             model.VocabularyItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(model.VocabularyItem.DateAdded, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+            model.VocabularyItem.Progeny = await progenyHttpClient.GetProgeny(model.VocabularyItem.ProgenyId);
 
             return PartialView("_VocabularyAddedPartial", model);
         }
@@ -130,17 +165,21 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditVocabulary(int itemId)
         {
             VocabularyItem vocab = await wordsHttpClient.GetWord(itemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vocab.ProgenyId);
-            VocabularyItemViewModel model = new(baseModel);
+            if (vocab == null || vocab.WordId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
 
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (vocab.ItemPermission.PermissionLevel < PermissionLevel.Edit)
             {
                 return PartialView("_AccessDeniedPartial");
             }
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vocab.ProgenyId, 0, false);
+            VocabularyItemViewModel model = new(baseModel);
             
             model.SetPropertiesFromVocabularyItem(vocab);
-
-            model.SetAccessLevelList();
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(vocab.ProgenyId);
+            model.SetProgenyList();
 
             return PartialView("_EditVocabularyPartial", model);
         }
@@ -154,22 +193,29 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditVocabulary(VocabularyItemViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.VocabularyItem.ProgenyId);
-            model.SetBaseProperties(baseModel);
-
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            VocabularyItem existingVocabularyItem = await wordsHttpClient.GetWord(model.VocabularyItem.WordId);
+            if (existingVocabularyItem == null || existingVocabularyItem.WordId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (existingVocabularyItem.ItemPermission.PermissionLevel < PermissionLevel.Edit)
             {
                 return PartialView("_AccessDeniedPartial");
             }
 
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.VocabularyItem.ProgenyId, 0, false);
+            model.SetBaseProperties(baseModel);
+            
             model.VocabularyItem.Date ??= TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
-
+            model.VocabularyItem.ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString, JsonSerializerOptions.Web);
             model.VocabularyItem = await wordsHttpClient.UpdateWord(model.VocabularyItem);
             if (model.VocabularyItem.Date.HasValue)
             {
                 model.VocabularyItem.Date = TimeZoneInfo.ConvertTimeFromUtc(model.VocabularyItem.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
             model.VocabularyItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(model.VocabularyItem.DateAdded, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+            model.VocabularyItem.Progeny = await progenyHttpClient.GetProgeny(model.VocabularyItem.ProgenyId);
 
             return PartialView("_VocabularyUpdatedPartial", model);
         }
@@ -183,15 +229,18 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteVocabulary(int itemId)
         {
             VocabularyItem vocabularyItem = await wordsHttpClient.GetWord(itemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vocabularyItem.ProgenyId);
-            VocabularyItemViewModel model = new(baseModel);
-            
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (vocabularyItem == null || vocabularyItem.WordId == 0)
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return RedirectToAction("Index", "Vocabulary");
+            }
+            if (vocabularyItem.ItemPermission.PermissionLevel < PermissionLevel.Admin)
+            {
+                return RedirectToAction("Index", "Vocabulary");
             }
 
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vocabularyItem.ProgenyId, 0, false);
+            VocabularyItemViewModel model = new(baseModel);
+            
             model.VocabularyItem = vocabularyItem;
 
             return View(model);
@@ -207,15 +256,18 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteVocabulary(VocabularyItemViewModel model)
         {
             VocabularyItem vocabularyItem = await wordsHttpClient.GetWord(model.VocabularyItem.WordId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vocabularyItem.ProgenyId);
-            model.SetBaseProperties(baseModel);
-            
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (vocabularyItem == null || vocabularyItem.WordId == 0)
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return RedirectToAction("Index", "Vocabulary");
+            }
+            if (vocabularyItem.ItemPermission.PermissionLevel < PermissionLevel.Admin)
+            {
+                return RedirectToAction("Index", "Vocabulary");
             }
 
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vocabularyItem.ProgenyId, 0, false);
+            model.SetBaseProperties(baseModel);
+            
             await wordsHttpClient.DeleteWord(vocabularyItem.WordId);
 
             return RedirectToAction("Index", "Vocabulary");
@@ -230,20 +282,17 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> CopyVocabulary(int itemId)
         {
             VocabularyItem vocabularyItem = await wordsHttpClient.GetWord(itemId);
+            if (vocabularyItem == null || vocabularyItem.WordId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vocabularyItem.ProgenyId);
             VocabularyItemViewModel model = new(baseModel);
-
-            if (model.CurrentAccessLevel > vocabularyItem.AccessLevel)
-            {
-                return PartialView("_AccessDeniedPartial");
-            }
-
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
 
             model.SetPropertiesFromVocabularyItem(vocabularyItem);
-
-            model.SetAccessLevelList();
 
             return PartialView("_CopyVocabularyPartial", model);
         }
@@ -257,22 +306,37 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CopyVocabulary(VocabularyItemViewModel model)
         {
+
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.VocabularyItem.ProgenyId);
             model.SetBaseProperties(baseModel);
 
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            bool canUserAdd = false;
+            if (model.VocabularyItem.ProgenyId > 0)
             {
+                List<Progeny> progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Add);
+                if (progenies.Exists(p => p.Id == model.VocabularyItem.ProgenyId))
+                {
+                    canUserAdd = true;
+                }
+            }
+
+            if (!canUserAdd)
+            {
+                // Todo: Show that no entities are available to add note for.
                 return PartialView("_AccessDeniedPartial");
             }
 
             model.VocabularyItem.Date ??= TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
+            model.VocabularyItem.ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString, JsonSerializerOptions.Web);
             model.VocabularyItem = await wordsHttpClient.AddWord(model.VocabularyItem);
             if (model.VocabularyItem.Date.HasValue)
             {
                 model.VocabularyItem.Date = TimeZoneInfo.ConvertTimeFromUtc(model.VocabularyItem.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
             model.VocabularyItem.DateAdded = TimeZoneInfo.ConvertTimeFromUtc(model.VocabularyItem.DateAdded, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+            model.VocabularyItem.Progeny = await progenyHttpClient.GetProgeny(model.VocabularyItem.ProgenyId);
 
             return PartialView("_VocabularyCopiedPartial", model);
         }

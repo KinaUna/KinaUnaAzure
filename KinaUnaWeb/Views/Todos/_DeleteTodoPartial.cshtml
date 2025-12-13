@@ -5,7 +5,15 @@
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = await LocaleManager.GetTranslation("Delete todo", PageNames.Todos, Model.LanguageId);
-    string title = Model.TodoItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Todo", PageNames.Todos, Model.LanguageId);
+    string title = "";
+    if (Model.TodoItem.ProgenyId > 0)
+    {
+        title = Model.TodoItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Todo", PageNames.Todos, Model.LanguageId);
+    }
+    if (Model.TodoItem.FamilyId > 0)
+    {
+        title = Model.TodoItem.Family.Name + " : " + await LocaleManager.GetTranslation("Todo", PageNames.Todos, Model.LanguageId);
+    }
     const int changedItemType = (int)KinaUnaTypes.TimeLineType.TodoItem;
 }
 <div class="d-none timeline-update-data-div" data-changed-item-type="@changedItemType" data-changed-item-item-id="@Model.TodoItem.TodoItemId"></div>
@@ -13,7 +21,14 @@
     <div class="timeline-card-body bg-todos item-details-content">
         <div class="row sticky-top m-0 item-details-header">
             <div class="col-12 bg-todos-header">
-                <img src="@Model.TodoItem.Progeny.PictureLink" class="item-details-title-picture"/>
+                @if (Model.TodoItem.ProgenyId > 0)
+                {
+                    <img src="@Model.TodoItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                }
+                @if (Model.TodoItem.FamilyId > 0)
+                {
+                    <img src="@Model.TodoItem.Family.GetProfilePictureUrl()" class="item-details-title-picture" />
+                }
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button" data-previous-item-type="todo" data-previous-item-id="@Model.TodoItem.TodoItemId"><span>×</span></button>
             </div>

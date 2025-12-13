@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -9,6 +8,7 @@ using Duende.IdentityModel.Client;
 using KinaUna.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
+using System.Text.Json;
 
 namespace KinaUnaWeb.Services.HttpClients
 {
@@ -48,8 +48,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of all unique tags for a Progeny, including only items that the user has access to.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get tags for.</param>
+        /// <param name="familyId">The FamilyId of the Family to get tags for.</param>
         /// <returns>List of strings.</returns>
-        public async Task<List<string>> GetTagsList(int progenyId)
+        public async Task<List<string>> GetTagsList(int progenyId, int familyId)
         {
             string userId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(userId);
@@ -57,14 +58,14 @@ namespace KinaUnaWeb.Services.HttpClients
 
             List<string> resultTagsList = [];
 
-            string tagsApiPath = "/api/AutoSuggests/GetTagsAutoSuggestList/" + progenyId;
+            string tagsApiPath = "/api/AutoSuggests/GetTagsAutoSuggestList/" + progenyId + "/" + familyId;
 
-            HttpResponseMessage tagsResponse = await _httpClient.GetAsync(tagsApiPath).ConfigureAwait(false);
+            HttpResponseMessage tagsResponse = await _httpClient.GetAsync(tagsApiPath);
             if (!tagsResponse.IsSuccessStatusCode) return resultTagsList;
 
-            string tagsListAsString = await tagsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string tagsListAsString = await tagsResponse.Content.ReadAsStringAsync();
 
-            resultTagsList = JsonConvert.DeserializeObject<List<string>>(tagsListAsString);
+            resultTagsList = JsonSerializer.Deserialize<List<string>>(tagsListAsString, JsonSerializerOptions.Web);
 
             return resultTagsList;
         }
@@ -73,8 +74,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of all unique contexts for a Progeny, including only items that the user has access to.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get contexts for.</param>
+        /// <param name="familyId">The FamilyId of the Family to get contexts for.</param>
         /// <returns>List of strings.</returns>
-        public async Task<List<string>> GetContextsList(int progenyId)
+        public async Task<List<string>> GetContextsList(int progenyId, int familyId)
         {
             string userId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(userId);
@@ -82,14 +84,14 @@ namespace KinaUnaWeb.Services.HttpClients
 
             List<string> resultContextsList = [];
 
-            string contextsApiPath = "/api/AutoSuggests/GetContextAutoSuggestList/" + progenyId;
+            string contextsApiPath = "/api/AutoSuggests/GetContextAutoSuggestList/" + progenyId + "/" + familyId;
 
-            HttpResponseMessage contextsResponse = await _httpClient.GetAsync(contextsApiPath).ConfigureAwait(false);
+            HttpResponseMessage contextsResponse = await _httpClient.GetAsync(contextsApiPath);
             if (!contextsResponse.IsSuccessStatusCode) return resultContextsList;
 
-            string contextsListAsString = await contextsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string contextsListAsString = await contextsResponse.Content.ReadAsStringAsync();
 
-            resultContextsList = JsonConvert.DeserializeObject<List<string>>(contextsListAsString);
+            resultContextsList = JsonSerializer.Deserialize<List<string>>(contextsListAsString, JsonSerializerOptions.Web);
 
             return resultContextsList;
         }
@@ -98,8 +100,9 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of all unique location names for a Progeny, including only items that the user has access to.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get locations for.</param>
+        /// <param name="familyId">The FamilyId of the Family to get locations for.</param>
         /// <returns>List of strings.</returns>
-        public async Task<List<string>> GetLocationsList(int progenyId)
+        public async Task<List<string>> GetLocationsList(int progenyId, int familyId)
         {
             string userId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(userId);
@@ -107,14 +110,14 @@ namespace KinaUnaWeb.Services.HttpClients
 
             List<string> resultLocationsList = [];
 
-            string locationsApiPath = "/api/AutoSuggests/GetLocationAutoSuggestList/" + progenyId;
+            string locationsApiPath = "/api/AutoSuggests/GetLocationAutoSuggestList/" + progenyId + "/" + familyId;
 
-            HttpResponseMessage locationsResponse = await _httpClient.GetAsync(locationsApiPath).ConfigureAwait(false);
+            HttpResponseMessage locationsResponse = await _httpClient.GetAsync(locationsApiPath);
             if (!locationsResponse.IsSuccessStatusCode) return resultLocationsList;
 
-            string locationsListAsString = await locationsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string locationsListAsString = await locationsResponse.Content.ReadAsStringAsync();
 
-            resultLocationsList = JsonConvert.DeserializeObject<List<string>>(locationsListAsString);
+            resultLocationsList = JsonSerializer.Deserialize<List<string>>(locationsListAsString, JsonSerializerOptions.Web);
 
             return resultLocationsList;
         }
@@ -134,12 +137,12 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string categoriesApiPath = "/api/AutoSuggests/GetCategoryAutoSuggestList/" + progenyId;
 
-            HttpResponseMessage categoriesResponse = await _httpClient.GetAsync(categoriesApiPath).ConfigureAwait(false);
+            HttpResponseMessage categoriesResponse = await _httpClient.GetAsync(categoriesApiPath);
             if (!categoriesResponse.IsSuccessStatusCode) return resultCategoriesList;
 
-            string categoriesListAsString = await categoriesResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string categoriesListAsString = await categoriesResponse.Content.ReadAsStringAsync();
 
-            resultCategoriesList = JsonConvert.DeserializeObject<List<string>>(categoriesListAsString);
+            resultCategoriesList = JsonSerializer.Deserialize<List<string>>(categoriesListAsString, JsonSerializerOptions.Web);
 
             return resultCategoriesList;
         }
@@ -159,12 +162,12 @@ namespace KinaUnaWeb.Services.HttpClients
 
             string languagesApiPath = "/api/AutoSuggests/GetVocabularyLanguagesSuggestList/" + progenyId;
 
-            HttpResponseMessage languagesResponse = await _httpClient.GetAsync(languagesApiPath).ConfigureAwait(false);
+            HttpResponseMessage languagesResponse = await _httpClient.GetAsync(languagesApiPath);
             if (!languagesResponse.IsSuccessStatusCode) return resultLanguagesList;
 
-            string languagesListAsString = await languagesResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string languagesListAsString = await languagesResponse.Content.ReadAsStringAsync();
 
-            resultLanguagesList = JsonConvert.DeserializeObject<List<string>>(languagesListAsString);
+            resultLanguagesList = JsonSerializer.Deserialize<List<string>>(languagesListAsString, JsonSerializerOptions.Web);
 
             return resultLanguagesList;
         }

@@ -1,7 +1,7 @@
 ﻿@model PushDevices
 @section Scripts
 {
-    <script src="@Url.Content("~/js/CreateDevice.js")"></script>
+    <script src="@Url.Content("~/js/CreateDevice-v12.js")"></script>
 }
 @{
     ViewData["Title"] = "Add Push Device";
@@ -30,8 +30,8 @@
                     <input asp-for="PushEndpoint" class="form-control" readonly required/>
                 </div>
                 <div class="form-group">
-                    <label asp-for="PushP256DH" class="control-label"></label>
-                    <input asp-for="PushP256DH" class="form-control" readonly required/>
+                    <label asp-for="PushP256Dh" class="control-label"></label>
+                    <input asp-for="PushP256Dh" class="form-control" readonly required/>
                 </div>
                 <div class="form-group">
                     <label asp-for="PushAuth" class="control-label"></label>

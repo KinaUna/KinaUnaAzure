@@ -40,8 +40,9 @@ namespace KinaUna.Data.Extensions
         {
             otherPicture.RemoveNullStrings();
 
-            currentPicture.AccessLevel = otherPicture.AccessLevel;
             currentPicture.PictureTime = otherPicture.PictureTime;
+            currentPicture.ItemPerMission = otherPicture.ItemPerMission;
+            currentPicture.ItemPermissionsDtoList = otherPicture.ItemPermissionsDtoList;
             currentPicture.Tags = otherPicture.Tags.TrimEnd(',', ' ').TrimStart(',', ' ');
             currentPicture.Location = otherPicture.Location.TrimEnd(',', ' ');
             if (!string.IsNullOrEmpty(otherPicture.Longtitude))
@@ -69,10 +70,13 @@ namespace KinaUna.Data.Extensions
         {
             otherPicture.RemoveNullStrings();
 
-            currentPicture.AccessLevel = otherPicture.AccessLevel;
+            currentPicture.ItemPerMission = otherPicture.ItemPerMission;
+            currentPicture.ItemPermissionsDtoList = otherPicture.ItemPermissionsDtoList;
             currentPicture.CommentThreadNumber = otherPicture.CommentThreadNumber;
             currentPicture.TimeZone = otherPicture.TimeZone;
             currentPicture.Owners = otherPicture.Owners;
+            currentPicture.ModifiedBy = otherPicture.ModifiedBy;
+            currentPicture.ModifiedTime = DateTime.UtcNow;
             currentPicture.PictureRotation = otherPicture.PictureRotation;
             currentPicture.PictureTime = otherPicture.PictureTime;
             currentPicture.PictureNumber = otherPicture.PictureNumber;
@@ -93,13 +97,18 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherPicture"></param>
         public static void CopyPropertiesForAdd(this Picture currentPicture, Picture otherPicture)
         {
-            currentPicture.AccessLevel = otherPicture.AccessLevel;
+            currentPicture.ItemPerMission = otherPicture.ItemPerMission;
+            currentPicture.ItemPermissionsDtoList = otherPicture.ItemPermissionsDtoList;
             currentPicture.CommentThreadNumber = otherPicture.CommentThreadNumber;
             currentPicture.ProgenyId = otherPicture.ProgenyId;
             currentPicture.PictureLink = otherPicture.PictureLink;
             currentPicture.PictureLink600 = otherPicture.PictureLink600;
             currentPicture.PictureLink1200 = otherPicture.PictureLink1200;
             currentPicture.Author = otherPicture.Author;
+            currentPicture.CreatedBy = otherPicture.CreatedBy;
+            currentPicture.CreatedTime = DateTime.UtcNow;
+            currentPicture.ModifiedBy = otherPicture.CreatedBy;
+            currentPicture.ModifiedTime = DateTime.UtcNow;
             currentPicture.TimeZone = otherPicture.TimeZone;
             currentPicture.PictureTime = otherPicture.PictureTime;
             currentPicture.Owners = otherPicture.Owners;
@@ -166,12 +175,12 @@ namespace KinaUna.Data.Extensions
         public static void CopyPropertiesForCopy(this Picture currentPicture, Picture otherPicture, string ownerEmail, Progeny progeny)
         {
             otherPicture.RemoveNullStrings();
-
+            currentPicture.ItemPerMission = otherPicture.ItemPerMission;
+            currentPicture.ItemPermissionsDtoList = otherPicture.ItemPermissionsDtoList;
             currentPicture.PictureId = 0;
             currentPicture.ProgenyId = otherPicture.ProgenyId;
             currentPicture.Progeny = progeny;
             currentPicture.Owners = ownerEmail;
-            currentPicture.AccessLevel = otherPicture.AccessLevel;
             currentPicture.PictureTime = otherPicture.PictureTime;
             currentPicture.Tags = otherPicture.Tags.TrimEnd(',', ' ').TrimStart(',', ' ');
             currentPicture.Location = otherPicture.Location.TrimEnd(',', ' ');
@@ -202,7 +211,6 @@ namespace KinaUna.Data.Extensions
 
             picture.ProgenyId = 0;
             picture.Progeny = progeny;
-            picture.AccessLevel = 5;
             picture.PictureLink = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
             picture.PictureLink600 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";
             picture.PictureLink1200 = Constants.WebAppUrl + "/photodb/0/default_temp.jpg";

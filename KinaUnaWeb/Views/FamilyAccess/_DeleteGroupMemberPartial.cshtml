@@ -1,0 +1,64 @@
+﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.FamilyAccessViewModels.UserGroupViewModel
+@inject ILocaleManager LocaleManager
+@{
+    string pageTitle = await LocaleManager.GetTranslation("Remove group member for", PageNames.AccessManagement, Model.LanguageId);
+    string nameString = string.Empty;
+    if (Model.CurrentProgenyId > 0 && Model.CurrentProgeny != null)
+    {
+        nameString = Model.CurrentProgeny.NickName;
+    }
+    else if (Model.CurrentFamily != null)
+    {
+        nameString = Model.CurrentFamily.Name;
+    }
+}
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body modal-content item-details-content">
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-add-item-header">
+                <span class="h4 mr-3 align-bottom">@pageTitle: @nameString</span>
+                <button id="close-delete-group-member-modal-button" type="button" class="btn btn-link item-details-close-button close-delete-group-member-modal-button"><span>×</span></button>
+            </div>
+        </div>
+        <form id="delete-group-member-form" asp-action="DeleteGroupMember" asp-controller="FamilyAccess" role="form" method="post">
+            <div class="space-20"></div>
+            <div class="form-group">
+                <div class="col-auto">@await LocaleManager.GetTranslation("Group name", PageNames.AccessManagement, Model.LanguageId):</div>
+                <div class="col-auto h-5">
+                    @Model.UserGroup.Name
+                </div>
+            </div>
+            @if (!string.IsNullOrWhiteSpace(Model.UserGroupMember.UserId) && Model.UserGroupMember.UserInfo != null)
+            {
+                <div class="form-group">
+                    <div class="col-auto">@await LocaleManager.GetTranslation("User:", PageNames.AccessManagement, Model.LanguageId):</div>
+                    <div class="col-auto h-6">
+                        @Model.UserGroupMember.UserInfo.FullName()
+                    </div>
+                </div>
+            }
+            <div class="form-group">
+                <label asp-for="UserGroupMember.Email" class="col-auto control-label">@await LocaleManager.GetTranslation("Email", PageNames.Progeny, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="group-member-email-input" asp-for="UserGroupMember.Email" type="email" class="form-control" value="@Model.UserGroupMember.Email" readonly="readonly" />
+                </div>
+            </div>
+            <input type="hidden" asp-for="UserGroup.FamilyId" value="@Model.UserGroup.FamilyId" />
+            <input type="hidden" asp-for="UserGroup.ProgenyId" value="@Model.UserGroup.ProgenyId" />
+            <input type="hidden" asp-for="UserGroup.UserGroupId" value="@Model.UserGroup.UserGroupId" />
+            <input type="hidden" asp-for="UserGroupMember.UserGroupMemberId" value="@Model.UserGroupMember.UserGroupMemberId" />
+            <input type="hidden" asp-for="UserGroupMember.UserGroupId" value="@Model.UserGroupMember.UserGroupId" />
+            <div class="space-20"></div>
+            <div class="form-group">
+                <div class="col-auto control-label"></div>
+                <div class="col-auto">
+                    <button id="delete-group-member-button" class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Remove", PageNames.AddItem, Model.LanguageId)</button>
+                    <button class="btn btn-danger item-details-cancel-button close-edit-group-member-modal-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

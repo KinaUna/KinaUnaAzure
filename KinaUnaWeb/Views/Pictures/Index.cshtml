@@ -1,5 +1,6 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
+@using KinaUna.Data.Models.AccessManagement
 @model KinaUnaWeb.Models.ItemViewModels.PicturesListViewModel
 @inject ILocaleManager LocaleManager
 @{
@@ -115,8 +116,8 @@
                 </div>
             </div>
         </div>
-        
-        @if (Model.IsCurrentUserProgenyAdmin)
+
+        @if (Model.PicturesList.Count > 0 && Model.PicturesList.Exists(p => p.ItemPerMission?.PermissionLevel >= PermissionLevel.Admin))
         {
             <div class="space-70"></div>
             <div class="row">
@@ -261,4 +262,4 @@
         </button>
     </div>
 </div>
-<script src="/js/pictures/pictures-index.js" type="module" asp-append-version="true"></script>
+<script src="/js/pictures/pictures-index-v12.js" type="module" asp-append-version="true"></script>

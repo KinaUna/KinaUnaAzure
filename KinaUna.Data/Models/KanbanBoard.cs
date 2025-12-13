@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.DTOs;
 using KinaUna.Data.Models.ItemInterfaces;
 
 namespace KinaUna.Data.Models
@@ -29,9 +31,12 @@ namespace KinaUna.Data.Models
         /// <summary>
         /// Gets or sets the unique identifier for the progeny that this Kanban board is associated with.
         /// </summary>
-        public int ProgenyId { get; set; }
-
-        // Todo: Add Family or Group association if needed in the future.
+        public int ProgenyId { get; set; } = 0; // 0 if associated with a family.
+        
+        /// <summary>
+        /// Gets or sets the identifier for the family associated with this entity.
+        /// </summary>
+        public int FamilyId { get; set; } = 0; // 0 if associated with a progeny.
 
         /// <summary>
         /// Gets or sets the title of the Kanban board.
@@ -74,12 +79,7 @@ namespace KinaUna.Data.Models
         /// </summary>
         [MaxLength(256)]
         public string ModifiedBy { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the access level required to view this Kanban board.
-        /// </summary>
-        public int AccessLevel { get; set; }
-
+        
         /// <summary>
         /// Comma-separated list of tags associated with the entity for categorization and filtering.
         /// </summary>
@@ -103,6 +103,21 @@ namespace KinaUna.Data.Models
         [NotMapped]
         public Progeny Progeny { get; set; } = new Progeny();
 
+        [NotMapped]
+        public Family.Family Family { get; set; }
+
+        /// <summary>
+        /// The current user's permissions for this item.
+        /// </summary>
+        [NotMapped]
+        public TimelineItemPermission ItemPerMission { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of item permissions associated with the current entity. For adding or updating item permissions.
+        /// </summary>
+        [NotMapped]
+        public List<ItemPermissionDto> ItemPermissionsDtoList { get; set; } = new List<ItemPermissionDto>();
+        
         /// <summary>
         /// Gets or sets the list of columns associated with the Kanban board.
         /// </summary>

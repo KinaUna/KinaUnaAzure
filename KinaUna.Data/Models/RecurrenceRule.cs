@@ -15,6 +15,7 @@ namespace KinaUna.Data.Models
         /// The Id of the Progeny the event belongs to. Makes it easier to determine if a progeny has any recurring events.
         /// </summary>
         public int ProgenyId { get; set; }
+        public int FamilyId { get; set; }
 
         /// <summary>
         /// The frequency of the recurrence rule.

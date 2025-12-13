@@ -1,10 +1,20 @@
 ﻿@using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.ItemViewModels.ContactViewModel
 @inject ILocaleManager LocaleManager
 @{
-    string title = Model.ContactItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Contacts", PageNames.Contacts, Model.LanguageId);
+    string title = "";
+    if (Model.ContactItem.ProgenyId > 0)
+    {
+        title = Model.ContactItem.Progeny.NickName + " : " + await LocaleManager.GetTranslation("Contacts", PageNames.Contacts, Model.LanguageId);
+    }
+    if (Model.ContactItem.FamilyId > 0)
+    {
+        title = Model.ContactItem.Family.Name + " : " + await LocaleManager.GetTranslation("Contacts", PageNames.Contacts, Model.LanguageId);
+    }
+    
     string websiteLink = Model.ContactItem.Website;
     if (!string.IsNullOrEmpty(Model.ContactItem.Website) && !Model.ContactItem.Website.StartsWith("https://"))
     {
@@ -17,7 +27,14 @@
     <div class="timeline-card-body bg-contact item-details-content">
         <div class="row sticky-top m-0 item-details-header">
             <div class="col-12 bg-contact-header">
-                <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                @if (Model.ContactItem.ProgenyId > 0)
+                {
+                    <img src="@Model.ContactItem.Progeny.GetProfilePictureUrl()" class="item-details-title-picture" />
+                }
+                @if (Model.ContactItem.FamilyId > 0)
+                {
+                    <img src="@Model.ContactItem.Family.GetProfilePictureUrl()" class="item-details-title-picture" />
+                }
                 <span class="h4 mr-3 align-bottom">@title</span>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
@@ -260,12 +277,15 @@
                     </div>
                 </div>
             </div>
-            @if (Model.IsCurrentUserProgenyAdmin)
+            @if (Model.ContactItem.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
             {
                 <div class="space-20"></div>
                 <div class="col-12">
                     <a data-edit-item-type="contact" data-edit-item-item-id="@Model.ContactItem.ContactId" class="btn btn-info item-details-edit-button edit-item-button"><i class="fas fa-pencil-alt"></i></a>
-                    <a asp-controller="Contacts" asp-action="DeleteContact" asp-route-itemId="@Model.ContactItem.ContactId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    @if (Model.ContactItem.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
+                    {
+                        <a asp-controller="Contacts" asp-action="DeleteContact" asp-route-itemId="@Model.ContactItem.ContactId" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    }
                 </div>
             }
         </div>

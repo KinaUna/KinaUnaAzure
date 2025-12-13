@@ -1,15 +1,16 @@
-﻿using KinaUna.Data;
-using KinaUna.Data.Extensions;
+﻿using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.TodosServices;
-using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.FamiliesServices;
 
 namespace KinaUnaProgenyApi.Controllers
 {
@@ -21,11 +22,9 @@ namespace KinaUnaProgenyApi.Controllers
     /// items. The controller also integrates with notification services to inform users about changes to to-do
     /// items.</remarks>
     /// <param name="progenyService"></param>
-    /// <param name="userAccessService"></param>
     /// <param name="todosService"></param>
     /// <param name="userInfoService"></param>
     /// <param name="timelineService"></param>
-    /// <param name="azureNotifications"></param>
     /// <param name="webNotificationsService"></param>
     [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
@@ -33,47 +32,38 @@ namespace KinaUnaProgenyApi.Controllers
     [ApiController]
     public class TodosController(
         IProgenyService progenyService,
-        IUserAccessService userAccessService,
+        IFamiliesService familiesService,
         ITodosService todosService,
         IUserInfoService userInfoService,
         ITimelineService timelineService,
-        IAzureNotifications azureNotifications,
-        IWebNotificationsService webNotificationsService) : ControllerBase
+        IWebNotificationsService webNotificationsService,
+        IAccessManagementService accessManagementService) : ControllerBase
     {
         /// <summary>
-        /// Returns a list of to-do items for the specified progenies.
+        /// Returns a list of to-do items for the specified progenies and families.
         /// </summary>
         /// <param name="request">TodoItemsRequest with the parameters and filters for retrieving TodoItems.</param>
-        /// <returns>TodoItemsResponse containing the list of TodoItems and associated Progeny.</returns>
+        /// <returns>TodoItemsResponse containing the list of TodoItems and associated Progeny or Family.</returns>
         [HttpPost]
         [Route("[action]")]
         public async Task<IActionResult> GetProgeniesTodoItemsList([FromBody] TodoItemsRequest request)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            List<Progeny> progenyList = [];
-            foreach (int progenyId in request.ProgenyIds)
-            {
-                Progeny progeny = await progenyService.GetProgeny(progenyId);
-                if (progeny != null)
-                {
-                    UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progenyId, userEmail);
-                    if (userAccess != null)
-                    {
-                        progenyList.Add(progeny);
-                    }
-                }
-            }
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             
             if (request.Skip < 0) request.Skip = 0;
 
             List<TodoItem> todoItems = [];
 
-            if (progenyList.Count == 0) return NotFound();
-            foreach (Progeny progeny in progenyList)
+            foreach (int progenyId in request.ProgenyIds)
             {
-                UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progeny.Id, userEmail);
-                List<TodoItem> progenyTodos = await todosService.GetTodosForProgeny(progeny.Id, userAccess.AccessLevel, request);
+                List<TodoItem> progenyTodos = await todosService.GetTodosForProgenyOrFamily(progenyId, 0, currentUserInfo, request);
                 todoItems.AddRange(progenyTodos);
+            }
+
+            foreach (int familyId in request.FamilyIds)
+            {
+                List<TodoItem> familyTodos = await todosService.GetTodosForProgenyOrFamily(0, familyId, currentUserInfo, request);
+                todoItems.AddRange(familyTodos);
             }
 
             TodoItemsResponse todoItemsResponse = todosService.CreateTodoItemsResponseForTodoPage(todoItems, request);
@@ -94,16 +84,20 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetTodoItem(int id)
         {
-            TodoItem result = await todosService.GetTodoItem(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            TodoItem result = await todosService.GetTodoItem(id, currentUserInfo);
             if (result == null) return NotFound();
-            
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(result.ProgenyId, userEmail, result.AccessLevel);
 
-            if (accessLevelResult.IsSuccess) return Ok(result);
+            if (result.ProgenyId > 0)
+            {
+                result.Progeny = await progenyService.GetProgeny(result.ProgenyId, currentUserInfo);
+            }
 
-            return accessLevelResult.ToActionResult();
-
+            if (result.FamilyId > 0)
+            {
+                result.Family = await familiesService.GetFamilyById(result.FamilyId, currentUserInfo);
+            }
+            return Ok(result);
         }
 
         /// <summary>
@@ -128,41 +122,60 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] TodoItem value)
         {
-            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
+            // Either ProgenyId or FamilyId must be set, but not both.
+            if (value.ProgenyId > 0 && value.FamilyId > 0)
             {
+                return BadRequest("A TodoItem must have either a ProgenyId or a FamilyId set, but not both.");
+            }
 
-                if (!progeny.IsInAdminList(userEmail))
+            if (value.ProgenyId == 0 && value.FamilyId == 0)
+            {
+                return BadRequest("A TodoItem must have either a ProgenyId or a FamilyId set.");
+            }
+
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            if (value.ProgenyId > 0)
+            {
+                if (!await accessManagementService.HasProgenyPermission(value.ProgenyId, currentUserInfo, PermissionLevel.Add))
                 {
                     return Unauthorized();
                 }
             }
-            else
-            {
-                return BadRequest();
-            }
 
+            if (value.FamilyId > 0)
+            {
+                if (!await accessManagementService.HasFamilyPermission(value.FamilyId, currentUserInfo, PermissionLevel.Add))
+                {
+                    return Unauthorized();
+                }
+            }
+            
+            
             value.CreatedBy = User.GetUserId();
             if (string.IsNullOrWhiteSpace(value.UId))
             {
                 value.UId = Guid.NewGuid().ToString();
             }
 
-            TodoItem todoItem = await todosService.AddTodoItem(value);
-
+            TodoItem todoItem = await todosService.AddTodoItem(value, currentUserInfo);
             if (todoItem == null)
             {
-                return BadRequest();
+                return Unauthorized();
             }
 
             // Add TimeLineItem for the new TodoItem
             TimeLineItem timeLineItem = todoItem.ToNewTimeLineItem();
-            _ = await timelineService.AddTimeLineItem(timeLineItem);
+            _ = await timelineService.AddTimeLineItem(timeLineItem, currentUserInfo);
 
             // Send notifications about the new TodoItem
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-            await NotifyTodoItemAdded(progeny, userInfo, timeLineItem, todoItem);
+            if (todoItem.ProgenyId > 0)
+            {
+                Progeny progeny = await progenyService.GetProgeny(value.ProgenyId, currentUserInfo);
+                await NotifyTodoItemAdded(progeny, currentUserInfo, todoItem);
+            }
+            // Todo: Send notification for family too.
+
+            todoItem = await todosService.GetTodoItem(todoItem.TodoItemId, currentUserInfo);
 
             return Ok(todoItem);
         }
@@ -187,24 +200,21 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] TodoItem value)
         {
-            TodoItem todoItem = await todosService.GetTodoItem(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            TodoItem todoItem = await todosService.GetTodoItem(id, currentUserInfo);
             if (todoItem == null)
             {
                 return NotFound();
             }
 
-            Progeny progeny = await progenyService.GetProgeny(value.ProgenyId);
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (progeny != null)
+            if (todoItem.ProgenyId > 0 && todoItem.FamilyId > 0)
             {
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
+                return BadRequest("TodoItems cannot be assigned to both a progeny and a family.");
             }
-            else
+
+            if (todoItem.ProgenyId == 0 && todoItem.FamilyId == 0)
             {
-                return BadRequest();
+                return BadRequest("TodoItems must be assigned to either a progeny or a family.");
             }
 
             value.ModifiedBy = User.GetUserId();
@@ -213,19 +223,19 @@ namespace KinaUnaProgenyApi.Controllers
                 value.UId = Guid.NewGuid().ToString();
             }
 
-            todoItem = await todosService.UpdateTodoItem(value);
+            todoItem = await todosService.UpdateTodoItem(value, currentUserInfo);
             if (todoItem == null || todoItem.TodoItemId == 0)
             {
-                return BadRequest();
+                return Unauthorized();
             }
 
             // Update TimeLineItem for the TodoItem
-            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(todoItem.TodoItemId.ToString(), (int)KinaUnaTypes.TimeLineType.TodoItem);
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(todoItem.TodoItemId.ToString(), (int)KinaUnaTypes.TimeLineType.TodoItem, currentUserInfo);
 
             if (timeLineItem == null || !timeLineItem.CopyTodoItemPropertiesForUpdate(todoItem)) return Ok(todoItem);
 
-            _ = await timelineService.UpdateTimeLineItem(timeLineItem);
-
+            _ = await timelineService.UpdateTimeLineItem(timeLineItem, currentUserInfo);
+            
             return Ok(todoItem);
         }
 
@@ -237,15 +247,12 @@ namespace KinaUnaProgenyApi.Controllers
         /// and the user who added the item.</remarks>
         /// <param name="progeny">The progeny for whom the TodoItem was added. Cannot be null.</param>
         /// <param name="userInfo">The user who added the TodoItem. Cannot be null.</param>
-        /// <param name="timeLineItem">The timeline item associated with the TodoItem. Cannot be null.</param>
         /// <param name="todoItem">The TodoItem that was added. Cannot be null.</param>
         /// <returns>A task that represents the asynchronous notification operation.</returns>
-        private async Task NotifyTodoItemAdded(Progeny progeny, UserInfo userInfo, TimeLineItem timeLineItem, TodoItem todoItem)
+        private async Task NotifyTodoItemAdded(Progeny progeny, UserInfo userInfo, TodoItem todoItem)
         {
             string notificationTitle = "Todo item added for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " added a new todo item for " + progeny.NickName;
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-
+            
             await webNotificationsService.SendTodoItemNotification(todoItem, userInfo, notificationTitle);
         }
 
@@ -269,54 +276,37 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            TodoItem todoItem = await todosService.GetTodoItem(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            TodoItem todoItem = await todosService.GetTodoItem(id, currentUserInfo);
             if (todoItem == null)
             {
                 return NotFound();
             }
 
-            // Check if the user has access to the Progeny associated with the TodoItem
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-
-            Progeny progeny = await progenyService.GetProgeny(todoItem.ProgenyId);
-            if (progeny != null)
-            {
-                if (!progeny.IsInAdminList(userEmail))
-                {
-                    return Unauthorized();
-                }
-            }
-            else
-            {
-                return BadRequest();
-            }
-
-            // Check if the TodoItem has a TimeLineItem and delete it
-            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(todoItem.TodoItemId.ToString(), (int)KinaUnaTypes.TimeLineType.TodoItem);
-            if (timeLineItem != null)
-            {
-                _ = await timelineService.DeleteTimeLineItem(timeLineItem);
-            }
-
             todoItem.ModifiedBy = User.GetUserId();
-            bool isDeleted = await todosService.DeleteTodoItem(todoItem);
+            bool isDeleted = await todosService.DeleteTodoItem(todoItem, currentUserInfo);
             if (!isDeleted)
             {
                 return BadRequest();
+            }
+            
+            // Check if the TodoItem has a TimeLineItem and delete it
+            TimeLineItem timeLineItem = await timelineService.GetTimeLineItemByItemId(todoItem.TodoItemId.ToString(), (int)KinaUnaTypes.TimeLineType.TodoItem, currentUserInfo);
+            if (timeLineItem != null)
+            {
+                _ = await timelineService.DeleteTimeLineItem(timeLineItem, currentUserInfo);
             }
 
             if (timeLineItem == null) return NoContent();
 
             // Send notifications about the deleted TodoItem
-            UserInfo userInfo = await userInfoService.GetUserInfoByEmail(userEmail);
-
-            string notificationTitle = "Todo item deleted for " + progeny.NickName;
-            string notificationMessage = userInfo.FullName() + " deleted a todo item for " + progeny.NickName + ". Todo: " + todoItem.Title;
-
-            todoItem.AccessLevel = timeLineItem.AccessLevel = 0; // Set access level to 0 for notifications, to only notify admins.
-
-            await azureNotifications.ProgenyUpdateNotification(notificationTitle, notificationMessage, timeLineItem, userInfo.ProfilePicture);
-            await webNotificationsService.SendTodoItemNotification(todoItem, userInfo, notificationTitle);
+            if (todoItem.ProgenyId > 0)
+            {
+                Progeny progeny = await progenyService.GetProgeny(todoItem.ProgenyId, currentUserInfo);
+                string notificationTitle = "Todo item deleted for " + progeny.NickName;
+                await webNotificationsService.SendTodoItemNotification(todoItem, currentUserInfo, notificationTitle);
+            }
+            // Todo: Send notification for family too.
 
             return NoContent();
         }

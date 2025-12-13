@@ -15,13 +15,12 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherContact"></param>
         public static void CopyPropertiesForUpdate(this Contact currentContact, Contact otherContact )
         {
-            currentContact.ContactId = otherContact.ContactId;
-            currentContact.AccessLevel = otherContact.AccessLevel;
             currentContact.Active = otherContact.Active;
             currentContact.AddressIdNumber = otherContact.AddressIdNumber;
             currentContact.AddressString = otherContact.AddressString;
-            currentContact.ProgenyId = otherContact.ProgenyId;
             currentContact.Author = otherContact.Author;
+            currentContact.ModifiedBy = otherContact.ModifiedBy;
+            currentContact.ModifiedTime = DateTime.UtcNow;
             if (otherContact.DateAdded.HasValue)
             {
                 currentContact.DateAdded = otherContact.DateAdded.Value;
@@ -49,6 +48,7 @@ namespace KinaUna.Data.Extensions
             currentContact.Tags = otherContact.Tags;
             currentContact.Website = otherContact.Website;
             currentContact.Address = otherContact.Address;
+            currentContact.ItemPermissionsDtoList = otherContact.ItemPermissionsDtoList;
         }
 
         /// <summary>
@@ -58,11 +58,15 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherContact"></param>
         public static void CopyPropertiesForAdd(this Contact currentContact, Contact otherContact)
         {
-            currentContact.AccessLevel = otherContact.AccessLevel;
             currentContact.Active = otherContact.Active;
             currentContact.AddressString = otherContact.AddressString;
             currentContact.ProgenyId = otherContact.ProgenyId;
+            currentContact.FamilyId = otherContact.FamilyId;
             currentContact.Author = otherContact.Author;
+            currentContact.CreatedBy = otherContact.CreatedBy;
+            currentContact.CreatedTime = DateTime.UtcNow;
+            currentContact.ModifiedBy = otherContact.CreatedBy;
+            currentContact.ModifiedTime = DateTime.UtcNow;
             currentContact.DateAdded = otherContact.DateAdded ?? DateTime.UtcNow;
             currentContact.Context = otherContact.Context;
             currentContact.DisplayName = otherContact.DisplayName;
@@ -78,6 +82,7 @@ namespace KinaUna.Data.Extensions
             currentContact.Tags = otherContact.Tags;
             currentContact.Website = otherContact.Website;
             currentContact.Address = otherContact.Address;
+            currentContact.ItemPermissionsDtoList = otherContact.ItemPermissionsDtoList;
         }
 
         /// <summary>

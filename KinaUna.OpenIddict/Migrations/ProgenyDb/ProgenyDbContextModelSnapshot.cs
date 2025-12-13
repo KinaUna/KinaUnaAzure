@@ -17,7 +17,7 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.9")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -37,10 +37,6 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Email")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
                     b.Property<int>("FamilyId")
                         .HasColumnType("int");
 
@@ -56,10 +52,6 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
 
                     b.Property<int>("PermissionLevel")
                         .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
 
                     b.HasKey("FamilyPermissionId");
 
@@ -131,10 +123,6 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("Email")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
                     b.Property<int>("GroupId")
                         .HasColumnType("int");
 
@@ -150,10 +138,6 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
 
                     b.Property<int>("ProgenyId")
                         .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
 
                     b.HasKey("ProgenyPermissionId");
 
@@ -184,6 +168,9 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
 
                     b.Property<int>("GroupId")
                         .HasColumnType("int");
+
+                    b.Property<bool>("InheritPermissions")
+                        .HasColumnType("bit");
 
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
@@ -388,9 +375,6 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EventId"));
 
-                    b.Property<int>("AccessLevel")
-                        .HasColumnType("int");
-
                     b.Property<bool>("AllDay")
                         .HasColumnType("bit");
 
@@ -402,15 +386,33 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("EndTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("FamilyId")
+                        .HasColumnType("int");
 
                     b.Property<string>("Location")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("ModifiedTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<int>("ProgenyId")
                         .HasColumnType("int");
@@ -477,9 +479,6 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ContactId"));
 
-                    b.Property<int>("AccessLevel")
-                        .HasColumnType("int");
-
                     b.Property<bool>("Active")
                         .HasColumnType("bit");
 
@@ -493,6 +492,13 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.Property<string>("Context")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("DateAdded")
                         .HasColumnType("datetime2");
@@ -508,6 +514,9 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.Property<string>("Email2")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<int>("FamilyId")
+                        .HasColumnType("int");
 
                     b.Property<string>("FirstName")
                         .HasMaxLength(256)
@@ -525,9 +534,16 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
-                    b.Property<string>("Notes")
+                    b.Property<string>("ModifiedBy")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("ModifiedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(4096)
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
                         .HasMaxLength(256)
@@ -586,6 +602,10 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.Property<string>("Name")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("PictureLink")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
 
                     b.HasKey("FamilyId");
 
@@ -685,9 +705,6 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("FriendId"));
 
-                    b.Property<int>("AccessLevel")
-                        .HasColumnType("int");
-
                     b.Property<string>("Author")
                         .HasMaxLength(128)
                         .HasColumnType("nvarchar(128)");
@@ -695,6 +712,13 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.Property<string>("Context")
                         .HasMaxLength(1024)
                         .HasColumnType("nvarchar(1024)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .HasMaxLength(4096)
@@ -706,12 +730,20 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.Property<DateTime?>("FriendSince")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("ModifiedTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Name")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<string>("PictureLink")
                         .HasMaxLength(1024)
@@ -740,9 +772,6 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("KanbanBoardId"));
 
-                    b.Property<int>("AccessLevel")
-                        .HasColumnType("int");
-
                     b.Property<string>("Columns")
                         .HasMaxLength(4096)
                         .HasColumnType("nvarchar(max)");
@@ -761,6 +790,9 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.Property<string>("Description")
                         .HasMaxLength(4096)
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("FamilyId")
+                        .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -923,6 +955,7 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                         .HasColumnType("nvarchar(1024)");
 
                     b.Property<string>("Text")
+                        .HasMaxLength(1000000)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("TextId")
@@ -964,9 +997,6 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("LocationId"));
 
-                    b.Property<int>("AccessLevel")
-                        .HasColumnType("int");
-
                     b.Property<string>("Author")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -983,6 +1013,13 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime?>("Date")
                         .HasColumnType("datetime2");
 
@@ -992,6 +1029,9 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.Property<string>("District")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<int>("FamilyId")
+                        .HasColumnType("int");
 
                     b.Property<string>("HouseNumber")
                         .HasMaxLength(128)
@@ -1003,11 +1043,19 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.Property<double>("Longitude")
                         .HasColumnType("float");
 
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("ModifiedTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Name")
                         .HasMaxLength(512)
                         .HasColumnType("nvarchar(512)");
 
                     b.Property<string>("Notes")
+                        .HasMaxLength(4096)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PostalCode")
@@ -1042,9 +1090,6 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MeasurementId"));
 
-                    b.Property<int>("AccessLevel")
-                        .HasColumnType("int");
-
                     b.Property<string>("Author")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -1052,7 +1097,14 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.Property<double>("Circumference")
                         .HasColumnType("float");
 
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
                     b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("Date")
@@ -1068,6 +1120,13 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
 
                     b.Property<double>("Height")
                         .HasColumnType("float");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("ModifiedTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("ProgenyId")
                         .HasColumnType("int");
@@ -1134,17 +1193,29 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("NoteId"));
 
-                    b.Property<int>("AccessLevel")
-                        .HasColumnType("int");
-
                     b.Property<string>("Category")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("Content")
+                        .HasMaxLength(1000000)
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
                     b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("ModifiedTime")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Owner")
@@ -1178,6 +1249,24 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.Property<DateTime?>("BirthDay")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(1024)
+                        .HasColumnType("nvarchar(1024)");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("ModifiedTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Name")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -1191,6 +1280,10 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                         .HasColumnType("nvarchar(512)");
 
                     b.Property<string>("TimeZone")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("UserId")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
@@ -1218,8 +1311,16 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("ModifiedTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Notes")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
 
                     b.Property<int>("ProgenyId")
                         .HasColumnType("int");
@@ -1253,7 +1354,7 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                         .HasMaxLength(4096)
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PushP256DH")
+                    b.Property<string>("PushP256Dh")
                         .HasMaxLength(4096)
                         .HasColumnType("nvarchar(max)");
 
@@ -1288,6 +1389,9 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.Property<int>("EndOption")
                         .HasColumnType("int");
 
+                    b.Property<int>("FamilyId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Frequency")
                         .HasColumnType("int");
 
@@ -1316,9 +1420,6 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SkillId"));
 
-                    b.Property<int>("AccessLevel")
-                        .HasColumnType("int");
-
                     b.Property<string>("Author")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -1327,12 +1428,27 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Description")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("ModifiedTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<int>("ProgenyId")
                         .HasColumnType("int");
@@ -1356,14 +1472,25 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SleepId"));
 
-                    b.Property<int>("AccessLevel")
-                        .HasColumnType("int");
-
                     b.Property<string>("Author")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
                     b.Property<DateTime>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("ModifiedTime")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("ProgenyId")
@@ -1423,9 +1550,6 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TimeLineId"));
 
-                    b.Property<int>("AccessLevel")
-                        .HasColumnType("int");
-
                     b.Property<string>("CreatedBy")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
@@ -1433,11 +1557,22 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.Property<DateTime>("CreatedTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("FamilyId")
+                        .HasColumnType("int");
+
                     b.Property<string>("ItemId")
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<int>("ItemType")
                         .HasColumnType("int");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("ModifiedTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("ProgenyId")
                         .HasColumnType("int");
@@ -1457,9 +1592,6 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TodoItemId"));
-
-                    b.Property<int>("AccessLevel")
-                        .HasColumnType("int");
 
                     b.Property<DateTime?>("CompletedDate")
                         .HasColumnType("datetime2");
@@ -1481,6 +1613,9 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
 
                     b.Property<DateTime?>("DueDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<int>("FamilyId")
+                        .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -1527,32 +1662,6 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.HasKey("TodoItemId");
 
                     b.ToTable("TodoItemsDb");
-                });
-
-            modelBuilder.Entity("KinaUna.Data.Models.UserAccess", b =>
-                {
-                    b.Property<int>("AccessId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("AccessId"));
-
-                    b.Property<int>("AccessLevel")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("CanContribute")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("ProgenyId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
-                        .HasMaxLength(256)
-                        .HasColumnType("nvarchar(256)");
-
-                    b.HasKey("AccessId");
-
-                    b.ToTable("UserAccessDb");
                 });
 
             modelBuilder.Entity("KinaUna.Data.Models.UserInfo", b =>
@@ -1627,14 +1736,26 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("VaccinationId"));
 
-                    b.Property<int>("AccessLevel")
-                        .HasColumnType("int");
-
                     b.Property<string>("Author")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("ModifiedTime")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Notes")
+                        .HasMaxLength(4096)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ProgenyId")
@@ -1664,12 +1785,16 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("WordId"));
 
-                    b.Property<int>("AccessLevel")
-                        .HasColumnType("int");
-
                     b.Property<string>("Author")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("CreatedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("CreatedTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("Date")
                         .HasColumnType("datetime2");
@@ -1684,6 +1809,13 @@ namespace KinaUna.IDP.Migrations.ProgenyDb
                     b.Property<string>("Language")
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("ModifiedBy")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("ModifiedTime")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("ProgenyId")
                         .HasColumnType("int");

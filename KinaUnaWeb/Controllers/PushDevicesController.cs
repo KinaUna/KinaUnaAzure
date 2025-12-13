@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using KinaUna.Data.Extensions;
 using KinaUnaWeb.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -33,11 +34,16 @@ namespace KinaUnaWeb.Controllers
         // more details see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,PushEndpoint,PushP256DH,PushAuth")] PushDevices devices)
+        public async Task<IActionResult> Create([Bind("Id,Name,PushEndpoint,PushP256Dh,PushAuth")] PushDevices devices)
         {
             if (!ModelState.IsValid) return View(devices);
 
-            string userId = HttpContext.User.FindFirst("sub")?.Value;
+            string userId = User.GetUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("EnablePush", "Account");
+            }
+
             devices.Name = userId;
             _ = await messageSender.AddPushDevice(devices);
 
@@ -47,15 +53,20 @@ namespace KinaUnaWeb.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateUser([Bind("Id,Name,PushEndpoint,PushP256DH,PushAuth")] PushDevices devices)
+        public async Task<IActionResult> CreateUser([Bind("Id,Name,PushEndpoint,PushP256Dh,PushAuth")] PushDevices devices)
         {
             if (!ModelState.IsValid) return RedirectToAction("EnablePush", "Account");
-            
+            string userId = User.GetUserId();
+            if (string.IsNullOrEmpty(userId))
+            {
+                return RedirectToAction("EnablePush", "Account");
+            }
+
+            devices.Name = userId;
+
             PushDevices existingDevice = await messageSender.GetDevice(devices);
             if (existingDevice != null) return RedirectToAction("MyAccount", "Account");
-
-            string userId = HttpContext.User.FindFirst("sub")?.Value;
-            devices.Name = userId;
+            
             _ = await messageSender.AddPushDevice(devices);
 
             return RedirectToAction("MyAccount", "Account");

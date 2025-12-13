@@ -133,6 +133,7 @@ namespace KinaUna.Data.Extensions
         public static void CopyPropertiesForAdd(this TodoItem currentTodoItem, TodoItem otherTodoItem)
         {
             currentTodoItem.ProgenyId = otherTodoItem.ProgenyId;
+            currentTodoItem.FamilyId = otherTodoItem.FamilyId;
             currentTodoItem.ParentTodoItemId = otherTodoItem.ParentTodoItemId;
             currentTodoItem.UId = otherTodoItem.UId;
             currentTodoItem.Title = otherTodoItem.Title;
@@ -142,15 +143,15 @@ namespace KinaUna.Data.Extensions
             currentTodoItem.StartDate = otherTodoItem.StartDate;
             currentTodoItem.CompletedDate = otherTodoItem.CompletedDate;
             currentTodoItem.Notes = otherTodoItem.Notes;
-            currentTodoItem.AccessLevel = otherTodoItem.AccessLevel;
             currentTodoItem.Tags = otherTodoItem.Tags;
             currentTodoItem.Context = otherTodoItem.Context;
             currentTodoItem.Location = otherTodoItem.Location;
-            currentTodoItem.CreatedBy = null; // Set to null or assign current user if available
+            currentTodoItem.CreatedBy = otherTodoItem.CreatedBy;
             currentTodoItem.CreatedTime = DateTime.UtcNow;
             currentTodoItem.ModifiedTime = DateTime.UtcNow;
-            currentTodoItem.ModifiedBy = null; // Set to null or assign current user if available
+            currentTodoItem.ModifiedBy = otherTodoItem.CreatedBy; // Set to null or assign current user if available
             currentTodoItem.IsDeleted = otherTodoItem.IsDeleted;
+            currentTodoItem.ItemPermissionsDtoList = otherTodoItem.ItemPermissionsDtoList;
         }
 
         /// <summary>
@@ -166,6 +167,8 @@ namespace KinaUna.Data.Extensions
         public static void CopyPropertiesForUpdate(this TodoItem currentTodoItem, TodoItem otherTodoItem)
         {
             currentTodoItem.ProgenyId = otherTodoItem.ProgenyId;
+            currentTodoItem.FamilyId = otherTodoItem.FamilyId;
+            currentTodoItem.ParentTodoItemId = otherTodoItem.ParentTodoItemId;
             currentTodoItem.Title = otherTodoItem.Title;
             currentTodoItem.Description = otherTodoItem.Description;
             currentTodoItem.Status = otherTodoItem.Status;
@@ -173,13 +176,13 @@ namespace KinaUna.Data.Extensions
             currentTodoItem.StartDate = otherTodoItem.StartDate;
             currentTodoItem.CompletedDate = otherTodoItem.CompletedDate;
             currentTodoItem.Notes = otherTodoItem.Notes;
-            currentTodoItem.AccessLevel = otherTodoItem.AccessLevel;
             currentTodoItem.Tags = otherTodoItem.Tags;
             currentTodoItem.Context = otherTodoItem.Context;
             currentTodoItem.Location = otherTodoItem.Location;
             currentTodoItem.ModifiedTime = DateTime.UtcNow; // Update modified time to now
             currentTodoItem.ModifiedBy = otherTodoItem.ModifiedBy; // Keep the same modifier
             currentTodoItem.IsDeleted = otherTodoItem.IsDeleted; // Keep the same deleted status
+            currentTodoItem.ItemPermissionsDtoList = otherTodoItem.ItemPermissionsDtoList;
         }
 
         /// <summary>
@@ -202,10 +205,12 @@ namespace KinaUna.Data.Extensions
             {
                 ItemId = todoItem.TodoItemId.ToString(),
                 ProgenyId = todoItem.ProgenyId,
-                AccessLevel = todoItem.AccessLevel,
+                FamilyId = todoItem.FamilyId,
                 ItemType = (int)KinaUnaTypes.TimeLineType.TodoItem,
                 CreatedBy = todoItem.CreatedBy,
                 CreatedTime = DateTime.UtcNow,
+                ModifiedBy = todoItem.CreatedBy,
+                ModifiedTime = DateTime.UtcNow,
                 ProgenyTime = progenyTime
             };
 

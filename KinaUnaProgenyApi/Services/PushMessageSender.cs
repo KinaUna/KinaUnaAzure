@@ -1,10 +1,10 @@
 ﻿using KinaUna.Data.Models;
 using Microsoft.Extensions.Configuration;
-using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using WebPush;
+using System.Text.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -34,7 +34,7 @@ namespace KinaUnaProgenyApi.Services
                 Link = link,
                 Tag = tag
             };
-            string payload = JsonConvert.SerializeObject(notification);
+            string payload = JsonSerializer.Serialize(notification, JsonSerializerOptions.Web);
             string vapidPublicKey = configuration["VapidPublicKey"];
             string vapidPrivateKey = configuration["VapidPrivateKey"];
 
@@ -43,7 +43,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 foreach (PushDevices dev in deviceList)
                 {
-                    PushSubscription pushSubscription = new(dev.PushEndpoint, dev.PushP256DH, dev.PushAuth);
+                    PushSubscription pushSubscription = new(dev.PushEndpoint, dev.PushP256Dh, dev.PushAuth);
                     VapidDetails vapidDetails = new("mailto:" + Constants.SupportEmail, vapidPublicKey, vapidPrivateKey);
                     if (string.IsNullOrEmpty(dev.PushAuth) || string.IsNullOrEmpty(dev.PushEndpoint))
                     {
@@ -58,7 +58,7 @@ namespace KinaUnaProgenyApi.Services
                         }
                         catch (WebPushException ex)
                         {
-                            if (ex.Message == "Subscription no longer valid")
+                            if (ex.Message.Contains("subscription no longer valid", System.StringComparison.CurrentCultureIgnoreCase))
                             {
                                 await notificationsService.RemovePushDevice(dev);
                             }
@@ -67,7 +67,6 @@ namespace KinaUnaProgenyApi.Services
 
                 }
             }
-
         }
 
         /// <summary>

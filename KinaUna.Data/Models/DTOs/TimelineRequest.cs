@@ -6,7 +6,9 @@ namespace KinaUna.Data.Models.DTOs
     public class TimelineRequest
     {
         public int ProgenyId { get; set; } = 0;
+        public int FamilyId { get; set; } = 0;
         public List<int> Progenies { get; set; } = [];
+        public List<int> Families { get; set; } = [];
         public DateTime TimelineStartDateTime
         {
             get
@@ -38,7 +40,6 @@ namespace KinaUna.Data.Models.DTOs
         public int Month { get; set; }
         public int Day { get; set; }
         public int FirstItemYear { get; set; } = 1900;
-        public int AccessLevel { get; set; } = 5;
         public int Skip { get; set; } = 0;
         public int NumberOfItems { get; set; } = 10;
         public string TagFilter { get; set; } = string.Empty;

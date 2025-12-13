@@ -3,7 +3,7 @@
 @model PushDevices
 @section Scripts
     {
-    <script src="@Url.Content("~/js/RemoveDevice.js")"></script>
+    <script src="@Url.Content("~/js/RemoveDevice-v12.js")"></script>
 }
 @inject ILocaleManager LocaleManager
 @{
@@ -41,9 +41,9 @@
                 </div>
             </div>
             <div class="form-group">
-                <label asp-for="PushP256DH" class="col-auto control-label"></label>
+                <label asp-for="PushP256Dh" class="col-auto control-label"></label>
                 <div class="col-auto">
-                    <input asp-for="PushP256DH" class="form-control" readonly required />
+                    <input asp-for="PushP256Dh" class="form-control" readonly required />
                 </div>
             </div>
             <div class="form-group">

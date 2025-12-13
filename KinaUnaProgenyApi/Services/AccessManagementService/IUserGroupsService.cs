@@ -1,0 +1,147 @@
+﻿using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
+namespace KinaUnaProgenyApi.Services.AccessManagementService
+{
+    public interface IUserGroupsService
+    {
+        /// <summary>
+        /// Gets a user group by its unique identifier, including its members, if the current user has the necessary permissions.
+        /// </summary>
+        /// <param name="groupId">The unique identifier of the user group to retrieve.</param>
+        /// <param name="currentUserInfo">The information about the current user, used to verify access permissions.</param>
+        /// <param name="isSystemRequest">Indicates whether the request is made by a system user.</param>
+        /// <returns>The <see cref="UserGroup"/> object representing the requested user group, including its members, if the user has access.</returns>
+        Task<UserGroup> GetUserGroup(int groupId, UserInfo currentUserInfo, bool isSystemRequest = false);
+
+        /// <summary>
+        /// Retrieves a list of user groups associated with the specified progeny that the current user has
+        /// administrative access to.
+        /// </summary>
+        /// <remarks>Each returned <see cref="UserGroup"/> includes its associated members. Only groups
+        /// for which the current user has  administrative permissions are included in the result.</remarks>
+        /// <param name="progenyId">The unique identifier of the progeny whose user groups are to be retrieved.</param>
+        /// <param name="currentUserInfo">The information about the current user, used to determine access permissions.</param>
+        /// <param name="isSystemRequest">Indicates whether the request is a system request.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see
+        /// cref="UserGroup"/> objects  that the current user has administrative access to. If no groups are accessible,
+        /// the list will be empty.</returns>
+        Task<List<UserGroup>> GetUserGroupsForProgeny(int progenyId, UserInfo currentUserInfo, bool isSystemRequest = false);
+
+        /// <summary>
+        /// Retrieves a list of user groups associated with the specified family that the current user has access to.
+        /// </summary>
+        /// <remarks>Only user groups for which the current user has administrative permissions are
+        /// included in the result.</remarks>
+        /// <param name="familyId">The unique identifier of the family whose user groups are to be retrieved.</param>
+        /// <param name="currentUserInfo">The information of the current user, used to determine access permissions.</param>
+        /// <param name="isSystemRequest">Indicates whether the request is a system request.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see
+        /// cref="UserGroup"/> objects  that the current user has access to. Each user group includes its associated
+        /// members.</returns>
+        Task<List<UserGroup>> GetUserGroupsForFamily(int familyId, UserInfo currentUserInfo, bool isSystemRequest = false);
+
+        /// <summary>
+        /// Adds a new user group to the database.
+        /// </summary>
+        /// <param name="userGroup">The <see cref="UserGroup"/> object to be added. This object must contain the necessary details about the user group.</param>
+        /// <param name="currentUserInfo">The information about the current user, used to verify access permissions.</param>
+        /// <returns>The added <see cref="UserGroup"/> object if the operation is successful; otherwise, <see langword="null"/> if the current user lacks the required access rights.</returns>
+        Task<UserGroup> AddUserGroup(UserGroup userGroup, UserInfo currentUserInfo);
+
+        /// <summary>
+        /// Updates the details of an existing user group in the database.
+        /// </summary>
+        /// <param name="userGroup">The <see cref="UserGroup"/> object containing the updated details of the user group. The <see cref="UserGroup.UserGroupId"/> property must correspond to an existing user group.</param>
+        /// <param name="currentUserInfo">The information about the current user, used to verify access permissions.</param>
+        /// <returns>The updated <see cref="UserGroup"/> object if the operation is successful; otherwise, <see langword="null"/> if the user group does not exist or the current user lacks the required access rights.</returns>
+        Task<UserGroup> UpdateUserGroup(UserGroup userGroup, UserInfo currentUserInfo);
+
+        /// <summary>
+        /// Removes a user group from the database, including all its members.
+        /// </summary>
+        /// <param name="groupId">The unique identifier of the user group to be removed.</param>
+        /// <param name="currentUserInfo">The information about the current user, used to verify access permissions.</param>
+        /// <returns>Boolean value indicating whether the user group was successfully removed. Returns <see langword="true"/>
+        /// if the operation is successful; otherwise, <see langword="false"/>
+        /// if the user group does not exist or the current user lacks the required access rights.</returns>
+        Task<bool> RemoveUserGroup(int groupId, UserInfo currentUserInfo);
+
+        /// <summary>
+        /// Gets a user group member by its unique identifier, if the current user has access to the associated user group.
+        /// </summary>
+        /// <param name="userGroupMemberId">The unique identifier of the user group member to retrieve.</param>
+        /// <param name="currentUserInfo">The information about the current user, used to verify access permissions.</param>
+        /// <returns>The <see cref="UserGroupMember"/> object representing the requested user group member, if the user has access; otherwise, an empty <see cref="UserGroupMember"/> object.</returns>
+        Task<UserGroupMember> GetUserGroupMember(int userGroupMemberId, UserInfo currentUserInfo);
+
+        /// <summary>
+        /// Adds a new member to a user group.
+        /// </summary>
+        /// <param name="userGroupMember">The <see cref="UserGroupMember"/> object representing the member to add. The <see cref="UserGroupMember.UserGroupId"/> property must be set to the ID of the target user group.</param>
+        /// <param name="currentUserInfo">The <see cref="UserInfo"/> object representing the user performing the operation. This user must have sufficient permissions to add members to the specified user group.</param>
+        /// <returns>UserGroupMember object representing the newly added member, or <see langword="null"/> if the operation fails due to insufficient permissions or an invalid user group ID.</returns>
+        Task<UserGroupMember> AddUserGroupMember(UserGroupMember userGroupMember, UserInfo currentUserInfo);
+
+        /// <summary>
+        /// Updates a user group member.
+        /// </summary>
+        /// <param name="userGroupMember">The <see cref="UserGroupMember"/> object containing the updated details of the user group member. The <see cref="UserGroupMember.UserGroupMemberId"/> property must correspond to an existing user group member.</param>
+        /// <param name="currentUserInfo">The information about the current user, used to verify access permissions.</param>
+        /// <returns>The updated <see cref="UserGroupMember"/> object if the operation is successful; otherwise, <see langword="null"/> if the user group member does not exist or the current user lacks the required access rights.</returns>
+        Task<UserGroupMember> UpdateUserGroupMember(UserGroupMember userGroupMember, UserInfo currentUserInfo);
+
+        /// <summary>
+        /// Removes a user group member from the database.
+        /// </summary>
+        /// <param name="userGroupMemberId">The unique identifier of the user group member to be removed.</param>
+        /// <param name="currentUserInfo">The information about the current user, used to verify access permissions.</param>
+        /// <returns>True if the user group member was successfully removed; otherwise, false if the user group member does not exist or the current user lacks the required access rights.</returns>
+        Task<bool> RemoveUserGroupMember(int userGroupMemberId, UserInfo currentUserInfo);
+
+        /// <summary>
+        /// Retrieves a list of user groups that the specified user belongs to and for which the current user has edit
+        /// permissions.
+        /// </summary>
+        /// <remarks>This method filters the user groups based on the current user's permissions. Only
+        /// user groups where the current user has edit-level access are included in the result.</remarks>
+        /// <param name="userId">The unique identifier of the user whose user groups are to be retrieved.</param>
+        /// <param name="currentUserInfo">The information of the current user, used to determine access permissions.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see
+        /// cref="UserGroup"/> objects that the specified user belongs to and the current user has access to edit. If no
+        /// such user groups are found, an empty list is returned.</returns>
+        Task<List<UserGroup>> GetUsersUserGroupsByUserId(string userId, UserInfo currentUserInfo);
+
+        /// <summary>
+        /// Gets the user groups a user belongs to by their email address, if the current user has access to those groups.
+        /// Should only be used when a user signs up, to check if the UserId should be assigned for each GroupMember entity.
+        /// </summary>
+        /// <param name="userEmail">The email address of the user whose groups are to be retrieved.</param>
+        /// <param name="currentUserInfo">The information about the current user, used to verify access permissions.</param>
+        /// <returns>List of user groups the user belongs to.</returns>
+        Task<List<UserGroup>> GetUsersUserGroupsByEmail(string userEmail, UserInfo currentUserInfo);
+
+        /// <summary>
+        /// Updates the email address for all group members associated with the specified user.
+        /// </summary>
+        /// <remarks>This method retrieves all group members associated with the specified user and
+        /// updates their email addresses to the provided value. If the user has no associated group members, the method
+        /// exits without making any changes.</remarks>
+        /// <param name="userInfo">The user information containing the user ID whose group members' email addresses will be updated.</param>
+        /// <param name="newEmail">The new email address to assign to the group members.</param>
+        /// <returns></returns>
+        Task ChangeUsersEmailForGroupMembers(UserInfo userInfo, string newEmail);
+
+        /// <summary>
+        /// Updates the user group memberships for a newly created user based on their email address.
+        /// </summary>
+        /// <remarks>This method associates existing user group memberships, identified by the user's
+        /// email address, with the user's unique identifier. If no matching user group memberships are found, the
+        /// method performs no action. Changes are persisted to the database.</remarks>
+        /// <param name="userInfo">The user information containing the user's email address and unique identifier.</param>
+        /// <returns></returns>
+        Task UpdateUserGroupMembersForNewUser(UserInfo userInfo);
+    }
+}

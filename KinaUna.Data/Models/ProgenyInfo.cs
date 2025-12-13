@@ -1,5 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using KinaUna.Data.Models.AccessManagement;
 
 namespace KinaUna.Data.Models
 {
@@ -21,8 +23,22 @@ namespace KinaUna.Data.Models
 
         [MaxLength(2048)]
         public string Website { get; set; } = string.Empty;
+        [MaxLength(4000)]
         public string Notes { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Gets or sets the identifier of the user or system that last modified the entity.
+        /// </summary>
+        [MaxLength(256)]
+        public string ModifiedBy { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the date and time when the object was last modified.
+        /// </summary>
+        public DateTime ModifiedTime { get; set; }
+
         [NotMapped] public Address Address { get; set; } = new();
+        [NotMapped] public ProgenyPermission ProgenyPerMission { get; set; } = new();
+
     }
 }

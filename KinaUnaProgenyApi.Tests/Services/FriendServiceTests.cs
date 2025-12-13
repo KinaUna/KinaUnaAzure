@@ -1,7 +1,12 @@
 ﻿using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.CacheManagement;
+using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.CacheServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
@@ -12,424 +17,1039 @@ namespace KinaUnaProgenyApi.Tests.Services
 {
     public class FriendServiceTests
     {
-        [Fact]
-        public async Task GetFriend_Should_Return_Friend_Object_When_Id_Is_Valid()
+        private readonly Mock<IAccessManagementService> _mockAccessManagementService;
+        private readonly Mock<IImageStore> _mockImageStore;
+        private readonly Mock<IKinaUnaCacheService> _mockKinaUnaCacheService;
+
+        public FriendServiceTests()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetFriend_Should_Return_Friend_Object_When_Id_Is_Valid").Options;
-            await using ProgenyDbContext context = new(dbOptions);
+            _mockAccessManagementService = new Mock<IAccessManagementService>();
+            _mockImageStore = new Mock<IImageStore>();
+            _mockKinaUnaCacheService = new Mock<IKinaUnaCacheService>();
+        }
+
+        private static ProgenyDbContext GetInMemoryDbContext(string dbName)
+        {
+            DbContextOptions<ProgenyDbContext> options = new DbContextOptionsBuilder<ProgenyDbContext>()
+                .UseInMemoryDatabase(databaseName: dbName)
+                .Options;
+            return new ProgenyDbContext(options);
+        }
+
+        private static IDistributedCache GetMemoryCache()
+        {
+            IOptions<MemoryDistributedCacheOptions> options = Options.Create(new MemoryDistributedCacheOptions());
+            return new MemoryDistributedCache(options);
+        }
+
+        private UserInfo CreateTestUserInfo(string userId = "testuser@test.com")
+        {
+            return new UserInfo
+            {
+                UserId = userId,
+                UserEmail = userId
+            };
+        }
+
+        private void SetupDefaultCacheMocks()
+        {
+            _mockKinaUnaCacheService
+                .Setup(x => x.GetFriendsListCache(It.IsAny<string>(), It.IsAny<int>()))
+                .ReturnsAsync((FriendsListCacheEntry)null!);
+
+            _mockKinaUnaCacheService
+                .Setup(x => x.GetProgenyOrFamilyTimelineUpdatedCache(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<KinaUnaTypes.TimeLineType>()))
+                .ReturnsAsync((TimelineUpdatedCacheEntry)null!);
+
+            _mockKinaUnaCacheService
+                .Setup(x => x.SetFriendsListCache(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<Friend[]>()))
+                .Returns(Task.CompletedTask);
+
+            _mockKinaUnaCacheService
+                .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<KinaUnaTypes.TimeLineType>()))
+                .Returns(Task.CompletedTask);
+        }
+
+        #region GetFriend Tests
+
+        [Fact]
+        public async Task GetFriend_Should_Return_Friend_When_User_Has_Permission()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetFriend_Valid");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
+
+            Friend friend = new()
+            {
+                FriendId = 1,
+                ProgenyId = 1,
+                Name = "Test Friend",
+                Description = "Test Description",
+                PictureLink = Constants.ProfilePictureUrl,
+                Tags = "Tag1, Tag2",
+                Context = "Testing",
+                CreatedBy = "testuser@test.com",
+                CreatedTime = DateTime.UtcNow
+            };
+
+            context.FriendsDb.Add(friend);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Friend, 1, 1, 0, userInfo, null))
+                .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
+
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Friend? result = await service.GetFriend(1, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(1, result.FriendId);
+            Assert.Equal("Test Friend", result.Name);
+            Assert.NotNull(result.ItemPerMission);
+        }
+
+        [Fact]
+        public async Task GetFriend_Should_Return_Null_When_User_Has_No_Permission()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetFriend_NoPermission");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
+
+            Friend friend = new()
+            {
+                FriendId = 1,
+                ProgenyId = 1,
+                Name = "Test Friend"
+            };
+
+            context.FriendsDb.Add(friend);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(false);
+
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Friend? result = await service.GetFriend(1, userInfo);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task GetFriend_Should_Return_Null_When_Friend_Does_Not_Exist()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetFriend_NotFound");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 999, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Friend? result = await service.GetFriend(999, userInfo);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task GetFriend_Should_Use_Cache_On_Second_Call()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetFriend_Cache");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
+
+            Friend friend = new()
+            {
+                FriendId = 1,
+                ProgenyId = 1,
+                Name = "Test Friend"
+            };
+
+            context.FriendsDb.Add(friend);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Friend, 1, 1, 0, userInfo, null))
+                .ReturnsAsync(new TimelineItemPermission { PermissionLevel = PermissionLevel.View });
+
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Friend? result1 = await service.GetFriend(1, userInfo);
+            Friend? result2 = await service.GetFriend(1, userInfo);
+
+            // Assert
+            Assert.NotNull(result1);
+            Assert.NotNull(result2);
+            Assert.Equal(result1.Name, result2.Name);
+        }
+
+        #endregion
+
+        #region AddFriend Tests
+
+        [Fact]
+        public async Task AddFriend_Should_Add_Friend_When_User_Has_Permission()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("AddFriend_Valid");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
+
+            Friend friend = new()
+            {
+                ProgenyId = 1,
+                Name = "New Friend",
+                Description = "Test Description",
+                PictureLink = Constants.ProfilePictureUrl,
+                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Add))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.AddItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
+                .Returns(Task.CompletedTask);
+
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Friend? result = await service.AddFriend(friend, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotEqual(0, result.FriendId);
+            Assert.Equal("New Friend", result.Name);
+
+            Friend? dbFriend = await context.FriendsDb.FindAsync(result.FriendId);
+            Assert.NotNull(dbFriend);
+            Assert.Equal("New Friend", dbFriend.Name);
+
+            _mockKinaUnaCacheService.Verify(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Friend), Times.Once);
+        }
+
+        [Fact]
+        public async Task AddFriend_Should_Return_Null_When_User_Has_No_Permission()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("AddFriend_NoPermission");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
+
+            Friend friend = new()
+            {
+                ProgenyId = 1,
+                Name = "New Friend"
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Add))
+                .ReturnsAsync(false);
+
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Friend? result = await service.AddFriend(friend, userInfo);
+
+            // Assert
+            Assert.Null(result);
+            Assert.Empty(context.FriendsDb);
+        }
+
+        #endregion
+
+        #region UpdateFriend Tests
+
+        [Fact]
+        public async Task UpdateFriend_Should_Update_Friend_When_User_Has_Permission()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("UpdateFriend_Valid");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
+
+            Friend friend = new()
+            {
+                FriendId = 1,
+                ProgenyId = 1,
+                Name = "Original Name",
+                PictureLink = "original.jpg"
+            };
+
+            context.FriendsDb.Add(friend);
+            await context.SaveChangesAsync();
+            context.Entry(friend).State = EntityState.Detached;
+
+            Friend updatedFriend = new()
+            {
+                FriendId = 1,
+                ProgenyId = 1,
+                Name = "Updated Name",
+                PictureLink = "updated.jpg",
+                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.Edit))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.UpdateItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
+                .ReturnsAsync(new List<TimelineItemPermission>());
+
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Friend? result = await service.UpdateFriend(updatedFriend, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("Updated Name", result.Name);
+
+            Friend? dbFriend = await context.FriendsDb.FindAsync(1);
+            Assert.NotNull(dbFriend);
+            Assert.Equal("Updated Name", dbFriend.Name);
+
+            _mockKinaUnaCacheService.Verify(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Friend), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateFriend_Should_Return_Null_When_User_Has_No_Permission()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("UpdateFriend_NoPermission");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
+
+            Friend friend = new()
+            {
+                FriendId = 1,
+                ProgenyId = 1,
+                Name = "Original Name"
+            };
+
+            context.FriendsDb.Add(friend);
+            await context.SaveChangesAsync();
+
+            Friend updatedFriend = new()
+            {
+                FriendId = 1,
+                ProgenyId = 1,
+                Name = "Updated Name"
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.Edit))
+                .ReturnsAsync(false);
+
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Friend? result = await service.UpdateFriend(updatedFriend, userInfo);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task UpdateFriend_Should_Return_Null_When_Friend_Does_Not_Exist()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("UpdateFriend_NotFound");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
+
+            Friend updatedFriend = new()
+            {
+                FriendId = 999,
+                ProgenyId = 1,
+                Name = "Updated Name"
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 999, userInfo, PermissionLevel.Edit))
+                .ReturnsAsync(true);
+
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Friend? result = await service.UpdateFriend(updatedFriend, userInfo);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public async Task UpdateFriend_Should_Delete_Old_Picture_When_Picture_Changed_And_Not_Used_By_Others()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("UpdateFriend_DeleteOldPicture");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
+
+            Friend friend = new()
+            {
+                FriendId = 1,
+                ProgenyId = 1,
+                Name = "Test Friend",
+                PictureLink = "old-picture.jpg"
+            };
+
+            context.FriendsDb.Add(friend);
+            await context.SaveChangesAsync();
+            context.Entry(friend).State = EntityState.Detached;
+
+            Friend updatedFriend = new()
+            {
+                FriendId = 1,
+                ProgenyId = 1,
+                Name = "Test Friend",
+                PictureLink = "new-picture.jpg",
+                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.Edit))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.UpdateItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
+                .ReturnsAsync(new List<TimelineItemPermission>());
+
+            _mockImageStore
+                .Setup(x => x.DeleteImage("old-picture.jpg", BlobContainers.Friends))
+                .ReturnsAsync("old-picture.jpg");
+
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Friend? result = await service.UpdateFriend(updatedFriend, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            _mockImageStore.Verify(x => x.DeleteImage("old-picture.jpg", BlobContainers.Friends), Times.Once);
+        }
+
+        [Fact]
+        public async Task UpdateFriend_Should_Not_Delete_Old_Picture_When_Used_By_Other_Friends()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("UpdateFriend_KeepSharedPicture");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
 
             Friend friend1 = new()
             {
-                ProgenyId = 1, Author = "User1", AccessLevel = 0, Context = "Testing", Name = "Friend1", PictureLink = Constants.ProfilePictureUrl, Tags = "Tag1, Tag2",
-                Notes = "Note1", FriendAddedDate = DateTime.UtcNow, Description = "Friend1", FriendSince = DateTime.Now, Type = 1
+                FriendId = 1,
+                ProgenyId = 1,
+                Name = "Friend 1",
+                PictureLink = "shared-picture.jpg"
             };
-
 
             Friend friend2 = new()
             {
+                FriendId = 2,
                 ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                Context = "Testing",
-                Name = "Friend2",
-                PictureLink = Constants.ProfilePictureUrl,
-                Tags = "Tag1, Tag2",
-                Notes = "Note2",
-                FriendAddedDate = DateTime.UtcNow,
-                Description = "Friend2",
-                FriendSince = DateTime.Now,
-                Type = 1
+                Name = "Friend 2",
+                PictureLink = "shared-picture.jpg"
             };
 
-            context.Add(friend1);
-            context.Add(friend2);
+            context.FriendsDb.AddRange(friend1, friend2);
+            await context.SaveChangesAsync();
+            context.Entry(friend1).State = EntityState.Detached;
+
+            Friend updatedFriend = new()
+            {
+                FriendId = 1,
+                ProgenyId = 1,
+                Name = "Friend 1",
+                PictureLink = "new-picture.jpg",
+                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+            };
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.Edit))
+                .ReturnsAsync(true);
+
+            _mockAccessManagementService
+                .Setup(x => x.UpdateItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
+                .ReturnsAsync(new List<TimelineItemPermission>());
+
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Friend? result = await service.UpdateFriend(updatedFriend, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            _mockImageStore.Verify(x => x.DeleteImage(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        #endregion
+
+        #region DeleteFriend Tests
+
+        [Fact]
+        public async Task DeleteFriend_Should_Delete_Friend_When_User_Has_Permission()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("DeleteFriend_Valid");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
+
+            Friend friend = new()
+            {
+                FriendId = 1,
+                ProgenyId = 1,
+                Name = "Test Friend",
+                PictureLink = "test-picture.jpg"
+            };
+
+            context.FriendsDb.Add(friend);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            Mock<IImageStore> imageStore = new();
-            FriendService friendService = new(context, memoryCache, imageStore.Object);
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.Admin))
+                .ReturnsAsync(true);
 
-            Friend resultFriend1 = await friendService.GetFriend(1);
-            Friend resultFriend2 = await friendService.GetFriend(1); // Uses cache
+            _mockAccessManagementService
+                .Setup(x => x.GetTimelineItemPermissionsList(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), userInfo))
+                .ReturnsAsync(new List<TimelineItemPermission>());
 
-            Assert.NotNull(resultFriend1);
-            Assert.IsType<Friend>(resultFriend1);
-            Assert.Equal(friend1.Author, resultFriend1.Author);
-            Assert.Equal(friend1.Name, resultFriend1.Name);
-            Assert.Equal(friend1.AccessLevel, resultFriend1.AccessLevel);
-            Assert.Equal(friend1.ProgenyId, resultFriend1.ProgenyId);
+            _mockImageStore
+                .Setup(x => x.DeleteImage("test-picture.jpg", BlobContainers.Friends))
+                .ReturnsAsync("test-picture.jpg");
 
-            Assert.NotNull(resultFriend2);
-            Assert.IsType<Friend>(resultFriend2);
-            Assert.Equal(friend1.Author, resultFriend2.Author);
-            Assert.Equal(friend1.Name, resultFriend2.Name);
-            Assert.Equal(friend1.AccessLevel, resultFriend2.AccessLevel);
-            Assert.Equal(friend1.ProgenyId, resultFriend2.ProgenyId);
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Friend? result = await service.DeleteFriend(friend, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(1, result.FriendId);
+
+            Friend? dbFriend = await context.FriendsDb.FindAsync(1);
+            Assert.Null(dbFriend);
+
+            _mockKinaUnaCacheService.Verify(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Friend), Times.Once);
         }
 
         [Fact]
-        public async Task GetFriend_Should_Return_Null_When_Id_Is_Invalid()
+        public async Task DeleteFriend_Should_Return_Null_When_User_Has_No_Permission()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetFriend_Should_Return_Null_When_Id_Is_Invalid").Options;
-            await using ProgenyDbContext context = new(dbOptions);
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("DeleteFriend_NoPermission");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
 
-            Friend friend1 = new()
+            Friend friend = new()
             {
+                FriendId = 1,
                 ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                Context = "Testing",
-                Name = "Friend1",
-                PictureLink = Constants.ProfilePictureUrl,
-                Tags = "Tag1, Tag2",
-                Notes = "Note1",
-                FriendAddedDate = DateTime.UtcNow,
-                Description = "Friend1",
-                FriendSince = DateTime.Now,
-                Type = 1
+                Name = "Test Friend"
             };
-            
-            context.Add(friend1);
+
+            context.FriendsDb.Add(friend);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            Mock<IImageStore> imageStore = new();
-            FriendService friendService = new(context, memoryCache, imageStore.Object);
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.Admin))
+                .ReturnsAsync(false);
 
-            Friend resultFriend1 = await friendService.GetFriend(2);
-            Friend resultFriend2 = await friendService.GetFriend(2); // Using cache
-            
-            Assert.Null(resultFriend1);
-            Assert.Null(resultFriend2);
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            Friend? result = await service.DeleteFriend(friend, userInfo);
+
+            // Assert
+            Assert.Null(result);
+            Friend? dbFriend = await context.FriendsDb.FindAsync(1);
+            Assert.NotNull(dbFriend);
         }
 
         [Fact]
-        public async Task AddFriend_Should_Save_Friend()
+        public async Task DeleteFriend_Should_Return_Null_When_Friend_Does_Not_Exist()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddFriend_Should_Save_Friend").Options;
-            await using ProgenyDbContext context = new(dbOptions);
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("DeleteFriend_NotFound");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
 
-            Friend friend1 = new()
+            Friend friend = new()
             {
+                FriendId = 999,
                 ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                Context = "Testing",
-                Name = "Friend1",
-                PictureLink = Constants.ProfilePictureUrl,
-                Tags = "Tag1, Tag2",
-                Notes = "Note1",
-                FriendAddedDate = DateTime.UtcNow,
-                Description = "Friend1",
-                FriendSince = DateTime.Now,
-                Type = 1
-            };
-            context.Add(friend1);
-            await context.SaveChangesAsync();
-
-            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            Mock<IImageStore> imageStore = new();
-            FriendService friendService = new(context, memoryCache, imageStore.Object);
-
-            Friend friendToAdd = new()
-            {
-                ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                Context = "Testing",
-                Name = "Friend2",
-                PictureLink = Constants.ProfilePictureUrl,
-                Tags = "Tag1, Tag2",
-                Notes = "Note2",
-                FriendAddedDate = DateTime.UtcNow,
-                Description = "Friend2",
-                FriendSince = DateTime.Now,
-                Type = 1
+                Name = "Test Friend"
             };
 
-            Friend addedFriend = await friendService.AddFriend(friendToAdd);
-            Friend? dbFriend = await context.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == addedFriend.FriendId);
-            Friend savedFriend = await friendService.GetFriend(addedFriend.FriendId);
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 999, userInfo, PermissionLevel.Admin))
+                .ReturnsAsync(true);
 
-            Assert.NotNull(addedFriend);
-            Assert.IsType<Friend>(addedFriend);
-            Assert.Equal(friendToAdd.Author, addedFriend.Author);
-            Assert.Equal(friendToAdd.Name, addedFriend.Name);
-            Assert.Equal(friendToAdd.AccessLevel, addedFriend.AccessLevel);
-            Assert.Equal(friendToAdd.ProgenyId, addedFriend.ProgenyId);
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
-            if (dbFriend != null)
-            {
-                Assert.IsType<Friend>(dbFriend);
-                Assert.Equal(friendToAdd.Author, dbFriend.Author);
-                Assert.Equal(friendToAdd.Name, dbFriend.Name);
-                Assert.Equal(friendToAdd.AccessLevel, dbFriend.AccessLevel);
-                Assert.Equal(friendToAdd.ProgenyId, dbFriend.ProgenyId);
-            }
-            Assert.NotNull(savedFriend);
-            Assert.IsType<Friend>(savedFriend);
-            Assert.Equal(friendToAdd.Author, savedFriend.Author);
-            Assert.Equal(friendToAdd.Name, savedFriend.Name);
-            Assert.Equal(friendToAdd.AccessLevel, savedFriend.AccessLevel);
-            Assert.Equal(friendToAdd.ProgenyId, savedFriend.ProgenyId);
+            // Act
+            Friend? result = await service.DeleteFriend(friend, userInfo);
 
+            // Assert
+            Assert.Null(result);
         }
 
         [Fact]
-        public async Task UpdateFriend_Should_Save_Friend()
+        public async Task DeleteFriend_Should_Not_Delete_Picture_When_Used_By_Other_Friends()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("UpdateFriend_Should_Save_Friend").Options;
-            await using ProgenyDbContext context = new(dbOptions);
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("DeleteFriend_KeepSharedPicture");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
 
             Friend friend1 = new()
             {
+                FriendId = 1,
                 ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                Context = "Testing",
-                Name = "Friend1",
-                PictureLink = Constants.ProfilePictureUrl,
-                Tags = "Tag1, Tag2",
-                Notes = "Note1",
-                FriendAddedDate = DateTime.UtcNow,
-                Description = "Friend1",
-                FriendSince = DateTime.Now,
-                Type = 1
+                Name = "Friend 1",
+                PictureLink = "shared-picture.jpg"
             };
 
             Friend friend2 = new()
             {
+                FriendId = 2,
                 ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                Context = "Testing",
-                Name = "Friend2",
-                PictureLink = Constants.ProfilePictureUrl,
-                Tags = "Tag1, Tag2",
-                Notes = "Note2",
-                FriendAddedDate = DateTime.UtcNow,
-                Description = "Friend2",
-                FriendSince = DateTime.Now,
-                Type = 1
+                Name = "Friend 2",
+                PictureLink = "shared-picture.jpg"
             };
-            context.Add(friend1);
-            context.Add(friend2);
+
+            context.FriendsDb.AddRange(friend1, friend2);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            Mock<IImageStore> imageStore = new();
-            FriendService friendService = new(context, memoryCache, imageStore.Object);
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.Admin))
+                .ReturnsAsync(true);
 
-            Friend friendToUpdate = await friendService.GetFriend(1);
-            friendToUpdate.AccessLevel = 5;
-            Friend updatedFriend = await friendService.UpdateFriend(friendToUpdate);
-            Friend? dbFriend = await context.FriendsDb.AsNoTracking().SingleOrDefaultAsync(f => f.FriendId == 1);
-            Friend savedFriend = await friendService.GetFriend(1);
+            _mockAccessManagementService
+                .Setup(x => x.GetTimelineItemPermissionsList(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), userInfo))
+                .ReturnsAsync(new List<TimelineItemPermission>());
 
-            Assert.NotNull(updatedFriend);
-            Assert.IsType<Friend>(updatedFriend);
-            Assert.NotEqual(0, updatedFriend.FriendId);
-            Assert.Equal("User1", updatedFriend.Author);
-            Assert.Equal(5, updatedFriend.AccessLevel);
-            Assert.Equal(1, updatedFriend.ProgenyId);
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
-            if (dbFriend != null)
+            // Act
+            Friend? result = await service.DeleteFriend(friend1, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            _mockImageStore.Verify(x => x.DeleteImage(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+        }
+
+        #endregion
+
+        #region GetFriendsList Tests
+
+        [Fact]
+        public async Task GetFriendsList_Should_Return_List_Of_Accessible_Friends()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetFriendsList_Valid");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
+
+            List<Friend> friends = new()
             {
-                Assert.IsType<Friend>(dbFriend);
-                Assert.NotEqual(0, dbFriend.FriendId);
-                Assert.Equal("User1", dbFriend.Author);
-                Assert.Equal(5, dbFriend.AccessLevel);
-                Assert.Equal(1, dbFriend.ProgenyId);
-            }
+                new Friend { FriendId = 1, ProgenyId = 1, Name = "Friend 1" },
+                new Friend { FriendId = 2, ProgenyId = 1, Name = "Friend 2" },
+                new Friend { FriendId = 3, ProgenyId = 1, Name = "Friend 3" }
+            };
 
-            Assert.NotNull(savedFriend);
-            Assert.IsType<Friend>(savedFriend);
-            Assert.NotEqual(0, savedFriend.FriendId);
-            Assert.Equal("User1", savedFriend.Author);
-            Assert.Equal(5, savedFriend.AccessLevel);
-            Assert.Equal(1, savedFriend.ProgenyId);
+            context.FriendsDb.AddRange(friends);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, It.IsAny<int>(), userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            List<Friend>? result = await service.GetFriendsList(1, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(3, result.Count);
+            _mockKinaUnaCacheService.Verify(x => x.SetFriendsListCache(userInfo.UserId, 1, It.IsAny<Friend[]>()), Times.Once);
         }
 
         [Fact]
-        public async Task DeleteFriend_Should_Remove_Friend()
+        public async Task GetFriendsList_Should_Return_Only_Accessible_Friends()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("DeleteFriend_Should_Remove_Friend").Options;
-            await using ProgenyDbContext context = new(dbOptions);
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetFriendsList_PartialAccess");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
 
-            Friend friend1 = new()
+            List<Friend> friends = new()
             {
-                ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                Context = "Testing",
-                Name = "Friend1",
-                PictureLink = Constants.ProfilePictureUrl,
-                Tags = "Tag1, Tag2",
-                Notes = "Note1",
-                FriendAddedDate = DateTime.UtcNow,
-                Description = "Friend1",
-                FriendSince = DateTime.Now,
-                Type = 1
+                new Friend { FriendId = 1, ProgenyId = 1, Name = "Friend 1" },
+                new Friend { FriendId = 2, ProgenyId = 1, Name = "Friend 2" },
+                new Friend { FriendId = 3, ProgenyId = 1, Name = "Friend 3" }
             };
 
-            Friend friend2 = new()
-            {
-                ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                Context = "Testing",
-                Name = "Friend2",
-                PictureLink = Constants.ProfilePictureUrl,
-                Tags = "Tag1, Tag2",
-                Notes = "Note2",
-                FriendAddedDate = DateTime.UtcNow,
-                Description = "Friend2",
-                FriendSince = DateTime.Now,
-                Type = 1
-            };
-            context.Add(friend1);
-            context.Add(friend2);
+            context.FriendsDb.AddRange(friends);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            Mock<IImageStore> imageStore = new();
-            FriendService friendService = new(context, memoryCache, imageStore.Object);
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
 
-            int friendItemsCountBeforeDelete = context.FriendsDb.Count();
-            Friend friendToDelete = await friendService.GetFriend(1);
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 2, userInfo, PermissionLevel.View))
+                .ReturnsAsync(false);
 
-            await friendService.DeleteFriend(friendToDelete);
-            Friend? deletedFriend = await context.FriendsDb.SingleOrDefaultAsync(f => f.FriendId == 1);
-            int friendItemsCountAfterDelete = context.FriendsDb.Count();
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 3, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
 
-            Assert.Null(deletedFriend);
-            Assert.Equal(2, friendItemsCountBeforeDelete);
-            Assert.Equal(1, friendItemsCountAfterDelete);
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            List<Friend>? result = await service.GetFriendsList(1, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count);
+            Assert.Contains(result, f => f.FriendId == 1);
+            Assert.Contains(result, f => f.FriendId == 3);
         }
 
         [Fact]
-        public async Task GetFriendsList_Should_Return_List_Of_Friend_When_Progeny_Has_Saved_Friends()
+        public async Task GetFriendsList_Should_Return_Empty_List_When_No_Friends_Exist()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetFriendsList_Should_Return_List_Of_Friend_When_Progeny_Has_Saved_Friends").Options;
-            await using ProgenyDbContext context = new(dbOptions);
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetFriendsList_Empty");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
 
-            Friend friend1 = new()
-            {
-                ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                Context = "Testing",
-                Name = "Friend1",
-                PictureLink = Constants.ProfilePictureUrl,
-                Tags = "Tag1, Tag2",
-                Notes = "Note1",
-                FriendAddedDate = DateTime.UtcNow,
-                Description = "Friend1",
-                FriendSince = DateTime.Now,
-                Type = 1
-            };
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
-            Friend friend2 = new()
-            {
-                ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                Context = "Testing",
-                Name = "Friend2",
-                PictureLink = Constants.ProfilePictureUrl,
-                Tags = "Tag1, Tag2",
-                Notes = "Note2",
-                FriendAddedDate = DateTime.UtcNow,
-                Description = "Friend2",
-                FriendSince = DateTime.Now,
-                Type = 1
-            };
+            // Act
+            List<Friend>? result = await service.GetFriendsList(1, userInfo);
 
-            context.Add(friend1);
-            context.Add(friend2);
-            await context.SaveChangesAsync();
-
-            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            Mock<IImageStore> imageStore = new();
-            FriendService friendService = new(context, memoryCache, imageStore.Object);
-
-            List<Friend> friendsList = await friendService.GetFriendsList(1, 0);
-            List<Friend> friendsList2 = await friendService.GetFriendsList(1, 0); // Test cached result.
-            Friend firstFriend = friendsList.First();
-
-            Assert.NotNull(friendsList);
-            Assert.IsType<List<Friend>>(friendsList);
-            Assert.Equal(2, friendsList.Count);
-            Assert.NotNull(friendsList2);
-            Assert.IsType<List<Friend>>(friendsList2);
-            Assert.Equal(2, friendsList2.Count);
-            Assert.NotNull(firstFriend);
-            Assert.IsType<Friend>(firstFriend);
+            // Assert
+            Assert.NotNull(result);
+            Assert.Empty(result);
         }
 
         [Fact]
-        public async Task GetFriendsList_Should_Return_Empty_List_Of_Friend_When_Progeny_Has_No_Saved_Friends()
+        public async Task GetFriendsList_Should_Use_Cache_When_Available_And_Current()
         {
-            
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetFriendsList_Should_Return_Empty_List_Of_Friend_When_Progeny_Has_No_Saved_Friends").Options;
-            await using ProgenyDbContext context = new(dbOptions);
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetFriendsList_Cache");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
 
-            Friend friend1 = new()
+            Friend[] cachedFriends = new[]
             {
-                ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                Context = "Testing",
-                Name = "Friend1",
-                PictureLink = Constants.ProfilePictureUrl,
-                Tags = "Tag1, Tag2",
-                Notes = "Note1",
-                FriendAddedDate = DateTime.UtcNow,
-                Description = "Friend1",
-                FriendSince = DateTime.Now,
-                Type = 1
+                new Friend { FriendId = 1, ProgenyId = 1, Name = "Cached Friend" }
             };
 
-            Friend friend2 = new()
+            FriendsListCacheEntry cacheEntry = new()
             {
-                ProgenyId = 1,
-                Author = "User1",
-                AccessLevel = 0,
-                Context = "Testing",
-                Name = "Friend2",
-                PictureLink = Constants.ProfilePictureUrl,
-                Tags = "Tag1, Tag2",
-                Notes = "Note2",
-                FriendAddedDate = DateTime.UtcNow,
-                Description = "Friend2",
-                FriendSince = DateTime.Now,
-                Type = 1
+                FriendsList = cachedFriends,
+                UpdateTime = DateTime.UtcNow
             };
 
-            context.Add(friend1);
-            context.Add(friend2);
+            TimelineUpdatedCacheEntry timelineEntry = new()
+            {
+                UpdateTime = DateTime.UtcNow.AddMinutes(-5)
+            };
+
+            _mockKinaUnaCacheService
+                .Setup(x => x.GetFriendsListCache(userInfo.UserId, 1))
+                .ReturnsAsync(cacheEntry);
+
+            _mockKinaUnaCacheService
+                .Setup(x => x.GetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Friend))
+                .ReturnsAsync(timelineEntry);
+
+            _mockKinaUnaCacheService
+                .Setup(x => x.SetFriendsListCache(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<Friend[]>()))
+                .Returns(Task.CompletedTask);
+
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            List<Friend>? result = await service.GetFriendsList(1, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Single(result);
+            Assert.Equal("Cached Friend", result[0].Name);
+        }
+
+        #endregion
+
+        #region GetFriendsWithTag Tests
+
+        [Fact]
+        public async Task GetFriendsWithTag_Should_Return_Friends_With_Matching_Tag()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetFriendsWithTag_Valid");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
+
+            List<Friend> friends = new()
+            {
+                new Friend { FriendId = 1, ProgenyId = 1, Name = "Friend 1", Tags = "school, sports" },
+                new Friend { FriendId = 2, ProgenyId = 1, Name = "Friend 2", Tags = "family, school" },
+                new Friend { FriendId = 3, ProgenyId = 1, Name = "Friend 3", Tags = "sports, music" }
+            };
+
+            context.FriendsDb.AddRange(friends);
             await context.SaveChangesAsync();
 
-            IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
-            IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
-            Mock<IImageStore> imageStore = new();
-            FriendService friendService = new(context, memoryCache, imageStore.Object);
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, It.IsAny<int>(), userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
 
-            List<Friend> friendsList = await friendService.GetFriendsList(2, 0);
-            List<Friend> friendsList2 = await friendService.GetFriendsList(2, 0); // Test cached result.
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
-            Assert.NotNull(friendsList);
-            Assert.IsType<List<Friend>>(friendsList);
-            Assert.Empty(friendsList);
-            Assert.NotNull(friendsList2);
-            Assert.IsType<List<Friend>>(friendsList2);
-            Assert.Empty(friendsList2);
+            // Act
+            List<Friend>? result = await service.GetFriendsWithTag(1, "school", userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count);
+            Assert.Contains(result, f => f.FriendId == 1);
+            Assert.Contains(result, f => f.FriendId == 2);
         }
+
+        [Fact]
+        public async Task GetFriendsWithTag_Should_Return_All_Friends_When_Tag_Is_Null()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetFriendsWithTag_NoFilter");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
+
+            List<Friend> friends = new()
+            {
+                new Friend { FriendId = 1, ProgenyId = 1, Name = "Friend 1", Tags = "school" },
+                new Friend { FriendId = 2, ProgenyId = 1, Name = "Friend 2", Tags = "sports" }
+            };
+
+            context.FriendsDb.AddRange(friends);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, It.IsAny<int>(), userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            List<Friend>? result = await service.GetFriendsWithTag(1, null, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count);
+        }
+
+        [Fact]
+        public async Task GetFriendsWithTag_Should_Be_Case_Insensitive()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetFriendsWithTag_CaseInsensitive");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
+
+            Friend friend = new() { FriendId = 1, ProgenyId = 1, Name = "Friend 1", Tags = "School, Sports" };
+            context.FriendsDb.Add(friend);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            List<Friend>? result = await service.GetFriendsWithTag(1, "school", userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Single(result);
+        }
+
+        #endregion
+
+        #region GetFriendsWithContext Tests
+
+        [Fact]
+        public async Task GetFriendsWithContext_Should_Return_Friends_With_Matching_Context()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetFriendsWithContext_Valid");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
+
+            List<Friend> friends = new()
+            {
+                new Friend { FriendId = 1, ProgenyId = 1, Name = "Friend 1", Context = "school activities" },
+                new Friend { FriendId = 2, ProgenyId = 1, Name = "Friend 2", Context = "family events" },
+                new Friend { FriendId = 3, ProgenyId = 1, Name = "Friend 3", Context = "school sports" }
+            };
+
+            context.FriendsDb.AddRange(friends);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, It.IsAny<int>(), userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            List<Friend>? result = await service.GetFriendsWithContext(1, "school", userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count);
+            Assert.Contains(result, f => f.FriendId == 1);
+            Assert.Contains(result, f => f.FriendId == 3);
+        }
+
+        [Fact]
+        public async Task GetFriendsWithContext_Should_Return_All_Friends_When_Context_Is_Null()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetFriendsWithContext_NoFilter");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
+
+            List<Friend> friends = new()
+            {
+                new Friend { FriendId = 1, ProgenyId = 1, Name = "Friend 1", Context = "school" },
+                new Friend { FriendId = 2, ProgenyId = 1, Name = "Friend 2", Context = "sports" }
+            };
+
+            context.FriendsDb.AddRange(friends);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, It.IsAny<int>(), userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            List<Friend>? result = await service.GetFriendsWithContext(1, null, userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count);
+        }
+
+        [Fact]
+        public async Task GetFriendsWithContext_Should_Be_Case_Insensitive()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetFriendsWithContext_CaseInsensitive");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
+
+            Friend friend = new() { FriendId = 1, ProgenyId = 1, Name = "Friend 1", Context = "School Activities" };
+            context.FriendsDb.Add(friend);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            List<Friend>? result = await service.GetFriendsWithContext(1, "school", userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Single(result);
+        }
+
+        [Fact]
+        public async Task GetFriendsWithContext_Should_Match_Substring()
+        {
+            // Arrange
+            await using ProgenyDbContext context = GetInMemoryDbContext("GetFriendsWithContext_Substring");
+            IDistributedCache cache = GetMemoryCache();
+            UserInfo userInfo = CreateTestUserInfo();
+            SetupDefaultCacheMocks();
+
+            Friend friend = new() { FriendId = 1, ProgenyId = 1, Name = "Friend 1", Context = "After school activities" };
+            context.FriendsDb.Add(friend);
+            await context.SaveChangesAsync();
+
+            _mockAccessManagementService
+                .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.View))
+                .ReturnsAsync(true);
+
+            FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
+
+            // Act
+            List<Friend>? result = await service.GetFriendsWithContext(1, "school", userInfo);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Single(result);
+        }
+
+        #endregion
     }
 }

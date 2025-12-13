@@ -2,6 +2,7 @@
 using Syncfusion.EJ2.Schedule;
 using System.Collections.Generic;
 using System.Linq;
+using KinaUna.Data.Models.AccessManagement;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
@@ -50,8 +51,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
             foreach (CalendarItem ev in eventsList)
             {
-                if (ev.AccessLevel != (int)AccessLevel.Public && ev.AccessLevel < CurrentAccessLevel) continue;
-
                 if (!ev.StartTime.HasValue || !ev.EndTime.HasValue) continue;
 
                 ev.StartTime = TimeZoneInfo.ConvertTimeFromUtc(ev.StartTime.Value,
@@ -62,7 +61,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 // ToDo: Replace format string with configuration or user defined value
                 ev.StartString = ev.StartTime.Value.ToString("yyyy-MM-dd") + "T" + ev.StartTime.Value.ToString("HH:mm:ss");
                 ev.EndString = ev.EndTime.Value.ToString("yyyy-MM-dd") + "T" + ev.EndTime.Value.ToString("HH:mm:ss");
-                ev.IsReadonly = !IsCurrentUserProgenyAdmin;
+                ev.IsReadonly = ev.ItemPerMission.PermissionLevel < PermissionLevel.Edit;
                 // Todo: Add color property
                 EventsList.Add(ev);
             }

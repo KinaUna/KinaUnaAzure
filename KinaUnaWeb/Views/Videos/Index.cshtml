@@ -1,6 +1,7 @@
 ﻿@using KinaUnaWeb.Services
 @using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
 @model KinaUnaWeb.Models.ItemViewModels.VideoListViewModel
 @inject ILocaleManager LocaleManager
 @{
@@ -124,7 +125,7 @@
             </div>
         </div>
 
-        @if (Model.IsCurrentUserProgenyAdmin)
+        @if (Model.VideosList.Exists(v => v.ItemPermission?.PermissionLevel >= PermissionLevel.Admin))
         {
             <div class="space-70"></div>
             <div class="row">
@@ -269,4 +270,4 @@
         </button>
     </div>
 </div>
-<script src="/js/videos/videos-index.js" type="module" asp-append-version="true"></script>
+<script src="/js/videos/videos-index-v12.js" type="module" asp-append-version="true"></script>

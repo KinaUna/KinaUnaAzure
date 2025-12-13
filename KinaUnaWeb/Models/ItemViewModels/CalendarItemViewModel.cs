@@ -1,6 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using KinaUna.Data.Models.DTOs;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System;
+using System.Collections.Generic;
+using System.Text.Json;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
@@ -10,10 +12,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
     /// </summary>
     public class CalendarItemViewModel: BaseItemsViewModel
     {
-        public List<SelectListItem> ProgenyList { get; set; } = [];
-        public List<SelectListItem> AccessLevelListEn { get; set; }
-        public List<SelectListItem> AccessLevelListDa { get; set; }
-        public List<SelectListItem> AccessLevelListDe { get; set; }
         public CalendarItem CalendarItem { get; set; } = new();
         public List<CalendarReminder> CalendarReminders { get; set; } = [];
         public List<SelectListItem> ReminderOffsetsList { get; set; } = [];
@@ -30,14 +28,48 @@ namespace KinaUnaWeb.Models.ItemViewModels
         /// </summary>
         public CalendarItemViewModel()
         {
-            
+            ProgenyList = [];
+            FamilyList = [];
         }
 
         public CalendarItemViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
+            ProgenyList = [];
+            FamilyList = [];
         }
 
+        public void SetProgenyList()
+        {
+            CalendarItem.ProgenyId = CurrentProgenyId;
+            foreach (SelectListItem item in ProgenyList)
+            {
+                if (item.Value == CurrentProgenyId.ToString())
+                {
+                    item.Selected = true;
+                }
+                else
+                {
+                    item.Selected = false;
+                }
+            }
+        }
+
+        public void SetFamilyList()
+        {
+            CalendarItem.FamilyId = CurrentFamilyId;
+            foreach (SelectListItem item in FamilyList)
+            {
+                if (item.Value == CurrentFamilyId.ToString())
+                {
+                    item.Selected = true;
+                }
+                else
+                {
+                    item.Selected = false;
+                }
+            }
+        }
         /// <summary>
         /// Sets the CalendarItem property of this view model.
         /// Converts start and end times from UTC to the user's timezone.
@@ -47,6 +79,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
         {
             CalendarItem.EventId = eventItem.EventId;
             CalendarItem.ProgenyId = eventItem.ProgenyId;
+            CalendarItem.FamilyId = eventItem.FamilyId;
             CalendarItem.Title = eventItem.Title;
             CalendarItem.AllDay = eventItem.AllDay;
             if (eventItem.StartTime.HasValue && eventItem.EndTime.HasValue)
@@ -58,12 +91,11 @@ namespace KinaUnaWeb.Models.ItemViewModels
             CalendarItem.Notes = eventItem.Notes;
             CalendarItem.Location = eventItem.Location;
             CalendarItem.Context = eventItem.Context;
-            CalendarItem.AccessLevel = eventItem.AccessLevel;
             CalendarItem.Author = eventItem.Author;
             CalendarItem.UId = eventItem.UId;
             CalendarItem.RecurrenceRuleId = eventItem.RecurrenceRuleId;
+            CalendarItem.ItemPerMission = eventItem.ItemPerMission;
 
-            
             if (eventItem.RecurrenceRuleId != 0)
             {
                 CalendarItem.RecurrenceRule = eventItem.RecurrenceRule;
@@ -114,7 +146,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
             CalendarItem.RecurrenceRule.Frequency = frequencyConverted;
 
-            SetAccessLevelList();
             SetRecurrenceFrequencyList();
             SetEndOptionsList();
             SetMonthlyByDayPrefixList();
@@ -135,51 +166,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
             CalendarReminders = calendarReminders;
         }
-
-        /// <summary>
-        /// Updates the selected progeny in the ProgenyList to CurrentProgenyId.
-        /// </summary>
-        public void SetProgenyList()
-        {
-            CalendarItem.ProgenyId = CurrentProgenyId;
-            foreach (SelectListItem item in ProgenyList)
-            {
-                if (item.Value == CurrentProgenyId.ToString())
-                {
-                    item.Selected = true;
-                }
-                else
-                {
-                    item.Selected = false;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Creates access level lists, sets the selected access level to the current CalendarItem's access level.
-        /// </summary>
-        public void SetAccessLevelList()
-        {
-            AccessLevelList accessLevelList = new();
-            AccessLevelListEn = accessLevelList.AccessLevelListEn;
-            AccessLevelListDa = accessLevelList.AccessLevelListDa;
-            AccessLevelListDe = accessLevelList.AccessLevelListDe;
-
-            AccessLevelListEn[CalendarItem.AccessLevel].Selected = true;
-            AccessLevelListDa[CalendarItem.AccessLevel].Selected = true;
-            AccessLevelListDe[CalendarItem.AccessLevel].Selected = true;
-
-            if (LanguageId == 2)
-            {
-                AccessLevelListEn = AccessLevelListDe;
-            }
-
-            if (LanguageId == 3)
-            {
-                AccessLevelListEn = AccessLevelListDa;
-            }
-        }
-
+        
         /// <summary>
         /// Creates a new CalendarItem object from the properties of this view model.
         /// Converts start and end times from the user's timezone to UTC.
@@ -191,9 +178,12 @@ namespace KinaUnaWeb.Models.ItemViewModels
             {
                 EventId = CalendarItem.EventId,
                 ProgenyId = CalendarItem.ProgenyId,
+                FamilyId = CalendarItem.FamilyId,
                 Title = CalendarItem.Title,
-                Notes = CalendarItem.Notes
+                Notes = CalendarItem.Notes,
+                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString, JsonSerializerOptions.Web)
             };
+
             if (CalendarItem.StartTime != null && CalendarItem.EndTime != null)
             {
                 eventItem.StartTime = TimeZoneInfo.ConvertTimeToUtc(CalendarItem.StartTime.Value,
@@ -205,7 +195,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
             eventItem.Location = CalendarItem.Location;
             eventItem.Context = CalendarItem.Context;
             eventItem.AllDay = CalendarItem.AllDay;
-            eventItem.AccessLevel = CalendarItem.AccessLevel;
             eventItem.Author = CalendarItem.Author;
             eventItem.UId = CalendarItem.UId;
             eventItem.RecurrenceRuleId = CalendarItem.RecurrenceRuleId;
@@ -244,11 +233,11 @@ namespace KinaUnaWeb.Models.ItemViewModels
         {
             List<SelectListItem> frequencyItems =
             [
-                new SelectListItem { Value = "0", Text = "Never", Selected = false },
-                new SelectListItem { Value = "1", Text = "Daily", Selected = false },
-                new SelectListItem { Value = "2", Text = "Weekly", Selected = false },
-                new SelectListItem { Value = "3", Text = "Monthly", Selected = false },
-                new SelectListItem { Value = "4", Text = "Yearly", Selected = false }
+                new() { Value = "0", Text = "Never", Selected = false },
+                new() { Value = "1", Text = "Daily", Selected = false },
+                new() { Value = "2", Text = "Weekly", Selected = false },
+                new() { Value = "3", Text = "Monthly", Selected = false },
+                new() { Value = "4", Text = "Yearly", Selected = false }
             ];
             
             RecurrenceFrequencyList = frequencyItems;
@@ -260,18 +249,18 @@ namespace KinaUnaWeb.Models.ItemViewModels
         {
             List<SelectListItem> monthsList =
             [
-                new SelectListItem { Value = "1", Text = "January", Selected = false },
-                new SelectListItem { Value = "2", Text = "February", Selected = false },
-                new SelectListItem { Value = "3", Text = "March", Selected = false },
-                new SelectListItem { Value = "4", Text = "April", Selected = false },
-                new SelectListItem { Value = "5", Text = "May", Selected = false },
-                new SelectListItem { Value = "6", Text = "June", Selected = false },
-                new SelectListItem { Value = "7", Text = "July", Selected = false },
-                new SelectListItem { Value = "8", Text = "August", Selected = false },
-                new SelectListItem { Value = "9", Text = "September", Selected = false },
-                new SelectListItem { Value = "10", Text = "October", Selected = false },
-                new SelectListItem { Value = "11", Text = "November", Selected = false },
-                new SelectListItem { Value = "12", Text = "December", Selected = false }
+                new() { Value = "1", Text = "January", Selected = false },
+                new() { Value = "2", Text = "February", Selected = false },
+                new() { Value = "3", Text = "March", Selected = false },
+                new() { Value = "4", Text = "April", Selected = false },
+                new() { Value = "5", Text = "May", Selected = false },
+                new() { Value = "6", Text = "June", Selected = false },
+                new() { Value = "7", Text = "July", Selected = false },
+                new() { Value = "8", Text = "August", Selected = false },
+                new() { Value = "9", Text = "September", Selected = false },
+                new() { Value = "10", Text = "October", Selected = false },
+                new() { Value = "11", Text = "November", Selected = false },
+                new() { Value = "12", Text = "December", Selected = false }
             ];
             
             MonthsSelectList = monthsList;
@@ -304,9 +293,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
         {
             List<SelectListItem> endOptions =
             [
-                new SelectListItem { Value = "0", Text = "Never", Selected = false },
-                new SelectListItem { Value = "1", Text = "On date", Selected = false },
-                new SelectListItem { Value = "2", Text = "After count", Selected = false }
+                new() { Value = "0", Text = "Never", Selected = false },
+                new() { Value = "1", Text = "On date", Selected = false },
+                new() { Value = "2", Text = "After count", Selected = false }
             ];
 
             EndOptionsList = endOptions;

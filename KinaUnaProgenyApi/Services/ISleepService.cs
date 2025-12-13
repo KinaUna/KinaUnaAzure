@@ -11,37 +11,41 @@ namespace KinaUnaProgenyApi.Services
         /// First checks the cache, if not found, gets the Sleep from the database and adds it to the cache.
         /// </summary>
         /// <param name="id">The SleepId of the Sleep to get.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user. For checking permissions.</param>
         /// <returns>The Sleep object with the given SleepId. Null if the Sleep item doesn't exist.</returns>
-        Task<Sleep> GetSleep(int id);
+        Task<Sleep> GetSleep(int id, UserInfo currentUserInfo);
 
         /// <summary>
         /// Adds a new Sleep to the database and adds it to the cache.
         /// </summary>
         /// <param name="sleep">The Sleep object to add.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The added Sleep object.</returns>
-        Task<Sleep> AddSleep(Sleep sleep);
+        Task<Sleep> AddSleep(Sleep sleep, UserInfo currentUserInfo);
 
         /// <summary>
         /// Updates a Sleep in the database and the cache.
         /// </summary>
         /// <param name="sleep">The Sleep object with the updated properties.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The updated Sleep object.</returns>
-        Task<Sleep> UpdateSleep(Sleep sleep);
+        Task<Sleep> UpdateSleep(Sleep sleep, UserInfo currentUserInfo);
 
         /// <summary>
         /// Deletes a Sleep from the database and the cache.
         /// </summary>
         /// <param name="sleep">The Sleep object to delete.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The deleted Sleep object.</returns>
-        Task<Sleep> DeleteSleep(Sleep sleep);
+        Task<Sleep> DeleteSleep(Sleep sleep, UserInfo currentUserInfo);
 
         /// <summary>
         /// Gets a list of all Sleep items for a Progeny.
         /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get Sleep items for.</param>
-        /// <param name="accessLevel">The access level for the current user.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user. For checking permissions.</param>
         /// <returns>List of Sleep objects.</returns>
-        Task<List<Sleep>> GetSleepList(int progenyId, int accessLevel);
+        Task<List<Sleep>> GetSleepList(int progenyId, UserInfo currentUserInfo);
     }
 }

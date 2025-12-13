@@ -403,7 +403,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Name = "PushDevice1",
                 PushAuth = "",
                 PushEndpoint = "",
-                PushP256DH = ""
+                PushP256Dh = ""
             };
 
             context.Add(pushDevice1);
@@ -431,7 +431,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Name = "PushDevice1",
                 PushAuth = "",
                 PushEndpoint = "",
-                PushP256DH = ""
+                PushP256Dh = ""
             };
 
             context.Add(pushDevice1);
@@ -457,7 +457,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Name = "PushDevice1",
                 PushAuth = "Auth1",
                 PushEndpoint = "EndPoint1",
-                PushP256DH = "P2256DH1"
+                PushP256Dh = "P2256DH1"
             };
 
             context.Add(pushDevice1);
@@ -468,7 +468,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Name = "PushDevice1",
                 PushAuth = "Auth1",
                 PushEndpoint = "EndPoint1",
-                PushP256DH = "P2256DH1"
+                PushP256Dh = "P2256DH1"
             };
 
             PushDevices resultPushDevice1 = await notificationsService.GetPushDevice(requestPushDevice1);
@@ -478,7 +478,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal(pushDevice1.Name, resultPushDevice1.Name);
             Assert.Equal(pushDevice1.PushAuth, resultPushDevice1.PushAuth);
             Assert.Equal(pushDevice1.PushEndpoint, resultPushDevice1.PushEndpoint);
-            Assert.Equal(pushDevice1.PushP256DH, resultPushDevice1.PushP256DH);
+            Assert.Equal(pushDevice1.PushP256Dh, resultPushDevice1.PushP256Dh);
             Assert.Equal(pushDevice1.Id, resultPushDevice1.Id);
         }
 
@@ -498,7 +498,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Name = "PushDevice1",
                 PushAuth = "Auth1",
                 PushEndpoint = "EndPoint1",
-                PushP256DH = "P2256DH1"
+                PushP256Dh = "P2256DH1"
             };
 
             context.Add(pushDevice1);
@@ -509,7 +509,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Name = "PushDevice2",
                 PushAuth = "Auth2",
                 PushEndpoint = "EndPoint2",
-                PushP256DH = "P2256DH2"
+                PushP256Dh = "P2256DH2"
             };
 
             PushDevices resultPushDevice1 = await notificationsService.GetPushDevice(requestPushDevice1);
@@ -533,7 +533,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Name = "PushDevice1",
                 PushAuth = "Auth1",
                 PushEndpoint = "Endpoint1",
-                PushP256DH = "P256DH1"
+                PushP256Dh = "P256DH1"
             };
 
             PushDevices pushDevice2 = new()
@@ -541,7 +541,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Name = "PushDevice1",
                 PushAuth = "Auth2",
                 PushEndpoint = "Endpoint2",
-                PushP256DH = "P256DH2"
+                PushP256Dh = "P256DH2"
             };
 
             context.Add(pushDevice1);
@@ -574,7 +574,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Name = "PushDevice1",
                 PushAuth = "Auth1",
                 PushEndpoint = "Endpoint1",
-                PushP256DH = "P256DH1"
+                PushP256Dh = "P256DH1"
             };
 
             PushDevices pushDevice2 = new()
@@ -582,7 +582,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Name = "PushDevice1",
                 PushAuth = "Auth2",
                 PushEndpoint = "Endpoint2",
-                PushP256DH = "P256DH2"
+                PushP256Dh = "P256DH2"
             };
 
             context.Add(pushDevice1);
@@ -610,7 +610,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Name = "PushDevice1",
                 PushAuth = "Auth1",
                 PushEndpoint = "Endpoint1",
-                PushP256DH = "P256DH1"
+                PushP256Dh = "P256DH1"
             };
 
             PushDevices pushDevice2 = new()
@@ -618,7 +618,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Name = "PushDevice1",
                 PushAuth = "Auth2",
                 PushEndpoint = "Endpoint2",
-                PushP256DH = "P256DH2"
+                PushP256Dh = "P256DH2"
             };
 
             context.Add(pushDevice1);
@@ -651,7 +651,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Name = "PushDevice1",
                 PushAuth = "Auth1",
                 PushEndpoint = "EndPoint1",
-                PushP256DH = "P2256DH1"
+                PushP256Dh = "P2256DH1"
             };
 
             context.Add(pushDevice1);
@@ -662,7 +662,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Name = "PushDevice2",
                 PushAuth = "Auth2",
                 PushEndpoint = "EndPoint2",
-                PushP256DH = "P2256DH2"
+                PushP256Dh = "P2256DH2"
             };
 
             PushDevices addedPushDevice = await notificationsService.AddPushDevice(addPushDevice1);
@@ -676,7 +676,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal(addPushDevice1.Name, resultPushDevice1.Name);
             Assert.Equal(addPushDevice1.PushAuth, resultPushDevice1.PushAuth);
             Assert.Equal(addPushDevice1.PushEndpoint, resultPushDevice1.PushEndpoint);
-            Assert.Equal(addPushDevice1.PushP256DH, resultPushDevice1.PushP256DH);
+            Assert.Equal(addPushDevice1.PushP256Dh, resultPushDevice1.PushP256Dh);
             Assert.Equal(addPushDevice1.Id, resultPushDevice1.Id);
         }
 
@@ -696,7 +696,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Name = "PushDevice1",
                 PushAuth = "Auth1",
                 PushEndpoint = "EndPoint1",
-                PushP256DH = "P2256DH1"
+                PushP256Dh = "P2256DH1"
             };
 
             PushDevices pushDevice2 = new()
@@ -704,7 +704,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Name = "PushDevice2",
                 PushAuth = "Auth2",
                 PushEndpoint = "EndPoint2",
-                PushP256DH = "P2256DH2"
+                PushP256Dh = "P2256DH2"
             };
 
             context.Add(pushDevice1);

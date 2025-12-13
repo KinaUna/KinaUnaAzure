@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using KinaUna.Data.Models.AccessManagement;
 
 namespace KinaUna.Data.Models.Family
 {
@@ -68,5 +70,33 @@ namespace KinaUna.Data.Models.Family
         /// </summary>
         [MaxLength(256)]
         public string ModifiedBy { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the permission level associated with the entity, for access to family specific data.
+        /// </summary>
+        /// <remarks>This property is not mapped to the database and is intended for use in application
+        /// logic only. The actual permission is stored in with a FamilyPermission object.</remarks>
+        [NotMapped]
+        public PermissionLevel PermissionLevel { get; set; } = PermissionLevel.None;
+
+        /// <summary>
+        /// Gets or sets the associated progeny for the current entity.
+        /// </summary>
+        [NotMapped]
+        public Progeny Progeny { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the progeny information associated with this family member.
+        /// </summary>
+        [NotMapped]
+        public ProgenyInfo ProgenyInfo { get; set; } = new();
+
+        /// <summary>
+        /// Gets or sets the user information associated with this entity.
+        /// </summary>
+        /// <remarks>This property is not mapped to the database and is intended for use in application
+        /// logic only.</remarks>
+        [NotMapped]
+        public UserInfo UserInfo { get; set; } = new UserInfo();
     }
 }

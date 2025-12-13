@@ -7,9 +7,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
     public class VideoItemViewModel : BaseItemsViewModel
     {
         public Video Video { get; set; } = new();
-        public List<SelectListItem> AccessLevelListEn { get; set; }
-        public List<SelectListItem> AccessLevelListDa { get; set; }
-        public List<SelectListItem> AccessLevelListDe { get; set; }
         public int CommentThreadNumber { get; set; }
         public List<Comment> CommentsList { get; set; }
         public int CommentsCount { get; set; }
@@ -24,7 +21,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
         public string VidTime { get; set; }
         public bool VidTimeValid { get; set; }
-        public string VidYears { get; set; }
+        public List<string> VidYearsDataList { get; set; }
         public string VidMonths { get; set; }
         public string[] VidWeeks { get; set; }
         public string VidDays { get; set; }
@@ -34,12 +31,12 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public string HereMapsApiKey { get; init; } = "";
         public int VideoNumber { get; internal set; }
 
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
         public VideoItemViewModel()
         {
-            AccessLevelList aclList = new();
-            AccessLevelListEn = aclList.AccessLevelListEn;
-            AccessLevelListDa = aclList.AccessLevelListDa;
-            AccessLevelListDe = aclList.AccessLevelListDe;
+            ProgenyList = [];
         }
 
         public VideoItemViewModel(BaseItemsViewModel baseItemsViewModel)
@@ -57,7 +54,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
             Video.Owners = videoViewModel.Owners;
             Video.VideoLink = videoViewModel.VideoLink;
             Video.ThumbLink = videoViewModel.ThumbLink;
-            Video.AccessLevel = videoViewModel.AccessLevel;
             Video.Author = videoViewModel.Author;
             CommentThreadNumber = Video.CommentThreadNumber = videoViewModel.CommentThreadNumber;
             CommentsList = Video.Comments = videoViewModel.CommentsList ?? [];
@@ -71,6 +67,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             VideoCount = videoViewModel.VideoCount;
             PrevVideo = videoViewModel.PrevVideo;
             NextVideo = videoViewModel.NextVideo;
+            Video.ItemPermission = videoViewModel.ItemPerMission;
             CommentsList = videoViewModel.CommentsList;
             CommentsCount = CommentsList?.Count ?? 0;
             TagFilter = videoViewModel.TagFilter;
@@ -89,7 +86,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                     TimeZoneInfo.FindSystemTimeZoneById(CurrentProgeny.TimeZone));
                 VidTimeValid = true;
                 VidTime = Video.VideoTime.Value.ToString("dd MMMM yyyy HH:mm"); // Todo: Replace string format with global constant or user defined value
-                VidYears = picTime.CalcYears();
+                VidYearsDataList = picTime.CalcYears();
                 VidMonths = picTime.CalcMonths();
                 VidWeeks = picTime.CalcWeeks();
                 VidDays = picTime.CalcDays();
@@ -102,38 +99,33 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 VidTime = "";
             }
         }
-
-        public void SetAccessLevelList()
-        {
-            AccessLevelList accessLevelList = new();
-            AccessLevelListEn = accessLevelList.AccessLevelListEn;
-            AccessLevelListDa = accessLevelList.AccessLevelListDa;
-            AccessLevelListDe = accessLevelList.AccessLevelListDe;
-
-            AccessLevelListEn[Video.AccessLevel].Selected = true;
-            AccessLevelListDa[Video.AccessLevel].Selected = true;
-            AccessLevelListDe[Video.AccessLevel].Selected = true;
-
-            if (LanguageId == 2)
-            {
-                AccessLevelListEn = AccessLevelListDe;
-            }
-
-            if (LanguageId == 3)
-            {
-                AccessLevelListEn = AccessLevelListDa;
-            }
-        }
-
+        
         public void SetPropertiesFromVideoItem(Video video)
         {
             Video.ProgenyId = video.ProgenyId;
             Video.VideoId = video.VideoId;
             Video.ThumbLink = video.ThumbLink;
             Video.VideoTime = video.VideoTime;
+            Video.ItemPermission = video.ItemPermission;
             if (video.VideoTime.HasValue)
             {
                 Video.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(video.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
+            }
+        }
+
+        public void SetProgenyList()
+        {
+            Video.ProgenyId = CurrentProgenyId;
+            foreach (SelectListItem item in ProgenyList)
+            {
+                if (item.Value == CurrentProgenyId.ToString())
+                {
+                    item.Selected = true;
+                }
+                else
+                {
+                    item.Selected = false;
+                }
             }
         }
     }

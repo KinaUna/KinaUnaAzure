@@ -4,8 +4,10 @@ using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
-using KinaUna.Data.Models.DTOs;
-using KinaUnaProgenyApi.Services.UserAccessService;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUnaProgenyApi.Services.AccessManagementService;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -14,9 +16,14 @@ namespace KinaUnaProgenyApi.Services
     /// </summary>
     /// <param name="pushMessageSender"></param>
     /// <param name="notificationsService"></param>
-    /// <param name="userAccessService"></param>
     /// <param name="userInfoService"></param>
-    public class WebNotificationsService(IPushMessageSender pushMessageSender, INotificationsService notificationsService, IUserAccessService userAccessService, IUserInfoService userInfoService)
+    public class WebNotificationsService(
+        IPushMessageSender pushMessageSender,
+        INotificationsService notificationsService,
+        IUserInfoService userInfoService,
+        IAccessManagementService accessManagementService,
+        IUserGroupsService userGroupsService,
+        IWebHostEnvironment webHostEnvironment)
         : IWebNotificationsService
     {
         /// <summary>
@@ -29,45 +36,44 @@ namespace KinaUnaProgenyApi.Services
         /// <returns></returns>
         public async Task SendCalendarNotification(CalendarItem eventItem, UserInfo currentUser, string title)
         {
-            CustomResult<List<UserAccess>> usersToNotifyResult = await userAccessService.GetProgenyUserAccessList(eventItem.ProgenyId, Constants.SystemAccountEmail);
-
-            if (usersToNotifyResult.IsFailure) return;
-
-            foreach (UserAccess userAccess in usersToNotifyResult.Value)
+            // Don't send for development environment, unless explicitly enabled.
+            if (webHostEnvironment.IsDevelopment() && !Constants.SendNotificationsInDevelopment)
             {
-                if (userAccess.AccessLevel > eventItem.AccessLevel) continue;
+                return;
+            }
 
-                UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
-                if (uaUserInfo == null || uaUserInfo.UserId == "Unknown") continue;
-
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Calendar, eventItem.EventId, currentUser);
+            
+            foreach (UserInfo userInfo in usersToNotify)
+            {
                 if (eventItem.StartTime == null) continue;
 
                 DateTime startTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.StartTime.Value,
-                    TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+                    TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
                 string eventTimeString = "\r\nStart: " + startTime.ToString("dd-MMM-yyyy HH:mm");
 
                 if (eventItem.EndTime != null)
                 {
                     DateTime endTime = TimeZoneInfo.ConvertTimeFromUtc(eventItem.EndTime.Value,
-                        TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+                        TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
                     eventTimeString = eventTimeString + "\r\nEnd: " + endTime.ToString("dd-MMM-yyyy HH:mm");
                 }
 
                 WebNotification webNotification = new()
                 {
-                    To = uaUserInfo.UserId,
+                    To = userInfo.UserId,
                     From = currentUser.FullName(),
                     Message = eventItem.Title + eventTimeString,
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Calendar?eventId=" + eventItem.EventId + "&childId=" + eventItem.ProgenyId,
+                    Link = "/Calendar?eventId=" + eventItem.EventId,
                     Type = "Notification"
                 };
 
                 webNotification = await notificationsService.AddWebNotification(webNotification);
 
-                await pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
+                await pushMessageSender.SendMessage(userInfo.UserId, webNotification.Title,
                     webNotification.Message, Constants.WebAppUrl + webNotification.Link, "kinaunacalendar" + eventItem.EventId);
             }
         }
@@ -81,32 +87,31 @@ namespace KinaUnaProgenyApi.Services
         /// <returns></returns>
         public async Task SendContactNotification(Contact contactItem, UserInfo currentUser, string title)
         {
-            CustomResult<List<UserAccess>> usersToNotifyResult = await userAccessService.GetProgenyUserAccessList(contactItem.ProgenyId, Constants.SystemAccountEmail);
-
-            if(usersToNotifyResult.IsFailure) return;
-
-            foreach (UserAccess userAccess in usersToNotifyResult.Value)
+            // Don't send for development environment, unless explicitly enabled.
+            if (webHostEnvironment.IsDevelopment() && !Constants.SendNotificationsInDevelopment)
             {
-                if (userAccess.AccessLevel > contactItem.AccessLevel) continue;
+                return;
+            }
 
-                UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
-                if (uaUserInfo == null || uaUserInfo.UserId == "Unknown") continue;
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Contact, contactItem.ContactId, currentUser);
 
+            foreach (UserInfo userInfo in usersToNotify)
+            {
                 WebNotification webNotification = new()
                 {
-                    To = uaUserInfo.UserId,
+                    To = userInfo.UserId,
                     From = currentUser.FullName(),
                     Message = "Name: " + contactItem.DisplayName + "\r\nContext: " + contactItem.Context, // Todo: Translation of Name and Context
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Contacts?contactId=" + contactItem.ContactId + "&childId=" + contactItem.ProgenyId,
+                    Link = "/Contacts?contactId=" + contactItem.ContactId,
                     Type = "Notification"
                 };
 
                 webNotification = await notificationsService.AddWebNotification(webNotification);
 
-                await pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
+                await pushMessageSender.SendMessage(userInfo.UserId, webNotification.Title,
                     webNotification.Message, Constants.WebAppUrl + webNotification.Link, "kinaunacontact" + contactItem.ContactId);
             }
         }
@@ -120,30 +125,32 @@ namespace KinaUnaProgenyApi.Services
         /// <returns></returns>
         public async Task SendFriendNotification(Friend friendItem, UserInfo currentUser, string title)
         {
-            CustomResult<List<UserAccess>> usersToNotifyResult = await userAccessService.GetProgenyUserAccessList(friendItem.ProgenyId, Constants.SystemAccountEmail);
-
-            foreach (UserAccess userAccess in usersToNotifyResult.Value)
+            // Don't send for development environment, unless explicitly enabled.
+            if (webHostEnvironment.IsDevelopment() && !Constants.SendNotificationsInDevelopment)
             {
-                if (userAccess.AccessLevel > friendItem.AccessLevel) continue;
+                return;
+            }
 
-                UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
-                if (uaUserInfo == null || uaUserInfo.UserId == "Unknown") continue;
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Friend, friendItem.FriendId, currentUser);
+
+            foreach (UserInfo userInfo in usersToNotify)
+            {
 
                 WebNotification notification = new()
                 {
-                    To = uaUserInfo.UserId,
+                    To = userInfo.UserId,
                     From = currentUser.FullName(),
                     Message = "Friend: " + friendItem.Name + "\r\nContext: " + friendItem.Context, // Todo: Translation of Friend and Context
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Friends?friendId=" + friendItem.FriendId + "&childId=" + friendItem.ProgenyId,
+                    Link = "/Friends?friendId=" + friendItem.FriendId,
                     Type = "Notification"
                 };
 
                 notification = await notificationsService.AddWebNotification(notification);
 
-                await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                await pushMessageSender.SendMessage(userInfo.UserId, notification.Title,
                     notification.Message, Constants.WebAppUrl + notification.Link, "kinaunafriend" + friendItem.FriendId);
             }
         }
@@ -158,39 +165,38 @@ namespace KinaUnaProgenyApi.Services
         /// <returns></returns>
         public async Task SendLocationNotification(Location locationItem, UserInfo currentUser, string title)
         {
-            CustomResult<List<UserAccess>> usersToNotifResult = await userAccessService.GetProgenyUserAccessList(locationItem.ProgenyId, Constants.SystemAccountEmail);
-
-            if (usersToNotifResult.IsFailure) return;
-
-            foreach (UserAccess userAccess in usersToNotifResult.Value)
+            // Don't send for development environment, unless explicitly enabled.
+            if (webHostEnvironment.IsDevelopment() && !Constants.SendNotificationsInDevelopment)
             {
-                if (userAccess.AccessLevel > locationItem.AccessLevel) continue;
+                return;
+            }
 
-                UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
-                if (uaUserInfo == null || uaUserInfo.UserId == "Unknown") continue;
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Location, locationItem.LocationId, currentUser);
 
+            foreach (UserInfo userInfo in usersToNotify)
+            {
                 DateTime tempDate = DateTime.UtcNow;
                 if (locationItem.Date.HasValue)
                 {
-                    tempDate = TimeZoneInfo.ConvertTimeFromUtc(locationItem.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+                    tempDate = TimeZoneInfo.ConvertTimeFromUtc(locationItem.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
                 }
 
                 string dateString = tempDate.ToString("dd-MMM-yyyy");
                 WebNotification webNotification = new()
                 {
-                    To = uaUserInfo.UserId,
+                    To = userInfo.UserId,
                     From = currentUser.FullName(),
                     Message = "Name: " + locationItem.Name + "\r\nDate: " + dateString, // Todo: Translation of Name and Date
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Locations?locationId=" + locationItem.LocationId + "&childId=" + locationItem.ProgenyId,
+                    Link = "/Locations?locationId=" + locationItem.LocationId,
                     Type = "Notification"
                 };
 
                 webNotification = await notificationsService.AddWebNotification(webNotification);
 
-                await pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
+                await pushMessageSender.SendMessage(userInfo.UserId, webNotification.Title,
                     webNotification.Message, Constants.WebAppUrl + webNotification.Link, "kinaunalocation" + locationItem.LocationId);
             }
         }
@@ -203,32 +209,31 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="title">The title of the notification.</param>
         public async Task SendMeasurementNotification(Measurement measurementItem, UserInfo currentUser, string title)
         {
-            CustomResult<List<UserAccess>> usersToNotifResult = await userAccessService.GetProgenyUserAccessList(measurementItem.ProgenyId, Constants.SystemAccountEmail);
-
-            if (usersToNotifResult == null) return;
-
-            foreach (UserAccess userAccess in usersToNotifResult.Value)
+            // Don't send for development environment, unless explicitly enabled.
+            if (webHostEnvironment.IsDevelopment() && !Constants.SendNotificationsInDevelopment)
             {
-                if (userAccess.AccessLevel > measurementItem.AccessLevel) continue;
+                return;
+            }
 
-                UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
-                if (uaUserInfo == null || uaUserInfo.UserId == "Unknown") continue;
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Measurement, measurementItem.MeasurementId, currentUser);
 
+            foreach (UserInfo userInfo in usersToNotify)
+            {
                 WebNotification notification = new()
                 {
-                    To = uaUserInfo.UserId,
+                    To = userInfo.UserId,
                     From = currentUser.FullName(),
                     Message = "Height: " + measurementItem.Height + "\r\nWeight: " + measurementItem.Weight, // Todo: Translation of Height and Weight
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Measurements?measurementId=" + measurementItem.MeasurementId + "&childId=" + measurementItem.ProgenyId,
+                    Link = "/Measurements?measurementId=" + measurementItem.MeasurementId,
                     Type = "Notification"
                 };
 
                 notification = await notificationsService.AddWebNotification(notification);
 
-                await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                await pushMessageSender.SendMessage(userInfo.UserId, notification.Title,
                     notification.Message, Constants.WebAppUrl + notification.Link, "kinaunameasurement" + measurementItem.MeasurementId);
             }
         }
@@ -241,32 +246,31 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="title">The title of the notification.</param>
         public async Task SendNoteNotification(Note noteItem, UserInfo currentUser, string title)
         {
-            CustomResult<List<UserAccess>> usersToNotifResult = await userAccessService.GetProgenyUserAccessList(noteItem.ProgenyId, Constants.SystemAccountEmail);
-
-            if (usersToNotifResult == null) return;
-
-            foreach (UserAccess userAccess in usersToNotifResult.Value)
+            //Don't send for development environment, unless explicitly enabled.
+            if (webHostEnvironment.IsDevelopment() && !Constants.SendNotificationsInDevelopment)
             {
-                if (userAccess.AccessLevel > noteItem.AccessLevel) continue;
+                return;
+            }
 
-                UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
-                if (uaUserInfo == null || uaUserInfo.UserId == "Unknown") continue;
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Note, noteItem.NoteId, currentUser);
 
+            foreach (UserInfo userInfo in usersToNotify)
+            {
                 WebNotification notification = new()
                 {
-                    To = uaUserInfo.UserId,
+                    To = userInfo.UserId,
                     From = currentUser.FullName(),
                     Message = "Title: " + noteItem.Title + "\r\nCategory: " + noteItem.Category, // Todo: Translation of Title and Category
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Notes?noteId=" + noteItem.NoteId + "&childId=" + noteItem.ProgenyId,
+                    Link = "/Notes?noteId=" + noteItem.NoteId,
                     Type = "Notification"
                 };
 
                 notification = await notificationsService.AddWebNotification(notification);
 
-                await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                await pushMessageSender.SendMessage(userInfo.UserId, notification.Title,
                     notification.Message, Constants.WebAppUrl + notification.Link, "kinaunanote" + noteItem.NoteId);
             }
         }
@@ -279,43 +283,43 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="title">The title of the notification.</param>
         public async Task SendPictureNotification(Picture pictureItem, UserInfo currentUser, string title)
         {
-            CustomResult<List<UserAccess>> usersToNotifyResult = await userAccessService.GetProgenyUserAccessList(pictureItem.ProgenyId, Constants.SystemAccountEmail);
-
-            if (usersToNotifyResult == null) return;
-
-            foreach (UserAccess userAccess in usersToNotifyResult.Value)
+            // Don't send for development environment, unless explicitly enabled.
+            if (webHostEnvironment.IsDevelopment() && !Constants.SendNotificationsInDevelopment)
             {
-                if (userAccess.AccessLevel > pictureItem.AccessLevel) continue;
+                return;
+            }
 
-                UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
-                if (uaUserInfo == null || uaUserInfo.UserId == "Unknown") continue;
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Photo, pictureItem.PictureId, currentUser);
 
+            foreach (UserInfo userInfo in usersToNotify)
+            {
                 string picTimeString;
                 if (pictureItem.PictureTime.HasValue)
                 {
                     DateTime picTime = TimeZoneInfo.ConvertTimeFromUtc(pictureItem.PictureTime.Value,
-                        TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+                        TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
                     picTimeString = "Photo taken: " + picTime.ToString("dd-MMM-yyyy HH:mm"); // Todo: Translation of Photo taken
                 }
                 else
                 {
                     picTimeString = "Photo taken: Unknown";
                 }
+
                 WebNotification notification = new()
                 {
-                    To = uaUserInfo.UserId,
+                    To = userInfo.UserId,
                     From = currentUser.FullName(),
                     Message = picTimeString + "\r\n",
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Pictures?childId=" + pictureItem.ProgenyId + "&pictureId=" + pictureItem.PictureId,
+                    Link = "/Pictures?pictureId=" + pictureItem.PictureId,
                     Type = "Notification"
                 };
 
                 notification = await notificationsService.AddWebNotification(notification);
 
-                await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                await pushMessageSender.SendMessage(userInfo.UserId, notification.Title,
                     notification.Message, Constants.WebAppUrl + notification.Link, "kinaunaphoto" + pictureItem.PictureId);
             }
         }
@@ -328,43 +332,43 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="title">The title of the notification.</param>
         public async Task SendVideoNotification(Video videoItem, UserInfo currentUser, string title)
         {
-            CustomResult<List<UserAccess>> usersToNotifyResult = await userAccessService.GetProgenyUserAccessList(videoItem.ProgenyId, Constants.SystemAccountEmail);
-
-            if (usersToNotifyResult == null) return;
-
-            foreach (UserAccess userAccess in usersToNotifyResult.Value)
+            // Don't send for development environment, unless explicitly enabled.
+            if (webHostEnvironment.IsDevelopment() && !Constants.SendNotificationsInDevelopment)
             {
-                if (userAccess.AccessLevel > videoItem.AccessLevel) continue;
+                return;
+            }
 
-                UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
-                if (uaUserInfo == null || uaUserInfo.UserId == "Unknown") continue;
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Video, videoItem.VideoId, currentUser);
 
+            foreach (UserInfo userInfo in usersToNotify)
+            {
                 string picTimeString;
                 if (videoItem.VideoTime.HasValue)
                 {
                     DateTime picTime = TimeZoneInfo.ConvertTimeFromUtc(videoItem.VideoTime.Value,
-                        TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+                        TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
                     picTimeString = "Video recorded: " + picTime.ToString("dd-MMM-yyyy HH:mm"); // Todo: Translation of Video recorded
                 }
                 else
                 {
                     picTimeString = "Video recorded: Unknown";
                 }
+
                 WebNotification notification = new()
                 {
-                    To = uaUserInfo.UserId,
+                    To = userInfo.UserId,
                     From = currentUser.FullName(),
                     Message = picTimeString + "\r\n",
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Videos?videoId=" + videoItem.VideoId + "&childId=" + videoItem.ProgenyId,
+                    Link = "/Videos?videoId=" + videoItem.VideoId,
                     Type = "Notification"
                 };
 
                 notification = await notificationsService.AddWebNotification(notification);
 
-                await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                await pushMessageSender.SendMessage(userInfo.UserId, notification.Title,
                     notification.Message, Constants.WebAppUrl + notification.Link, "kinaunavideo" + videoItem.VideoId);
             }
         }
@@ -377,36 +381,35 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="title">The title of the notification.</param>
         public async Task SendSkillNotification(Skill skillItem, UserInfo currentUser, string title)
         {
-            CustomResult<List<UserAccess>> usersToNotifyResult = await userAccessService.GetProgenyUserAccessList(skillItem.ProgenyId, Constants.SystemAccountEmail);
-
-            if (usersToNotifyResult == null) return;
-
-            foreach (UserAccess userAccess in usersToNotifyResult.Value)
+            // Don't send for development environment, unless explicitly enabled.
+            if (webHostEnvironment.IsDevelopment() && !Constants.SendNotificationsInDevelopment)
             {
-                if (userAccess.AccessLevel > skillItem.AccessLevel) continue;
+                return;
+            }
 
-                UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
-                if (uaUserInfo == null || uaUserInfo.UserId == "Unknown") continue;
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Skill, skillItem.SkillId, currentUser);
 
+            foreach (UserInfo userInfo in usersToNotify)
+            {
                 skillItem.SkillFirstObservation ??= DateTime.UtcNow;
 
                 string skillTimeString = "\r\nDate: " + skillItem.SkillFirstObservation.Value.ToString("dd-MMM-yyyy"); // Todo: Translation of Date
 
                 WebNotification notification = new()
                 {
-                    To = uaUserInfo.UserId,
+                    To = userInfo.UserId,
                     From = currentUser.FullName(),
                     Message = "Skill: " + skillItem.Name + "\r\nCategory: " + skillItem.Category + skillTimeString,
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Skills?skillId=" + skillItem.SkillId + "&childId=" + skillItem.ProgenyId,
+                    Link = "/Skills?skillId=" + skillItem.SkillId,
                     Type = "Notification"
                 };
 
                 notification = await notificationsService.AddWebNotification(notification);
 
-                await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                await pushMessageSender.SendMessage(userInfo.UserId, notification.Title,
                     notification.Message, Constants.WebAppUrl + notification.Link, "kinaunaskill" + skillItem.SkillId);
             }
         }
@@ -420,20 +423,22 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="message">The message body of the notification.</param>
         public async Task SendCommentNotification(Comment commentItem, UserInfo currentUser, string title, string message)
         {
-            CustomResult<List<UserAccess>> usersToNotifyResult = await userAccessService.GetProgenyUserAccessList(commentItem.Progeny.Id, Constants.SystemAccountEmail);
-
-            if (usersToNotifyResult == null) return;
-
-            foreach (UserAccess userAccess in usersToNotifyResult.Value)
+            // Don't send for development environment, unless explicitly enabled.
+            if (webHostEnvironment.IsDevelopment() && !Constants.SendNotificationsInDevelopment)
             {
-                if (userAccess.AccessLevel > commentItem.Progeny.Id) continue;
+                return;
+            }
+            
+            bool itemIdParsed = int.TryParse(commentItem.ItemId, out int itemId);
+            if (!itemIdParsed) return;
 
-                UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
-                if (uaUserInfo == null || uaUserInfo.UserId == "Unknown") continue;
-
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem((KinaUnaTypes.TimeLineType)commentItem.ItemType, itemId, currentUser);
+            
+            foreach (UserInfo userInfo in usersToNotify)
+            {
                 WebNotification webNotification = new()
                 {
-                    To = uaUserInfo.UserId,
+                    To = userInfo.UserId,
                     From = currentUser.FullName(),
                     Message = message,
                     DateTime = DateTime.UtcNow,
@@ -443,13 +448,13 @@ namespace KinaUnaProgenyApi.Services
                 string tagString = string.Empty;
                 if (commentItem.ItemType == (int)KinaUnaTypes.TimeLineType.Photo)
                 {
-                    webNotification.Link = "/Pictures?pictureId=" + commentItem.ItemId + "&childId=" + commentItem.Progeny.Id;
+                    webNotification.Link = "/Pictures?pictureId=" + commentItem.ItemId;
                     tagString = "kinaunaphoto";
                 }
 
                 if (commentItem.ItemType == (int)KinaUnaTypes.TimeLineType.Video)
                 {
-                    webNotification.Link = "/Videos?videoId=" + commentItem.ItemId + "&childId=" + commentItem.Progeny.Id;
+                    webNotification.Link = "/Videos?videoId=" + commentItem.ItemId;
                     tagString = "kinaunavideo";
                 }
 
@@ -457,7 +462,7 @@ namespace KinaUnaProgenyApi.Services
 
                 webNotification = await notificationsService.AddWebNotification(webNotification);
 
-                await pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
+                await pushMessageSender.SendMessage(userInfo.UserId, webNotification.Title,
                     webNotification.Message, Constants.WebAppUrl + webNotification.Link, tagString + commentItem.CommentId);
             }
         }
@@ -470,35 +475,34 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="title">The title of the notification.</param>
         public async Task SendSleepNotification(Sleep sleepItem, UserInfo currentUser, string title)
         {
-            CustomResult<List<UserAccess>> usersToNotifyResult = await userAccessService.GetProgenyUserAccessList(sleepItem.ProgenyId, Constants.SystemAccountEmail);
-
-            if (usersToNotifyResult == null) return;
-
-            foreach (UserAccess userAccess in usersToNotifyResult.Value)
+            // Don't send for development environment, unless explicitly enabled.
+            if (webHostEnvironment.IsDevelopment() && !Constants.SendNotificationsInDevelopment)
             {
-                if (userAccess.AccessLevel > sleepItem.AccessLevel) continue;
+                return;
+            }
 
-                UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
-                if (uaUserInfo == null || uaUserInfo.UserId == "Unknown") continue;
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Sleep, sleepItem.SleepId, currentUser);
 
-                DateTime sleepStart = TimeZoneInfo.ConvertTimeFromUtc(sleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
-                DateTime sleepEnd = TimeZoneInfo.ConvertTimeFromUtc(sleepItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+            foreach (UserInfo userInfo in usersToNotify)
+            {
+                DateTime sleepStart = TimeZoneInfo.ConvertTimeFromUtc(sleepItem.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
+                DateTime sleepEnd = TimeZoneInfo.ConvertTimeFromUtc(sleepItem.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
 
                 WebNotification notification = new()
                 {
-                    To = uaUserInfo.UserId,
+                    To = userInfo.UserId,
                     From = currentUser.FullName(),
                     Message = "Start: " + sleepStart.ToString("dd-MMM-yyyy HH:mm") + "\r\nEnd: " + sleepEnd.ToString("dd-MMM-yyyy HH:mm"), // Todo: Translation of Start and End
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Sleep?sleepId=" + sleepItem.SleepId + "&childId=" + sleepItem.ProgenyId,
+                    Link = "/Sleep?sleepId=" + sleepItem.SleepId,
                     Type = "Notification"
                 };
 
                 notification = await notificationsService.AddWebNotification(notification);
 
-                await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title, notification.Message,
+                await pushMessageSender.SendMessage(userInfo.UserId, notification.Title, notification.Message,
                     Constants.WebAppUrl + notification.Link, "kinaunasleep" + sleepItem.SleepId);
             }
         }
@@ -511,32 +515,31 @@ namespace KinaUnaProgenyApi.Services
         /// <param name="title">The title of the notification.</param>
         public async Task SendVaccinationNotification(Vaccination vaccinationItem, UserInfo currentUser, string title)
         {
-            CustomResult<List<UserAccess>> usersToNotifyResult = await userAccessService.GetProgenyUserAccessList(vaccinationItem.ProgenyId, Constants.SystemAccountEmail);
-
-            if (usersToNotifyResult == null) return;
-
-            foreach (UserAccess userAccess in usersToNotifyResult.Value)
+            // Don't send for development environment, unless explicitly enabled.
+            if (webHostEnvironment.IsDevelopment() && !Constants.SendNotificationsInDevelopment)
             {
-                if (userAccess.AccessLevel > vaccinationItem.AccessLevel) continue;
+                return;
+            }
 
-                UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
-                if (uaUserInfo == null || uaUserInfo.UserId == "Unknown") continue;
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Vaccination, vaccinationItem.VaccinationId, currentUser);
 
+            foreach (UserInfo userInfo in usersToNotify)
+            {
                 WebNotification notification = new()
                 {
-                    To = uaUserInfo.UserId,
+                    To = userInfo.UserId,
                     From = currentUser.FullName(),
                     Message = "Name: " + vaccinationItem.VaccinationName + "\r\nDate: " + vaccinationItem.VaccinationDate.ToString("dd-MMM-yyyy"), // Todo: Translation of Name and Context
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Vaccinations?vaccinationId=" + vaccinationItem.VaccinationId + "&childId=" + vaccinationItem.ProgenyId,
+                    Link = "/Vaccinations?vaccinationId=" + vaccinationItem.VaccinationId,
                     Type = "Notification"
                 };
 
                 notification = await notificationsService.AddWebNotification(notification);
 
-                await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                await pushMessageSender.SendMessage(userInfo.UserId, notification.Title,
                     notification.Message, Constants.WebAppUrl + notification.Link, "kinaunavaccination" + vaccinationItem.VaccinationId);
             }
         }
@@ -545,86 +548,47 @@ namespace KinaUnaProgenyApi.Services
         /// Adds a notification for a VocabularyItem to the database, and sends a push notification (if they registered for it), for all users with access to the VocabularyItem.
         /// </summary>
         /// <param name="vocabularyItem">The VocabularyItem that was added, updated, or deleted.</param>
-        /// <param name="userInfo">The UserInfo for the user who made changes.</param>
+        /// <param name="currentUser">The UserInfo for the user who made changes.</param>
         /// <param name="title">The title of the notification.</param>
-        public async Task SendVocabularyNotification(VocabularyItem vocabularyItem, UserInfo userInfo, string title)
+        public async Task SendVocabularyNotification(VocabularyItem vocabularyItem, UserInfo currentUser, string title)
         {
-            CustomResult<List<UserAccess>> usersToNotifResult = await userAccessService.GetProgenyUserAccessList(vocabularyItem.ProgenyId, Constants.SystemAccountEmail);
-
-            if (usersToNotifResult == null) return;
-
-            foreach (UserAccess userAccess in usersToNotifResult.Value)
+            // Don't send for development environment, unless explicitly enabled.
+            if (webHostEnvironment.IsDevelopment() && !Constants.SendNotificationsInDevelopment)
             {
-                if (userAccess.AccessLevel > vocabularyItem.AccessLevel) continue;
+                return;
+            }
 
-                UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
-                if (uaUserInfo == null || uaUserInfo.UserId == "Unknown") continue;
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.Vocabulary, vocabularyItem.WordId, currentUser);
 
+            foreach (UserInfo userInfo in usersToNotify)
+            {
                 string vocabTimeString = string.Empty;
                 if (vocabularyItem.Date.HasValue)
                 {
-                    DateTime startTime = TimeZoneInfo.ConvertTimeFromUtc(vocabularyItem.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+                    DateTime startTime = TimeZoneInfo.ConvertTimeFromUtc(vocabularyItem.Date.Value, TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
 
                     vocabTimeString = "\r\nDate: " + startTime.ToString("dd-MMM-yyyy"); // Todo: Translation of Date
                 }
 
                 WebNotification notification = new()
                 {
-                    To = uaUserInfo.UserId,
+                    To = userInfo.UserId,
                     From = userInfo.FullName(),
                     Message = "Word: " + vocabularyItem.Word + "\r\nLanguage: " + vocabularyItem.Language + vocabTimeString, // Todo: Translation of Word and Language
                     DateTime = DateTime.UtcNow,
                     Icon = userInfo.ProfilePicture,
                     Title = title,
-                    Link = "/Vocabulary?vocabularyId=" + vocabularyItem.WordId + "&childId=" + vocabularyItem.ProgenyId,
+                    Link = "/Vocabulary?vocabularyId=" + vocabularyItem.WordId,
                     Type = "Notification"
                 };
 
                 notification = await notificationsService.AddWebNotification(notification);
 
-                await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
+                await pushMessageSender.SendMessage(userInfo.UserId, notification.Title,
                     notification.Message, Constants.WebAppUrl + notification.Link, "kinaunavocabulary" + vocabularyItem.WordId);
             }
         }
-
-        /// <summary>
-        /// Adds a notification for a UserAccess item to the database, and sends a push notification (if they registered for it), for all users with admin access to the Progeny that the item belongs to.
-        /// </summary>
-        /// <param name="userAccessItem">The UserAccess item that was added, updated, or deleted.</param>
-        /// <param name="userInfo">The UserInfo for the user who made changes.</param>
-        /// <param name="title">The title of the notification.</param>
-        public async Task SendUserAccessNotification(UserAccess userAccessItem, UserInfo userInfo, string title)
-        {
-            CustomResult<List<UserAccess>> usersToNotifResult = await userAccessService.GetProgenyUserAccessList(userAccessItem.ProgenyId, Constants.SystemAccountEmail);
-
-            if (usersToNotifResult == null) return;
-
-            foreach (UserAccess userAccess in usersToNotifResult.Value)
-            {
-                if (userAccess.AccessLevel != 0) continue;
-
-                UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
-                if (uaUserInfo == null || uaUserInfo.UserId == "Unknown") continue;
-
-                WebNotification notification = new()
-                {
-                    To = uaUserInfo.UserId,
-                    From = userInfo.FullName(),
-                    Message = "User email: " + userAccessItem.UserId, // Todo: Translation of User email
-                    DateTime = DateTime.UtcNow,
-                    Icon = userInfo.ProfilePicture,
-                    Title = title,
-                    Link = "/Family",
-                    Type = "Notification"
-                };
-
-                notification = await notificationsService.AddWebNotification(notification);
-
-                await pushMessageSender.SendMessage(uaUserInfo.UserId, notification.Title,
-                    notification.Message, Constants.WebAppUrl + notification.Link, "kinaunauseraccess" + userAccessItem.ProgenyId);
-            }
-        }
-
+        
         /// <summary>
         /// Sends a notification to users with appropriate access to a specified to-do item.
         /// </summary>
@@ -638,56 +602,111 @@ namespace KinaUnaProgenyApi.Services
         /// <returns>A task that represents the asynchronous operation of sending notifications to users with access to the specified to-do item.</returns>
         public async Task SendTodoItemNotification(TodoItem todoItem, UserInfo currentUser, string title)
         {
-            CustomResult<List<UserAccess>> usersToNotifyResult = await userAccessService.GetProgenyUserAccessList(todoItem.ProgenyId, Constants.SystemAccountEmail);
-
-            if (usersToNotifyResult.IsFailure) return;
-
-            foreach (UserAccess userAccess in usersToNotifyResult.Value)
+            // Don't send for development environment, unless explicitly enabled.
+            if (webHostEnvironment.IsDevelopment() && !Constants.SendNotificationsInDevelopment)
             {
-                if (userAccess.AccessLevel > todoItem.AccessLevel) continue;
+                return;
+            }
 
-                UserInfo uaUserInfo = await userInfoService.GetUserInfoByEmail(userAccess.UserId);
-                if (uaUserInfo == null || uaUserInfo.UserId == "Unknown") continue;
+            List<UserInfo> usersToNotify = await GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType.TodoItem, todoItem.TodoItemId, currentUser);
 
+            foreach (UserInfo userInfo in usersToNotify)
+            {
                 string eventTimeString;
                 if (todoItem.StartDate != null)
                 {
                     DateTime startDate = TimeZoneInfo.ConvertTimeFromUtc(todoItem.StartDate.Value,
-                        TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+                        TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
                     eventTimeString = "\r\nStart: " + startDate.ToString("dd-MMM-yyyy");
                 }
                 else
                 {
                     DateTime startDate = TimeZoneInfo.ConvertTimeFromUtc(todoItem.CreatedTime,
-                        TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+                        TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
                     eventTimeString = "\r\nStart: " + startDate.ToString("dd-MMM-yyyy");
                 }
-                
+
 
                 if (todoItem.DueDate != null)
                 {
                     DateTime dueDate = TimeZoneInfo.ConvertTimeFromUtc(todoItem.DueDate.Value,
-                        TimeZoneInfo.FindSystemTimeZoneById(uaUserInfo.Timezone));
+                        TimeZoneInfo.FindSystemTimeZoneById(userInfo.Timezone));
                     eventTimeString = eventTimeString + "\r\nDue: " + dueDate.ToString("dd-MMM-yyyy");
                 }
 
                 WebNotification webNotification = new()
                 {
-                    To = uaUserInfo.UserId,
+                    To = userInfo.UserId,
                     From = currentUser.FullName(),
                     Message = todoItem.Title + eventTimeString,
                     DateTime = DateTime.UtcNow,
                     Icon = currentUser.ProfilePicture,
                     Title = title,
-                    Link = "/Todos?todoItemId=" + todoItem.TodoItemId + "&childId=" + todoItem.ProgenyId,
+                    Link = "/Todos?todoItemId=" + todoItem.TodoItemId,
                     Type = "Notification"
                 };
 
                 webNotification = await notificationsService.AddWebNotification(webNotification);
 
-                await pushMessageSender.SendMessage(uaUserInfo.UserId, webNotification.Title,
+                await pushMessageSender.SendMessage(userInfo.UserId, webNotification.Title,
                     webNotification.Message, Constants.WebAppUrl + webNotification.Link, "kinaunatodolist" + todoItem.TodoItemId);
             }
+        }
+
+        private async Task<List<UserInfo>> GetUsersToNotifyForItem(KinaUnaTypes.TimeLineType type, int itemId, UserInfo currentUser)
+        {
+            List<UserInfo> usersToNotify = [];
+            List<TimelineItemPermission> permissions = await accessManagementService.GetTimelineItemPermissionsList(type, itemId, currentUser, true);
+            foreach (TimelineItemPermission permission in permissions)
+            {
+
+                if (permission.InheritPermissions)
+                {
+                    // Get user groups and members
+                    List<UserGroup> userGroups = [];
+                    if (permission.ProgenyId > 0)
+                    {
+                        userGroups = await userGroupsService.GetUserGroupsForProgeny(permission.ProgenyId, currentUser, true);
+                    }
+                    else if (permission.FamilyId > 0)
+                    {
+                        userGroups = await userGroupsService.GetUserGroupsForFamily(permission.FamilyId, currentUser, true);
+                    }
+
+                    foreach (UserGroup userGroup in userGroups)
+                    {
+                        if (userGroup.PermissionLevel > PermissionLevel.None)
+                        {
+                            foreach (UserGroupMember member in userGroup.Members)
+                            {
+                                if (!string.IsNullOrEmpty(member.UserId) && !usersToNotify.Exists(u => u.UserId == member.UserId))
+                                {
+                                    UserInfo memberUserInfo = await userInfoService.GetUserInfoByUserId(member.UserId);
+                                    usersToNotify.Add(memberUserInfo);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (permission.PermissionLevel > PermissionLevel.None && permission.GroupId > 0)
+                {
+                    UserGroup userGroup = await userGroupsService.GetUserGroup(permission.GroupId, currentUser, true);
+                    if (userGroup != null)
+                    {
+                        foreach (UserGroupMember member in userGroup.Members)
+                        {
+                            if (!string.IsNullOrEmpty(member.UserId) && !usersToNotify.Exists(u => u.UserId == member.UserId))
+                            {
+                                UserInfo memberUserInfo = await userInfoService.GetUserInfoByUserId(member.UserId);
+                                usersToNotify.Add(memberUserInfo);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return usersToNotify;
         }
     }
 }

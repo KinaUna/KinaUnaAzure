@@ -1,7 +1,8 @@
-﻿@using KinaUnaWeb.Services
+﻿@using System.Globalization
 @using KinaUna.Data
-@using System.Globalization
-@model KinaUnaWeb.Models.FamilyViewModels.ProgenyViewModel
+@using KinaUnaWeb.Models.ProgeniesViewModels
+@using KinaUnaWeb.Services
+@model ProgenyViewModel
 @inject ILocaleManager LocaleManager
 @{
     ViewData["Title"] = @Model.Name + " - " + await LocaleManager.GetTranslation("Family member added", PageNames.Progeny, Model.LanguageId);

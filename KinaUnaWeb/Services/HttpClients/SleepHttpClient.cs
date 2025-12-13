@@ -3,11 +3,11 @@ using KinaUna.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -55,11 +55,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string sleepApiPath = "/api/Sleep/" + sleepId;
-            HttpResponseMessage sleepResponse = await _httpClient.GetAsync(sleepApiPath).ConfigureAwait(false);
+            HttpResponseMessage sleepResponse = await _httpClient.GetAsync(sleepApiPath);
             if (!sleepResponse.IsSuccessStatusCode) return new Sleep();
 
-            string sleepAsString = await sleepResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-            Sleep sleepItem = JsonConvert.DeserializeObject<Sleep>(sleepAsString);
+            string sleepAsString = await sleepResponse.Content.ReadAsStringAsync();
+            Sleep sleepItem = JsonSerializer.Deserialize<Sleep>(sleepAsString, JsonSerializerOptions.Web);
             return sleepItem ?? new Sleep();
         }
 
@@ -75,11 +75,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string sleepApiPath = "/api/Sleep/";
-            HttpResponseMessage sleepResponse = await _httpClient.PostAsync(sleepApiPath, new StringContent(JsonConvert.SerializeObject(sleep), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage sleepResponse = await _httpClient.PostAsync(sleepApiPath, new StringContent(JsonSerializer.Serialize(sleep, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!sleepResponse.IsSuccessStatusCode) return new Sleep();
 
             string sleepAsString = await sleepResponse.Content.ReadAsStringAsync();
-            sleep = JsonConvert.DeserializeObject<Sleep>(sleepAsString);
+            sleep = JsonSerializer.Deserialize<Sleep>(sleepAsString, JsonSerializerOptions.Web);
             return sleep ?? new Sleep();
         }
 
@@ -95,11 +95,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateSleepApiPath = "/api/Sleep/" + sleep.SleepId;
-            HttpResponseMessage sleepResponse = await _httpClient.PutAsync(updateSleepApiPath, new StringContent(JsonConvert.SerializeObject(sleep), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage sleepResponse = await _httpClient.PutAsync(updateSleepApiPath, new StringContent(JsonSerializer.Serialize(sleep, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!sleepResponse.IsSuccessStatusCode) return new Sleep();
 
             string sleepAsString = await sleepResponse.Content.ReadAsStringAsync();
-            sleep = JsonConvert.DeserializeObject<Sleep>(sleepAsString);
+            sleep = JsonSerializer.Deserialize<Sleep>(sleepAsString, JsonSerializerOptions.Web);
             return sleep ?? new Sleep();
         }
 
@@ -135,7 +135,7 @@ namespace KinaUnaWeb.Services.HttpClients
             HttpResponseMessage sleepResponse = await _httpClient.GetAsync(sleepApiPath);
             if (!sleepResponse.IsSuccessStatusCode) return progenySleepList;
             string sleepAsString = await sleepResponse.Content.ReadAsStringAsync();
-            progenySleepList = JsonConvert.DeserializeObject<List<Sleep>>(sleepAsString);
+            progenySleepList = JsonSerializer.Deserialize<List<Sleep>>(sleepAsString, JsonSerializerOptions.Web);
 
             return progenySleepList;
         }

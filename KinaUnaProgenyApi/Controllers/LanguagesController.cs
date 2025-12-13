@@ -13,7 +13,6 @@ namespace KinaUnaProgenyApi.Controllers
     /// </summary>
     /// <param name="languagesService"></param>
     /// <param name="userInfoService"></param>
-    [Authorize(Policy = "Client")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
@@ -23,6 +22,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// Retrieves all language supported by the application.
         /// </summary>
         /// <returns>List of all KinaUnaLanguage entities in the database.</returns>
+        [Authorize(Policy = "Client")]
         [HttpGet]
         [Route("[action]")]
         public async Task<IActionResult> GetAllLanguages()
@@ -36,6 +36,7 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="languageId">The Id of the KinaUnaLanguage entity to get.</param>
         /// <returns>The KinaUnaLanguage object with the provided id.</returns>
+        [Authorize(Policy = "Client")]
         [HttpGet]
         [Route("[action]/{languageId:int}")]
         public async Task<IActionResult> GetLanguage(int languageId)
@@ -58,7 +59,7 @@ namespace KinaUnaProgenyApi.Controllers
             if (!await userInfoService.IsAdminUserId(userId)) return Unauthorized();
 
             language.Name = language.Name?.Trim();
-            await languagesService.AddLanguage(language);
+            language = await languagesService.AddLanguage(language);
 
             return Ok(language);
         }

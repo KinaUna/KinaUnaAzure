@@ -21,6 +21,11 @@ namespace KinaUna.Data.Models.DTOs
         public List<Progeny> ProgenyList { get; set; }
 
         /// <summary>
+        /// Gets or sets the list of families associated with the current list of to do items.
+        /// </summary>
+        public List<Family.Family> FamilyList { get; set; }
+
+        /// <summary>
         /// Gets or sets the request object containing parameters used for retrieving the list of to-do items.
         /// </summary>
         public TodoItemsRequest TodoItemsRequest { get; set; }

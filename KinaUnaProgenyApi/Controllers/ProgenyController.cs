@@ -1,12 +1,9 @@
 ﻿using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
-using KinaUna.Data.Models.DTOs;
 using KinaUnaProgenyApi.Services;
-using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Controllers
@@ -15,37 +12,12 @@ namespace KinaUnaProgenyApi.Controllers
     /// API endpoints for Progeny data.
     /// </summary>
     /// <param name="progenyService"></param>
-    /// <param name="userAccessService"></param>
     [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class ProgenyController(IProgenyService progenyService, IUserAccessService userAccessService) : ControllerBase
+    public class ProgenyController(IProgenyService progenyService, IUserInfoService userInfoService) : ControllerBase
     {
-        /// <summary>
-        /// Gets a list of all Progeny that the current user is admin for.
-        /// Obsolete: this action will show the user's email in the url.
-        /// </summary>
-        /// <param name="id">The user's email address.</param>
-        /// <returns>List of Progeny.</returns>
-        // GET api/progeny/parent/[id]
-        [HttpGet]
-        [Route("[action]/{id}")]
-        public async Task<IActionResult> Parent(string id)
-        {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (!userEmail.Equals(id, System.StringComparison.CurrentCultureIgnoreCase)) return Unauthorized();
-
-            List<Progeny> progenyList = await userAccessService.GetProgenyUserIsAdmin(id);
-            if (progenyList.Count != 0)
-            {
-                return Ok(progenyList);
-            }
-
-            return NotFound();
-
-        }
-
         /// <summary>
         /// Gets the Progeny entity with the specified id.
         /// </summary>
@@ -55,14 +27,9 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetProgeny(int id)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(id, userEmail, null);
-            if (!accessLevelResult.IsSuccess)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-
-            Progeny result = await progenyService.GetProgeny(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            
+            Progeny result = await progenyService.GetProgeny(id, currentUserInfo);
 
             if (result != null)
             {
@@ -82,13 +49,16 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Progeny value)
         {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            // Todo: check if user can add Progeny. Needs a property for that in signup form and in UserInfo.
             Progeny progeny = new()
             {
                 Name = value.Name,
                 NickName = value.NickName,
                 BirthDay = value.BirthDay,
                 TimeZone = value.TimeZone,
-                Admins = value.Admins
+                Admins = value.Admins,
+                Email = value.Email
             };
             if (string.IsNullOrEmpty(value.PictureLink))
             {
@@ -102,41 +72,10 @@ namespace KinaUnaProgenyApi.Controllers
                 progeny.PictureLink = await progenyService.ResizeImage(progeny.PictureLink);
             }
 
-            progeny = await progenyService.AddProgeny(progeny);
+            progeny.CreatedBy = User.GetUserId();
 
-            if (progeny.Admins.Contains(','))
-            {
-                List<string> adminList = [.. progeny.Admins.Split(',')];
-                foreach (string adminEmail in adminList)
-                {
-                    UserAccess ua = new()
-                    {
-                        AccessLevel = 0,
-                        ProgenyId = progeny.Id,
-                        UserId = adminEmail.Trim()
-                    };
-                    if (ua.UserId.IsValidEmail())
-                    {
-                        await userAccessService.AddUserAccess(ua);
-                    }
-                }
-            }
-            else
-            {
-                UserAccess ua = new()
-                {
-                    AccessLevel = 0,
-                    ProgenyId = progeny.Id,
-                    UserId = progeny.Admins.Trim()
-                };
-
-                if (ua.UserId.IsValidEmail())
-                {
-                    await userAccessService.AddUserAccess(ua);
-                }
-
-            }
-
+            progeny = await progenyService.AddProgeny(progeny, currentUserInfo);
+            
             return Ok(progeny);
         }
 
@@ -150,72 +89,32 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Put(int id, [FromBody] Progeny value)
         {
-            Progeny progeny = await progenyService.GetProgeny(id);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Progeny progeny = await progenyService.GetProgeny(id, currentUserInfo);
 
             if (progeny == null)
             {
                 return NotFound();
             }
 
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (!progeny.IsInAdminList(userEmail))
+            if (!progeny.IsInAdminList(currentUserInfo.UserEmail))
             {
                 return Unauthorized();
             }
-
-            if (!progeny.Admins.ToUpper().Equals(value.Admins.ToUpper()))
-            {
-                string[] admins = value.Admins.Split(',');
-                string[] oldAdmins = progeny.Admins.Split(',');
-                bool validAdminEmails = true;
-                foreach (string str in admins)
-                {
-                    if (!str.Trim().IsValidEmail())
-                    {
-                        validAdminEmails = false;
-                    }
-                }
-
-                if (validAdminEmails)
-                {
-                    progeny.Admins = value.Admins;
-
-                    foreach (string email in admins)
-                    {
-                        UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progeny.Id, email.Trim());
-                        if (userAccess.AccessLevel == (int)AccessLevel.Private) continue;
-
-                        userAccess.AccessLevel = (int)AccessLevel.Private;
-                        await userAccessService.UpdateUserAccess(userAccess);
-                    }
-
-                    foreach (string email in oldAdmins)
-                    {
-                        bool isInNewList = false;
-                        foreach (string newEmail in admins)
-                        {
-                            if (email.Trim().ToUpper().Equals(newEmail.Trim().ToUpper()))
-                            {
-                                isInNewList = true;
-                            }
-                        }
-
-                        if (isInNewList) continue;
-
-                        UserAccess userAccess = await userAccessService.GetProgenyUserAccessForUser(progeny.Id, email.Trim());
-                        userAccess.AccessLevel = (int)AccessLevel.Family;
-                        await userAccessService.UpdateUserAccess(userAccess);
-                    }
-                }
-            }
-
+            
             progeny.BirthDay = value.BirthDay;
             progeny.Name = value.Name;
             progeny.NickName = value.NickName;
             progeny.TimeZone = value.TimeZone;
             progeny.PictureLink = value.PictureLink;
-
-            progeny = await progenyService.UpdateProgeny(progeny);
+            progeny.Email = value.Email;
+            progeny.ModifiedBy = currentUserInfo.UserId;
+            
+            progeny = await progenyService.UpdateProgeny(progeny, currentUserInfo);
+            if (progeny == null)
+            {
+                return Unauthorized();
+            }
 
             return Ok(progeny);
         }
@@ -229,29 +128,29 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+
             // Todo: Implement confirmation mail to verify that all content really should be deleted.
-            Progeny progeny = await progenyService.GetProgeny(id);
+            Progeny progeny = await progenyService.GetProgeny(id, currentUserInfo);
             if (progeny == null) return NotFound();
 
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (!progeny.IsInAdminList(userEmail))
+            
+            if (!progeny.IsInAdminList(currentUserInfo.UserEmail))
+            {
+                return Unauthorized();
+            }
+            
+            progeny.ModifiedBy = currentUserInfo.UserId;
+
+            Progeny deletedProgeny = await progenyService.DeleteProgeny(progeny, currentUserInfo);
+            if (deletedProgeny == null)
             {
                 return Unauthorized();
             }
 
-            CustomResult<List<UserAccess>> userAccessListResult = await userAccessService.GetProgenyUserAccessList(progeny.Id, userEmail);
-            if (!userAccessListResult.IsSuccess) return userAccessListResult.ToActionResult();
-
-            foreach (UserAccess ua in userAccessListResult.Value)
-            {
-                await userAccessService.RemoveUserAccess(ua.AccessId, ua.ProgenyId, ua.UserId);
-            }
-
-            await progenyService.DeleteProgeny(progeny);
-
-            ProgenyInfo progenyInfo = await progenyService.GetProgenyInfo(progeny.Id);
-            await progenyService.DeleteProgenyInfo(progenyInfo);
-
+            ProgenyInfo progenyInfo = await progenyService.GetProgenyInfo(progeny.Id, currentUserInfo);
+            _ = await progenyService.DeleteProgenyInfo(progenyInfo, currentUserInfo);
+            
             return NoContent();
 
         }
@@ -264,14 +163,9 @@ namespace KinaUnaProgenyApi.Controllers
         [HttpGet("[action]/{progenyId:int}")]
         public async Task<IActionResult> GetProgenyInfo(int progenyId)
         {
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            CustomResult<int> accessLevelResult = await userAccessService.GetValidatedAccessLevel(progenyId, userEmail, null);
-            if (accessLevelResult.IsFailure)
-            {
-                return accessLevelResult.ToActionResult();
-            }
-
-            ProgenyInfo result = await progenyService.GetProgenyInfo(progenyId);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            
+            ProgenyInfo result = await progenyService.GetProgenyInfo(progenyId, currentUserInfo);
 
             if (result != null)
             {
@@ -291,14 +185,14 @@ namespace KinaUnaProgenyApi.Controllers
         [Route("[action]/{progenyId:int}")]
         public async Task<IActionResult> UpdateProgenyInfo(int progenyId, [FromBody] ProgenyInfo progenyInfo)
         {
-            Progeny progeny = await progenyService.GetProgeny(progenyId);
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            Progeny progeny = await progenyService.GetProgeny(progenyId, currentUserInfo);
             if (progeny == null)
             {
                 return NotFound();
             }
 
-            string userEmail = User.GetEmail() ?? Constants.DefaultUserEmail;
-            if (!progeny.IsInAdminList(userEmail))
+            if (!progeny.IsInAdminList(currentUserInfo.UserEmail))
             {
                 return Unauthorized();
             }
@@ -307,8 +201,12 @@ namespace KinaUnaProgenyApi.Controllers
             {
                 return BadRequest();
             }
-
-            ProgenyInfo updatedProgenyInfo = await progenyService.UpdateProgenyInfo(progenyInfo);
+            progenyInfo.ModifiedBy = currentUserInfo.UserId;
+            ProgenyInfo updatedProgenyInfo = await progenyService.UpdateProgenyInfo(progenyInfo, currentUserInfo);
+            if (updatedProgenyInfo == null)
+            {
+                return Unauthorized();
+            }
 
             return Ok(updatedProgenyInfo);
         }

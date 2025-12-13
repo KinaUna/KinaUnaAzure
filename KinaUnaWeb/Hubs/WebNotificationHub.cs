@@ -42,7 +42,7 @@ namespace KinaUnaWeb.Hubs
             string userTimeZone = Context.GetHttpContext()?.User.FindFirst("timezone")?.Value ?? Constants.DefaultTimezone;
             if (userId != "NoUser")
             {
-                List<WebNotification> notifications = await notificationsService.GetLatestNotifications(userId, 0, 10, true);
+                List<WebNotification> notifications = await notificationsService.GetLatestNotifications(userId);
 
                 notifications = [.. notifications.OrderByDescending(n => n.DateTime).Skip(start).Take(count)];
 
@@ -67,7 +67,7 @@ namespace KinaUnaWeb.Hubs
         public async Task SendUpdateToUser(WebNotification notification)
         {
             string userId = Context.GetHttpContext()?.User.FindFirst("sub")?.Value ?? "NoUser";
-            UserInfo currentUserInfo = await userInfosHttpClient.GetUserInfoByUserId(userId);
+            UserInfo currentUserInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(userId);
             
             // Todo: Check if sender has access rights to send to receiver.
 
@@ -81,7 +81,7 @@ namespace KinaUnaWeb.Hubs
                 }
                 else
                 {
-                    userinfo = await userInfosHttpClient.GetUserInfoByUserId(notification.To);
+                    userinfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(notification.To);
                 }
 
 

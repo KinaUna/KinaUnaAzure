@@ -1,19 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using ImageMagick;
+﻿using ImageMagick;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Extensions.ThirdPartyElements;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.CacheManagement;
 using KinaUna.Data.Models.DTOs;
+using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.CacheServices;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
 using Location = KinaUna.Data.Models.Location;
 
 namespace KinaUnaProgenyApi.Services
@@ -21,16 +26,22 @@ namespace KinaUnaProgenyApi.Services
     public class PicturesService : IPicturesService
     {
         private readonly MediaDbContext _mediaContext;
+        private readonly ProgenyDbContext _progenyContext;
+        private readonly IAccessManagementService _accessManagementService;
         private readonly IDistributedCache _cache;
+        private readonly IKinaUnaCacheService _kinaUnaCacheService;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
         private readonly IImageStore _imageStore;
 
-        public PicturesService(MediaDbContext mediaContext, IDistributedCache cache, IImageStore imageStore)
+        public PicturesService(MediaDbContext mediaContext, ProgenyDbContext progenyDbContext, IDistributedCache cache, IImageStore imageStore, IAccessManagementService accessManagementService, IKinaUnaCacheService kinaUnaCacheService)
         {
             _mediaContext = mediaContext;
+            _progenyContext = progenyDbContext;
+            _accessManagementService = accessManagementService;
             _imageStore = imageStore;
             _cache = cache;
+            _kinaUnaCacheService = kinaUnaCacheService;
             _ = _cacheOptions.SetAbsoluteExpiration(new TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _ = _cacheOptionsSliding.SetSlidingExpiration(new TimeSpan(96, 0, 0)); // Expire after 24 hours.
         }
@@ -40,9 +51,15 @@ namespace KinaUnaProgenyApi.Services
         /// First tries to get the Picture from the cache, then from the database if it's not in the cache.
         /// </summary>
         /// <param name="id">The PictureId of the Picture to get.</param>
+        /// <param name="currentUserInfo">UserInfo object for the current user, to check permissions.</param>
         /// <returns>Picture object with the given PictureId. Null if the Picture doesn't exist.</returns>
-        public async Task<Picture> GetPicture(int id)
+        public async Task<Picture> GetPicture(int id, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, id, currentUserInfo, PermissionLevel.View))
+            {
+                return null;
+            }
+
             Picture picture = await GetPictureFromCache(id);
             if (picture == null || picture.PictureId == 0)
             {
@@ -51,13 +68,15 @@ namespace KinaUnaProgenyApi.Services
 
             if (picture == null) return null;
             
+            picture.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, picture.ProgenyId, 0, currentUserInfo);
+            
             if (picture.PictureRotation != null)
             {
                 return picture;
             }
 
             picture.PictureRotation = 0;
-            _ = await UpdatePicture(picture);
+            _ = await UpdatePictureAsSystem(picture);
 
             return picture;
         }
@@ -75,7 +94,7 @@ namespace KinaUnaProgenyApi.Services
                 return null;
             }
             
-            Picture picture = JsonConvert.DeserializeObject<Picture>(cachedPicture);
+            Picture picture = JsonSerializer.Deserialize<Picture>(cachedPicture, JsonSerializerOptions.Web);
             return picture;
         }
 
@@ -83,16 +102,25 @@ namespace KinaUnaProgenyApi.Services
         /// Adds a new Picture to the database and the cache.
         /// </summary>
         /// <param name="picture">The Picture to add.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The added Picture object.</returns>
-        public async Task<Picture> AddPicture(Picture picture)
+        public async Task<Picture> AddPicture(Picture picture, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasProgenyPermission(picture.ProgenyId, currentUserInfo, PermissionLevel.Add))
+            {
+                return null;
+            }
+
             picture.RemoveNullStrings();
             Picture pictureToAdd = new();
             pictureToAdd.CopyPropertiesForAdd(picture);
             _ = _mediaContext.PicturesDb.Add(pictureToAdd);
             _ = await _mediaContext.SaveChangesAsync();
 
+            await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Photo, pictureToAdd.PictureId, pictureToAdd.ProgenyId, 0, pictureToAdd.ItemPermissionsDtoList, currentUserInfo);
+
             _ = await SetPictureInCache(pictureToAdd.PictureId);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(pictureToAdd.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
 
             return pictureToAdd;
         }
@@ -149,10 +177,10 @@ namespace KinaUnaProgenyApi.Services
                 }
                 
 
-                picture = await UpdatePicture(picture);
-                _ = await _imageStore.DeleteImage(originalPictureLink, BlobContainers.Pictures);
-                _ = await _imageStore.DeleteImage(originalPictureLink600, BlobContainers.Pictures);
-                _ = await _imageStore.DeleteImage(originalPictureLink1200, BlobContainers.Pictures);
+                picture = await UpdatePictureAsSystem(picture);
+                _ = await _imageStore.DeleteImage(originalPictureLink);
+                _ = await _imageStore.DeleteImage(originalPictureLink600);
+                _ = await _imageStore.DeleteImage(originalPictureLink1200);
 
                 return picture;
             }
@@ -458,10 +486,16 @@ namespace KinaUnaProgenyApi.Services
         /// Gets a Picture by PictureLink.
         /// </summary>
         /// <param name="link">The PictureLink of the Picture to get.</param>
+        /// <param name="currentUserInfo">UserInfo object for the current user, to check permissions.</param>
         /// <returns>Picture object with the given PictureLink. Null if the Picture doesn't exist.</returns>
-        public async Task<Picture> GetPictureByLink(string link)
+        public async Task<Picture> GetPictureByLink(string link, UserInfo currentUserInfo)
         {
             Picture picture = await _mediaContext.PicturesDb.AsNoTracking().SingleOrDefaultAsync(p => p.PictureLink == link);
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, currentUserInfo, PermissionLevel.View))
+            {
+                return null;
+            }
+            picture.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, picture.ProgenyId, 0, currentUserInfo);
             return picture;
         }
 
@@ -478,7 +512,7 @@ namespace KinaUnaProgenyApi.Services
             if (picture.Tags != null && picture.Tags.Trim().EndsWith(','))
             {
                 picture.Tags = picture.Tags.Trim().TrimEnd(',');
-                _ = await UpdatePicture(picture);
+                _ = await UpdatePictureAsSystem(picture);
             }
 
             if (!picture.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase) && !picture.PictureLink.Contains('.')) // Some pictures do not have file extensions. If they don't, update the links.
@@ -493,7 +527,7 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
             
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "picture" + id, JsonConvert.SerializeObject(picture), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "picture" + id, JsonSerializer.Serialize(picture, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             _ = await SetPicturesListInCache(picture.ProgenyId);
 
@@ -504,9 +538,15 @@ namespace KinaUnaProgenyApi.Services
         /// Updates a Picture in the database and the cache.
         /// </summary>
         /// <param name="picture">The Picture object with the updated properties.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The updated Picture object.</returns>
-        public async Task<Picture> UpdatePicture(Picture picture)
+        public async Task<Picture> UpdatePicture(Picture picture, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, currentUserInfo, PermissionLevel.Edit))
+            {
+                return null;
+            }
+
             picture.RemoveNullStrings();
             Picture pictureToUpdate = await _mediaContext.PicturesDb.SingleOrDefaultAsync(p => p.PictureId == picture.PictureId);
             if (pictureToUpdate == null) return null;
@@ -515,7 +555,39 @@ namespace KinaUnaProgenyApi.Services
 
             _ = _mediaContext.PicturesDb.Update(pictureToUpdate);
             _ = await _mediaContext.SaveChangesAsync();
+
+            await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Photo, pictureToUpdate.PictureId, pictureToUpdate.ProgenyId, 0, pictureToUpdate.ItemPermissionsDtoList, currentUserInfo);
+
             _ = await SetPictureInCache(pictureToUpdate.PictureId);
+
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(pictureToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
+
+            return pictureToUpdate;
+
+        }
+
+        /// <summary>
+        /// Updates a Picture in the database and the cache.
+        /// Not for end users, only used by system processes.
+        /// </summary>
+        /// <param name="picture">The Picture object with the updated properties.</param>
+        /// <returns>The updated Picture object.</returns>
+        private async Task<Picture> UpdatePictureAsSystem(Picture picture)
+        {
+            
+            picture.RemoveNullStrings();
+            Picture pictureToUpdate = await _mediaContext.PicturesDb.SingleOrDefaultAsync(p => p.PictureId == picture.PictureId);
+            if (pictureToUpdate == null) return null;
+            string modifiedBy = pictureToUpdate.ModifiedBy;
+            DateTime modifiedTime = pictureToUpdate.ModifiedTime;
+            pictureToUpdate.CopyPropertiesForUpdate(picture);
+            pictureToUpdate.ModifiedBy = modifiedBy;
+            pictureToUpdate.ModifiedTime = modifiedTime;
+            _ = _mediaContext.PicturesDb.Update(pictureToUpdate);
+            _ = await _mediaContext.SaveChangesAsync();
+            _ = await SetPictureInCache(pictureToUpdate.PictureId);
+
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(pictureToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
 
             return pictureToUpdate;
 
@@ -525,8 +597,60 @@ namespace KinaUnaProgenyApi.Services
         /// Deletes a Picture from the database and the cache.
         /// </summary>
         /// <param name="picture">The Picture to delete.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The deleted Picture object.</returns>
-        public async Task<Picture> DeletePicture(Picture picture)
+        public async Task<Picture> DeletePicture(Picture picture, UserInfo currentUserInfo)
+        {
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, currentUserInfo, PermissionLevel.Admin))
+            {
+                return null;
+            }
+
+            Picture pictureToDelete = await _mediaContext.PicturesDb.SingleOrDefaultAsync(p => p.PictureId == picture.PictureId);
+            if (pictureToDelete != null)
+            {
+                _ = _mediaContext.PicturesDb.Remove(pictureToDelete);
+                _ = await _mediaContext.SaveChangesAsync();
+            }
+
+            List<Picture> picturesWithThisImageLink = await _mediaContext.PicturesDb.AsNoTracking().Where(p => p.PictureLink == picture.PictureLink).ToListAsync();
+            if (picturesWithThisImageLink.Count == 0)
+            {
+                _ = await _imageStore.DeleteImage(picture.PictureLink);
+            }
+
+            List<Picture> picturesWithThisImageLink600 = await _mediaContext.PicturesDb.AsNoTracking().Where(p => p.PictureLink600 == picture.PictureLink600).ToListAsync();
+            if (picturesWithThisImageLink600.Count == 0)
+            {
+                _ = await _imageStore.DeleteImage(picture.PictureLink600);
+            }
+
+            List<Picture> picturesWithThisImageLink1200 = await _mediaContext.PicturesDb.AsNoTracking().Where(p => p.PictureLink1200 == picture.PictureLink1200).ToListAsync();
+            if (picturesWithThisImageLink1200.Count == 0)
+            {
+                _ = await _imageStore.DeleteImage(picture.PictureLink1200);
+            }
+
+            // Remove all associated permissions.
+            List<TimelineItemPermission> timelineItemPermissionsList = await _accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, picture.PictureId, currentUserInfo);
+            foreach (TimelineItemPermission permission in timelineItemPermissionsList)
+            {
+                await _accessManagementService.RevokeItemPermission(permission, currentUserInfo);
+            }
+
+            await RemovePictureFromCache(picture.PictureId, picture.ProgenyId);
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(picture.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
+
+            return pictureToDelete;
+        }
+
+        /// <summary>
+        /// Deletes a Picture from the database and the cache.
+        /// Not for use by end users, only used by system processes.
+        /// </summary>
+        /// <param name="picture">The Picture to delete.</param>
+        /// <returns>The deleted Picture object.</returns>
+        public async Task<Picture> DeletePictureAsSystem(Picture picture)
         {
             Picture pictureToDelete = await _mediaContext.PicturesDb.SingleOrDefaultAsync(p => p.PictureId == picture.PictureId);
             if (pictureToDelete != null)
@@ -554,6 +678,9 @@ namespace KinaUnaProgenyApi.Services
             }
 
             await RemovePictureFromCache(picture.PictureId, picture.ProgenyId);
+
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(picture.ProgenyId, 0, KinaUnaTypes.TimeLineType.Photo);
+            // Todo: Remove permission entries for this picture?
             return pictureToDelete;
         }
 
@@ -574,19 +701,103 @@ namespace KinaUnaProgenyApi.Services
         /// Gets a list of all Pictures for a Progeny from the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Pictures for.</param>
-        /// <param name="accessLevel">The access level for the user.</param>
+        /// <param name="currentUserInfo">UserInfo object for the current user, to check permissions.</param>
         /// <returns>List of Picture objects.</returns>
-        public async Task<List<Picture>> GetPicturesList(int progenyId, int accessLevel)
+        public async Task<List<Picture>> GetPicturesList(int progenyId, UserInfo currentUserInfo)
         {
-            List<Picture> picturesList = await GetPicturesListFromCache(progenyId);
-            if (picturesList.Count == 0)
+            PicturesListCacheEntry cacheEntry = await _kinaUnaCacheService.GetPicturesListCache(currentUserInfo.UserId, progenyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = await _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Photo);
+            if (cacheEntry != null && timelineUpdatedCacheEntry != null)
+            {
+                if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
+                {
+                    return cacheEntry.PicturesList.ToList();
+                }
+            }
+
+            Picture[] picturesList = await GetPicturesListFromCache(progenyId);
+            if (picturesList.Length == 0)
+            {
+                picturesList = await SetPicturesListInCache(progenyId);
+            }
+            Console.WriteLine("GetPicturesList for Progeny: " + progenyId + " pictures list count: " + picturesList.Length);
+            Stopwatch watch = Stopwatch.StartNew();
+            
+            List<Picture> filteredList = [];
+            foreach (Picture picture in picturesList)
+            {
+                if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, currentUserInfo, PermissionLevel.View))
+                {
+                    // picture.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, picture.ProgenyId, 0, currentUserInfo);
+                    filteredList.Add(picture);
+                }
+            }
+            filteredList = filteredList.OrderByDescending(p => p.PictureTime).ToList();
+
+            await _kinaUnaCacheService.SetPicturesListCache(currentUserInfo.UserId, progenyId, filteredList.ToArray());
+
+            watch.Stop();
+            Console.WriteLine("GetPicturesList for progeny: " + progenyId + " Time Taken: " + watch.Elapsed.Minutes + "m " + watch.Elapsed.Seconds + "s");
+            Console.WriteLine("Filtered list length: " + filteredList.Count);
+            return filteredList;
+        }
+
+        /// <summary>
+        /// Retrieves a random picture associated with the specified progeny, ensuring the current user has permission
+        /// to view it.
+        /// </summary>
+        /// <remarks>This method attempts to retrieve a random picture from the cache or database. If the
+        /// user does not have  permission to view any pictures after a maximum number of attempts, a placeholder
+        /// picture is returned instead.</remarks>
+        /// <param name="progenyId">The unique identifier of the progeny whose pictures are being accessed.</param>
+        /// <param name="currentUserInfo">The user information used to verify access permissions for the picture.</param>
+        /// <returns>A <see cref="Picture"/> object representing a random picture the user has permission to view.  If no
+        /// pictures are available or accessible, a placeholder picture is returned.</returns>
+        public async Task<Picture> RandomPicture(int progenyId, UserInfo currentUserInfo)
+        {
+            Picture[] picturesList = await GetPicturesListFromCache(progenyId);
+            if (picturesList.Length == 0)
             {
                 picturesList = await SetPicturesListInCache(progenyId);
             }
 
-            picturesList = [.. picturesList.Where(p => p.AccessLevel >= accessLevel)];
+            if (picturesList.Length == 0)
+            {
+                Picture tempPicture = new();
+                tempPicture.ApplyPlaceholderProperties();
+                return tempPicture;
+            }
 
-            return picturesList;
+            Picture randomPicture = new();
+            bool hasAccess = false;
+            const int maxTries = 1000;
+            int tries = 0;
+            while (!hasAccess)
+            {
+                tries++;
+                Random r = new();
+                int pictureNumber = r.Next(0,  picturesList.Length);
+                Picture picture =  picturesList[pictureNumber];
+                if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, picture.PictureId, currentUserInfo, PermissionLevel.View))
+                {
+                    randomPicture = picture;
+                    hasAccess = true;
+                }
+                if (tries > maxTries)
+                {
+                    break;
+                }
+            }
+
+            if (!hasAccess)
+            {
+                Picture tempPicture = new();
+                tempPicture.ApplyPlaceholderProperties();
+                return tempPicture;
+            }
+
+            randomPicture.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Photo, randomPicture.PictureId, randomPicture.ProgenyId, 0, currentUserInfo);
+            return randomPicture;
         }
 
         /// <summary>
@@ -594,15 +805,17 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get pictures for.</param>
         /// <param name="tag">String with the tag.</param>
-        /// <param name="accessLevel">The access level for the user.</param>
+        /// <param name="currentUserInfo">UserInfo object for the current user, to check permissions.</param>
         /// <returns>List of Picture objects.</returns>
-        public async Task<List<Picture>> GetPicturesWithTag(int progenyId, string tag, int accessLevel)
+        public async Task<List<Picture>> GetPicturesWithTag(int progenyId, string tag, UserInfo currentUserInfo)
         {
-            List<Picture> allItems = await GetPicturesList(progenyId, accessLevel);
+            List<Picture> allItems = await GetPicturesList(progenyId, currentUserInfo);
+            
             if (!string.IsNullOrEmpty(tag))
             {
                 allItems = [.. allItems.Where(p => p.Tags != null && p.Tags.Contains(tag, StringComparison.CurrentCultureIgnoreCase))];
             }
+
             return allItems;
         }
 
@@ -611,16 +824,15 @@ namespace KinaUnaProgenyApi.Services
         /// Gets a list of distinct Locations for a Progeny's pictures.
         /// </summary>
         /// <param name="picturesLocationsRequest">PicturesLocationsRequest with the distance, in kilometers, to group picture locations by.</param>
-        /// <param name="userAccesses">List of UserAccess objects with the access level for each Progeny.</param>
+        /// <param name="currentUserInfo">UserInfo object for the current user, to check permissions.</param>
         /// <returns>PicturesLocationsResponse</returns>
-        public async Task<PicturesLocationsResponse> GetPicturesLocations(PicturesLocationsRequest picturesLocationsRequest, List<UserAccess> userAccesses)
+        public async Task<PicturesLocationsResponse> GetPicturesLocations(PicturesLocationsRequest picturesLocationsRequest, UserInfo currentUserInfo)
         {
             List<Picture> allPictures = [];
 
             foreach (int progenyId in picturesLocationsRequest.Progenies)
             {
-                int accessLevel = userAccesses.FirstOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
-                List<Picture> progenyPictures = await GetPicturesList(progenyId, accessLevel);
+                List<Picture> progenyPictures = await GetPicturesList(progenyId, currentUserInfo);
                 progenyPictures = [.. progenyPictures.Where(p => !string.IsNullOrEmpty(p.Longtitude))];
                 
                 allPictures.AddRange(progenyPictures);
@@ -662,9 +874,9 @@ namespace KinaUnaProgenyApi.Services
         /// Gets a list of Pictures near a specific Location.
         /// </summary>
         /// <param name="nearByPhotosRequest">NearByPhotosRequest object with the location data.</param>
-        /// <param name="userAccesses">List of UserAccess objects with the access level for each Progeny.</param>
+        /// <param name="currentUserInfo">UserInfo object for the current user, to check permissions.</param>
         /// <returns>NearByPhotosResponse, with the list of Picture objects.</returns>
-        public async Task<NearByPhotosResponse> GetPicturesNearLocation(NearByPhotosRequest nearByPhotosRequest, List<UserAccess> userAccesses)
+        public async Task<NearByPhotosResponse> GetPicturesNearLocation(NearByPhotosRequest nearByPhotosRequest, UserInfo currentUserInfo)
         {
             // Todo: Add unit tests for this method.
             // Todo: Add sort order parameter.
@@ -673,8 +885,7 @@ namespace KinaUnaProgenyApi.Services
 
             foreach (int progenyId in nearByPhotosRequest.Progenies)
             {
-                int accessLevel = userAccesses.FirstOrDefault(u => u.ProgenyId == progenyId)?.AccessLevel ?? 5;
-                List<Picture> progenyPictures = await GetPicturesList(progenyId, accessLevel);
+                List<Picture> progenyPictures = await GetPicturesList(progenyId, currentUserInfo);
                 progenyPictures = [.. progenyPictures.Where(p => !string.IsNullOrEmpty(p.Longtitude))];
                 
                 allPictures.AddRange(progenyPictures);
@@ -717,13 +928,13 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get all Pictures for.</param>
         /// <returns>List of Picture objects.</returns>
-        private async Task<List<Picture>> GetPicturesListFromCache(int progenyId)
+        private async Task<Picture[]> GetPicturesListFromCache(int progenyId)
         {
-            List<Picture> picturesList = [];
+            Picture[] picturesList = Array.Empty<Picture>();
             string cachedPicturesList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "pictureslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedPicturesList))
             {
-                picturesList = JsonConvert.DeserializeObject<List<Picture>>(cachedPicturesList);
+                picturesList = JsonSerializer.Deserialize<Picture[]>(cachedPicturesList, JsonSerializerOptions.Web);
             }
 
             return picturesList;
@@ -734,10 +945,10 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get and set all Pictures for.</param>
         /// <returns>List of Picture objects.</returns>
-        public async Task<List<Picture>> SetPicturesListInCache(int progenyId)
+        public async Task<Picture[]> SetPicturesListInCache(int progenyId)
         {
-            List<Picture> picturesList = await _mediaContext.PicturesDb.AsNoTracking().Where(p => p.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "pictureslist" + progenyId, JsonConvert.SerializeObject(picturesList), _cacheOptionsSliding);
+            Picture[] picturesList = await _mediaContext.PicturesDb.AsNoTracking().Where(p => p.ProgenyId == progenyId).ToArrayAsync();
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "pictureslist" + progenyId, JsonSerializer.Serialize(picturesList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return picturesList;
         }
@@ -752,10 +963,20 @@ namespace KinaUnaProgenyApi.Services
             foreach (Picture picture in allPicturesList)
             {
                 picture.RemoveNullStrings();
-                _ = await UpdatePicture(picture);
+                _ = await UpdatePictureAsSystem(picture);
             }
         }
 
+        /// <summary>
+        /// Checks all pictures in the database for missing file extensions in their links and updates them if
+        /// necessary.
+        /// </summary>
+        /// <remarks>This method retrieves all pictures from the database and verifies whether their <see
+        /// cref="Picture.PictureLink"/>, <see cref="Picture.PictureLink600"/>, and <see
+        /// cref="Picture.PictureLink1200"/> properties are valid and contain file extensions. If a picture's <see
+        /// cref="Picture.PictureLink"/> does not start with "http" or contain a file extension, it attempts to update
+        /// the link by calling <c>UpdatePictureLinkWithExtension</c>.</remarks>
+        /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
         public async Task CheckPicturesForExtensions()
         {
             List<Picture> allPicturesList = await _mediaContext.PicturesDb.ToListAsync();
@@ -767,9 +988,34 @@ namespace KinaUnaProgenyApi.Services
                 {
                     _ = await UpdatePictureLinkWithExtension(picture);
                 }
+
+
+                List<TimelineItemPermission> permissions = await _progenyContext.TimelineItemPermissionsDb.AsNoTracking().Where(t => t.ItemId == picture.PictureId && t.TimelineType == KinaUnaTypes.TimeLineType.Photo).ToListAsync();
+                if (permissions.Count == 0)
+                {
+                    TimelineItemPermission timelineItemPermission = new()
+                    {
+                        TimelineType = KinaUnaTypes.TimeLineType.Photo,
+                        ItemId = picture.PictureId,
+                        ProgenyId = picture.ProgenyId,
+                        GroupId = 0,
+                        InheritPermissions = true,
+                        PermissionLevel = PermissionLevel.None,
+                        CreatedBy = "system",
+                        CreatedTime = DateTime.UtcNow,
+                        ModifiedBy = "system",
+                        ModifiedTime = DateTime.UtcNow
+                    };
+                    _progenyContext.TimelineItemPermissionsDb.Add(timelineItemPermission);
+                    await _progenyContext.SaveChangesAsync();
+                }
             }
         }
 
+        /// <summary>
+        /// Checks all pictures in the database for missing image files in the blob storage and deletes the Picture
+        /// </summary>
+        /// <returns></returns>
         public async Task CheckPictureLinks()
         {
             List<Picture> allPicturesList = await _mediaContext.PicturesDb.ToListAsync();
@@ -777,18 +1023,31 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (string.IsNullOrEmpty(picture.PictureLink) || string.IsNullOrEmpty(picture.PictureLink600) || string.IsNullOrEmpty(picture.PictureLink1200))
                 {
-                    _ = await DeletePicture(picture);
+                    _ = await DeletePictureAsSystem(picture);
                     continue;
                 }
 
                 if (picture.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase)) continue;
-                if (!await _imageStore.ImageExists(picture.PictureLink, BlobContainers.Pictures))
+                if (!await _imageStore.ImageExists(picture.PictureLink))
                 {
-                    _ = await DeletePicture(picture);
+                    _ = await DeletePictureAsSystem(picture);
                 }
             }
         }
 
+        /// <summary>
+        /// Ensures that all nullable properties of pictures in the database are set to default values if they are null.
+        /// </summary>
+        /// <remarks>This method retrieves all pictures from the database and checks for null values in
+        /// specific properties. If a property is null, it is assigned a default value: <list type="bullet">
+        /// <item><description><see cref="Picture.Altitude"/> is set to an empty string.</description></item>
+        /// <item><description><see cref="Picture.Latitude"/> is set to an empty string.</description></item>
+        /// <item><description><see cref="Picture.Longtitude"/> is set to an empty string.</description></item>
+        /// <item><description><see cref="Picture.Location"/> is set to an empty string.</description></item>
+        /// <item><description><see cref="Picture.Tags"/> is set to an empty string.</description></item>
+        /// <item><description><see cref="Picture.PictureRotation"/> is set to 0.</description></item> </list> If any
+        /// changes are made to a picture, the updated picture is saved back to the database.</remarks>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         public async Task CheckPicturePropertiesForNull()
         {
             List<Picture> allPicturesList = await _mediaContext.PicturesDb.ToListAsync();
@@ -833,7 +1092,7 @@ namespace KinaUnaProgenyApi.Services
 
                 if (changed)
                 {
-                    _ = await UpdatePicture(picture);
+                    _ = await UpdatePictureAsSystem(picture);
                 }
             }
         }

@@ -1,27 +1,35 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.CacheManagement;
+using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.CacheServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
     public class VaccinationService : IVaccinationService
     {
         private readonly ProgenyDbContext _context;
+        private readonly IAccessManagementService _accessManagementService;
         private readonly IDistributedCache _cache;
+        private readonly IKinaUnaCacheService _kinaUnaCacheService;
         private readonly DistributedCacheEntryOptions _cacheOptions = new();
         private readonly DistributedCacheEntryOptions _cacheOptionsSliding = new();
 
-        public VaccinationService(ProgenyDbContext context, IDistributedCache cache)
+        public VaccinationService(ProgenyDbContext context, IDistributedCache cache, IAccessManagementService accessManagementService, IKinaUnaCacheService kinaUnaCacheService)
         {
             _context = context;
+            _accessManagementService = accessManagementService;
             _cache = cache;
+            _kinaUnaCacheService = kinaUnaCacheService;
             _cacheOptions.SetAbsoluteExpiration(new System.TimeSpan(0, 5, 0)); // Expire after 5 minutes.
             _cacheOptionsSliding.SetSlidingExpiration(new System.TimeSpan(7, 0, 0, 0)); // Expire after a week.
         }
@@ -31,13 +39,23 @@ namespace KinaUnaProgenyApi.Services
         /// First checks the cache, if not found, gets the Vaccination from the database and adds it to the cache.
         /// </summary>
         /// <param name="id">The VaccinationId of the Vaccination entity to get.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, used for access control.</param>
         /// <returns>The Vaccination object with the given VaccinationId. Null if the Vaccination item doesn't exist.</returns>
-        public async Task<Vaccination> GetVaccination(int id)
+        public async Task<Vaccination> GetVaccination(int id, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Vaccination, id, currentUserInfo, PermissionLevel.View))
+            {
+                return null;
+            }
+
             Vaccination vaccination = await GetVaccinationFromCache(id);
             if (vaccination == null || vaccination.VaccinationId == 0)
             {
                 vaccination = await SetVaccinationInCache(id);
+            }
+            if (vaccination != null && vaccination.VaccinationId != 0)
+            {
+                vaccination.ItemPermission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vaccination, vaccination.VaccinationId, vaccination.ProgenyId, 0, currentUserInfo);
             }
 
             return vaccination;
@@ -47,16 +65,26 @@ namespace KinaUnaProgenyApi.Services
         /// Adds a new Vaccination entity to the database and adds it to the cache.
         /// </summary>
         /// <param name="vaccination">The Vaccination object to add.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The added Vaccination object.</returns>
-        public async Task<Vaccination> AddVaccination(Vaccination vaccination)
+        public async Task<Vaccination> AddVaccination(Vaccination vaccination, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasProgenyPermission(vaccination.ProgenyId, currentUserInfo, PermissionLevel.Add))
+            {
+                return null;
+            }
+
             Vaccination vaccinationToAdd = new();
             vaccinationToAdd.CopyPropertiesForAdd(vaccination);
 
             _ = _context.VaccinationsDb.Add(vaccinationToAdd);
             _ = await _context.SaveChangesAsync();
 
+            await _accessManagementService.AddItemPermissions(KinaUnaTypes.TimeLineType.Vaccination, vaccinationToAdd.VaccinationId, vaccinationToAdd.ProgenyId, 0, vaccinationToAdd.ItemPermissionsDtoList,
+                currentUserInfo);
             _ = await SetVaccinationInCache(vaccinationToAdd.VaccinationId);
+
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(vaccinationToAdd.ProgenyId, 0, KinaUnaTypes.TimeLineType.Vaccination);
 
             return vaccinationToAdd;
         }
@@ -74,7 +102,7 @@ namespace KinaUnaProgenyApi.Services
                 return null;
             }
 
-            Vaccination vaccination = JsonConvert.DeserializeObject<Vaccination>(cachedVaccination);
+            Vaccination vaccination = JsonSerializer.Deserialize<Vaccination>(cachedVaccination, JsonSerializerOptions.Web);
             return vaccination;
         }
 
@@ -88,7 +116,7 @@ namespace KinaUnaProgenyApi.Services
             Vaccination vaccination = await _context.VaccinationsDb.AsNoTracking().SingleOrDefaultAsync(v => v.VaccinationId == id);
             if (vaccination == null) return null;
 
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccination" + id, JsonConvert.SerializeObject(vaccination), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccination" + id, JsonSerializer.Serialize(vaccination, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             _ = await SetVaccinationListInCache(vaccination.ProgenyId);
 
@@ -99,9 +127,15 @@ namespace KinaUnaProgenyApi.Services
         /// Updates a Vaccination entity in the database and the cache.
         /// </summary>
         /// <param name="vaccination">The Vaccination object with the updated properties.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns>The updated Vaccination object.</returns>
-        public async Task<Vaccination> UpdateVaccination(Vaccination vaccination)
+        public async Task<Vaccination> UpdateVaccination(Vaccination vaccination, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Vaccination, vaccination.VaccinationId, currentUserInfo, PermissionLevel.Edit))
+            {
+                return null;
+            }
+
             Vaccination vaccinationToUpdate = await _context.VaccinationsDb.SingleOrDefaultAsync(v => v.VaccinationId == vaccination.VaccinationId);
             if (vaccinationToUpdate == null) return null;
 
@@ -109,7 +143,13 @@ namespace KinaUnaProgenyApi.Services
 
             _ = _context.VaccinationsDb.Update(vaccinationToUpdate);
             _ = await _context.SaveChangesAsync();
+
+            await _accessManagementService.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Vaccination, vaccinationToUpdate.VaccinationId, vaccinationToUpdate.ProgenyId, 0, vaccinationToUpdate.ItemPermissionsDtoList,
+                currentUserInfo);
+
             _ = await SetVaccinationInCache(vaccination.VaccinationId);
+
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(vaccinationToUpdate.ProgenyId, 0, KinaUnaTypes.TimeLineType.Vaccination);
 
             return vaccinationToUpdate;
         }
@@ -118,16 +158,31 @@ namespace KinaUnaProgenyApi.Services
         /// Deletes a Vaccination entity from the database and the cache.
         /// </summary>
         /// <param name="vaccination">The Vaccination object to delete.</param>
+        /// <param name="currentUserInfo"></param>
         /// <returns></returns>
-        public async Task<Vaccination> DeleteVaccination(Vaccination vaccination)
+        public async Task<Vaccination> DeleteVaccination(Vaccination vaccination, UserInfo currentUserInfo)
         {
+            if (!await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Vaccination, vaccination.VaccinationId, currentUserInfo, PermissionLevel.Admin))
+            {
+                return null;
+            }
+
             Vaccination vaccinationToDelete = await _context.VaccinationsDb.SingleOrDefaultAsync(v => v.VaccinationId == vaccination.VaccinationId);
             if (vaccinationToDelete == null) return null;
 
             _ = _context.VaccinationsDb.Remove(vaccinationToDelete);
             _ = await _context.SaveChangesAsync();
+
+            // Remove all associated permissions.
+            List<TimelineItemPermission> timelineItemPermissionsList = await _accessManagementService.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, vaccinationToDelete.VaccinationId, currentUserInfo);
+            foreach (TimelineItemPermission permission in timelineItemPermissionsList)
+            {
+                await _accessManagementService.RevokeItemPermission(permission, currentUserInfo);
+            }
+
             await RemoveVaccinationFromCache(vaccination.VaccinationId, vaccination.ProgenyId);
 
+            await _kinaUnaCacheService.SetProgenyOrFamilyTimelineUpdatedCache(vaccinationToDelete.ProgenyId, 0, KinaUnaTypes.TimeLineType.Vaccination);
             return vaccinationToDelete;
         }
 
@@ -150,18 +205,39 @@ namespace KinaUnaProgenyApi.Services
         /// First checks the cache, if not found, gets the list from the database and adds it to the cache.
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get the list for.</param>
-        /// <param name="accessLevel">The access level of the user requesting the list.</param>
+        /// <param name="currentUserInfo">The UserInfo object for the current user, used for access control.</param>
         /// <returns>List of Vaccination objects.</returns>
-        public async Task<List<Vaccination>> GetVaccinationsList(int progenyId, int accessLevel)
+        public async Task<List<Vaccination>> GetVaccinationsList(int progenyId, UserInfo currentUserInfo)
         {
-            List<Vaccination> vaccinationsList = await GetVaccinationListFromCache(progenyId);
-            if (vaccinationsList.Count == 0)
+            VaccinationsListCacheEntry cacheEntry = await _kinaUnaCacheService.GetVaccinationsListCache(currentUserInfo.UserId, progenyId);
+            TimelineUpdatedCacheEntry timelineUpdatedCacheEntry = await _kinaUnaCacheService.GetProgenyOrFamilyTimelineUpdatedCache(progenyId, 0, KinaUnaTypes.TimeLineType.Vaccination);
+            if (cacheEntry != null && timelineUpdatedCacheEntry != null)
+            {
+                if (cacheEntry.UpdateTime >= timelineUpdatedCacheEntry.UpdateTime)
+                {
+                    return cacheEntry.VaccinationsList.ToList();
+                }
+            }
+
+            Vaccination[] vaccinationsList = await GetVaccinationListFromCache(progenyId);
+            if (vaccinationsList.Length == 0)
             {
                 vaccinationsList = await SetVaccinationListInCache(progenyId);
             }
 
-            vaccinationsList = [.. vaccinationsList.Where(v => v.AccessLevel >= accessLevel)];
-            return vaccinationsList;
+            List<Vaccination> accessibleVaccinationsList = [];
+            foreach (Vaccination vaccination in vaccinationsList)
+            {
+                if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Vaccination, vaccination.VaccinationId, currentUserInfo, PermissionLevel.View))
+                {
+                    vaccination.ItemPermission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vaccination, vaccination.VaccinationId, vaccination.ProgenyId, 0, currentUserInfo);
+                    accessibleVaccinationsList.Add(vaccination);
+                }
+            }
+
+            await _kinaUnaCacheService.SetVaccinationsListCache(currentUserInfo.UserId, progenyId, accessibleVaccinationsList.ToArray());
+
+            return accessibleVaccinationsList;
         }
 
         /// <summary>
@@ -169,13 +245,13 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get Vaccinations for.</param>
         /// <returns>List of Vaccination objects.</returns>
-        private async Task<List<Vaccination>> GetVaccinationListFromCache(int progenyId)
+        private async Task<Vaccination[]> GetVaccinationListFromCache(int progenyId)
         {
-            List<Vaccination> vaccinationsList = [];
+            Vaccination[] vaccinationsList = [];
             string cachedVaccinationsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccinationslist" + progenyId);
             if (!string.IsNullOrEmpty(cachedVaccinationsList))
             {
-                vaccinationsList = JsonConvert.DeserializeObject<List<Vaccination>>(cachedVaccinationsList);
+                vaccinationsList = JsonSerializer.Deserialize<Vaccination[]>(cachedVaccinationsList, JsonSerializerOptions.Web);
             }
 
             return vaccinationsList;
@@ -186,10 +262,10 @@ namespace KinaUnaProgenyApi.Services
         /// </summary>
         /// <param name="progenyId">The ProgenyId of the Progeny to get and set the list of Vaccinations for.</param>
         /// <returns>List of Vaccination objects.</returns>
-        private async Task<List<Vaccination>> SetVaccinationListInCache(int progenyId)
+        private async Task<Vaccination[]> SetVaccinationListInCache(int progenyId)
         {
-            List<Vaccination> vaccinationsList = await _context.VaccinationsDb.AsNoTracking().Where(v => v.ProgenyId == progenyId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccinationslist" + progenyId, JsonConvert.SerializeObject(vaccinationsList), _cacheOptionsSliding);
+            Vaccination[] vaccinationsList = await _context.VaccinationsDb.AsNoTracking().Where(v => v.ProgenyId == progenyId).ToArrayAsync();
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "vaccinationslist" + progenyId, JsonSerializer.Serialize(vaccinationsList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return vaccinationsList;
         }

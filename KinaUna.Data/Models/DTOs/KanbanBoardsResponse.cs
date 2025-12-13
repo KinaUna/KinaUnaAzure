@@ -5,9 +5,7 @@ namespace KinaUna.Data.Models.DTOs
     public class KanbanBoardsResponse
     {
         public List<KanbanBoard> KanbanBoards { get; set; } = [];
-
-        public List<Progeny> ProgenyList { get; set; } = [];
-
+        
         public KanbanBoardsRequest KanbanBoardsRequest { get; set; }
 
         /// <summary>

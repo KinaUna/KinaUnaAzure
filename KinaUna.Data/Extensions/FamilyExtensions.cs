@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
-using KinaUna.Data.Models.Family;
+﻿using KinaUna.Data.Models.Family;
+using System;
+using System.Collections.Generic;
 
 namespace KinaUna.Data.Extensions
 {
@@ -117,6 +118,41 @@ namespace KinaUna.Data.Extensions
             }
             family.Admins = newAdminList;
             return true;
+        }
+
+        /// <summary>
+        /// Produces a URL for the profile picture of a Family object.
+        /// </summary>
+        /// <param name="family"></param>
+        /// <returns>string with the URL.</returns>
+        public static string GetProfilePictureUrl(this Family family)
+        {
+            if (family == null || family.PictureLink == null || string.IsNullOrEmpty(family.PictureLink))
+            {
+                return Constants.ProfilePictureUrl;
+            }
+
+            if (family.PictureLink.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
+            {
+                return family.PictureLink;
+            }
+
+            string pictureUrl = "/Family/ProfilePicture/" + family.FamilyId + "?imageId=" + family.PictureLink;
+
+            return pictureUrl;
+        }
+
+
+        /// <summary>
+        /// Produces a string with the MIME type for a Family's profile picture, based on the file extension.
+        /// </summary>
+        /// <param name="family"></param>
+        /// <returns>string with the MIME type.</returns>
+        public static string GetPictureFileContentType(this Family family)
+        {
+            string contentType = FileContentTypeHelpers.GetContentTypeString(family.PictureLink);
+
+            return contentType;
         }
     }
 }

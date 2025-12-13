@@ -6,8 +6,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace KinaUnaProgenyApi.Controllers
@@ -15,66 +13,14 @@ namespace KinaUnaProgenyApi.Controllers
     /// <summary>
     /// API endpoints for notifications.
     /// </summary>
-    /// <param name="azureNotifications"></param>
     /// <param name="imageStore"></param>
     /// <param name="notificationsService"></param>
     [Authorize(Policy = "UserOrClient")]
     [Produces("application/json")]
     [Route("api/[controller]")]
     [ApiController]
-    public class NotificationsController(IAzureNotifications azureNotifications, IImageStore imageStore, INotificationsService notificationsService) : ControllerBase
+    public class NotificationsController(IImageStore imageStore, INotificationsService notificationsService) : ControllerBase
     {
-        /// <summary>
-        /// Sends a push notification to a user, using the Azure Notification Hub.
-        /// </summary>
-        /// <param name="pns">Platform to send notification to. wms=Windows, apns=iOS, fcm=android</param>
-        /// <param name="message">The content of the notification.</param>
-        /// <param name="to_tag">The tag with user id.</param>
-        /// <returns>HttpStatusCode.Ok if the notification was sent. HttpStatusCode.Unauthorized if the user is not logged in. HttpStatusCode.InternalServerError if something went wrong.</returns>
-        [HttpPost]
-        public async Task<HttpResponseMessage> Post(string pns, [FromBody] string message, string to_tag)
-        {
-            string user = User.GetEmail();
-            if (user == null)
-            {
-                return new HttpResponseMessage(HttpStatusCode.Unauthorized);
-            }
-
-            string[] userTag = ["username:" + to_tag, "from:" + user];
-            Microsoft.Azure.NotificationHubs.NotificationOutcome notificationOutcome = null;
-            HttpStatusCode returnStatusCode = HttpStatusCode.InternalServerError;
-
-            switch (pns.ToLower())
-            {
-                case "wns":
-                    // Windows 8.1 / Windows Phone 8.1
-                    string toast = @"<toast><visual><binding template=""ToastText01""><text id=""1"">" +
-                                   "From " + user + ": " + message + "</text></binding></visual></toast>";
-                    notificationOutcome = await azureNotifications.Hub.SendWindowsNativeNotificationAsync(toast, userTag);
-                    break;
-                case "apns":
-                    // iOS
-                    string alert = "{\"aps\":{\"alert\":\"" + "From " + user + ": " + message + "\"}}";
-                    notificationOutcome = await azureNotifications.Hub.SendAppleNativeNotificationAsync(alert, userTag);
-                    break;
-                case "fcm":
-                    // Android
-                    string notif = "{ \"data\" : {\"message\":\"" + "From " + user + ": " + message + "\"}}";
-                    notificationOutcome = await azureNotifications.Hub.SendFcmNativeNotificationAsync(notif, userTag);
-                    break;
-            }
-
-            if (notificationOutcome == null) return new HttpResponseMessage(returnStatusCode);
-
-            if (!((notificationOutcome.State == Microsoft.Azure.NotificationHubs.NotificationOutcomeState.Abandoned) ||
-                  (notificationOutcome.State == Microsoft.Azure.NotificationHubs.NotificationOutcomeState.Unknown)))
-            {
-                returnStatusCode = HttpStatusCode.OK;
-            }
-
-            return new HttpResponseMessage(returnStatusCode);
-        }
-
         /// <summary>
         /// Gets the latest mobile notifications for a user.
         /// </summary>

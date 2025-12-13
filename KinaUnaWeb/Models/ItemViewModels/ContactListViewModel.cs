@@ -10,15 +10,22 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public ContactsPageParameters ContactsPageParameters { get; set; }
         public int ContactId {get; set; }
 
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
         public ContactListViewModel()
         {
             ContactsList = [];
+            ProgenyList = [];
+            FamilyList = [];
         }
 
         public ContactListViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
             ContactsList = [];
+            ProgenyList = [];
+            FamilyList = [];
         }
     }
 }

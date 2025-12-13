@@ -11,6 +11,7 @@
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
     string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
     bool allowYouTube = Context.Request.YouTubeCookieSet();
+    int permissionsDataType = (int)KinaUnaTypes.TimeLineType.Video;
 }
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="add-video-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
@@ -24,25 +25,21 @@
         </div>
         <form id="save-item-form" asp-controller="Videos" asp-action="CopyVideo" enctype="multipart/form-data" method="post">
             <div class="space-20"></div>
-            @if (Model.ProgenyList.Count > 1)
+            <div class="form-group d-none">
+                <label class="col-auto control-label">@copyVideoToString</label>
+                <div class="col-auto">
+                    <button id="add-item-for-individual-button" class="btn btn-primary" type="button">Individual</button>
+                    <button id="add-item-for-family-button" class="btn btn-outline-primary" type="button">Family</button>
+                </div>
+            </div>
+            @if (Model.ProgenyList.Count > 0)
             {
-                <div class="form-group">
+                <div id="individual-select-from-group" class="form-group">
                     <label asp-for="Video.ProgenyId" class="col-auto control-label">@copyVideoToString </label>
                     <div class="col-auto">
                         <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="Video.ProgenyId" asp-items="@Model.ProgenyList"></select>
                     </div>
                 </div>
-            }
-            else
-            {
-                <div class="form-group">
-                    <label asp-for="Video.ProgenyId" class="control-label col-auto">@copyVideoToString </label>
-                    <div class="col-auto">
-                        <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
-                    </div>
-                    <input asp-for="Video.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
-                </div>
-
             }
             <div class="form-group">
                 @if (allowYouTube)
@@ -150,12 +147,9 @@
                     <input id="tag-list" type="text" asp-for="Video.Tags" value="@Model.Video.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Videos, Model.LanguageId)" class="form-control" />
                 </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Video.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-                <div class="col-auto">
-                    <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="Video.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
-                </div>
-            </div>
+            <div id="item-permissions-editor-div" class="d-none" data-item-type="@permissionsDataType" data-item-id="@Model.Video.VideoId"></div>
+            <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
+            <input id="inherit-permissions-input" asp-for="InheritPermissions" value="@Model.InheritPermissions" type="hidden"/>
             <div class="space-20"></div>
             <div class="form-group">
                 <div class="col-auto"></div>

@@ -17,7 +17,7 @@ namespace KinaUna.Data.Models
         public string PushEndpoint { get; init; }
 
         [MaxLength(4096)]
-        public string PushP256DH { get; init; }
+        public string PushP256Dh { get; init; }
 
         [MaxLength(4096)]
         public string PushAuth { get; init; }

@@ -51,10 +51,7 @@ namespace KinaUnaProgenyApi.Models
                         SleepLastMonth += sleep.SleepDuration;
                     }
 
-                    if (sleep.AccessLevel >= accessLevel)
-                    {
-                        sleepList.Add(sleep);
-                    }
+                    sleepList.Add(sleep);
                 }
                 sleepList = [.. sleepList.OrderBy(s => s.SleepStart)];
 
@@ -76,8 +73,6 @@ namespace KinaUnaProgenyApi.Models
             List<Sleep> sleepList = [];
             foreach (Sleep sleep in allSleepList)
             {
-                if (sleep.AccessLevel < accessLevel) continue;
-
                 sleep.SleepStart = TimeZoneInfo.ConvertTimeFromUtc(sleep.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
                 sleep.SleepEnd = TimeZoneInfo.ConvertTimeFromUtc(sleep.SleepEnd, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone));
                 DateTimeOffset sOffset = new(sleep.SleepStart, TimeZoneInfo.FindSystemTimeZoneById(userTimeZone).GetUtcOffset(sleep.SleepStart));

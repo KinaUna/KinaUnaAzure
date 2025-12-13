@@ -117,15 +117,7 @@ public interface IWebNotificationsService
     /// <param name="userInfo">The UserInfo for the user who made changes.</param>
     /// <param name="title">The title of the notification.</param>
     Task SendVocabularyNotification(VocabularyItem vocabularyItem, UserInfo userInfo, string title);
-
-    /// <summary>
-    /// Adds a notification for a UserAccess item to the database, and sends a push notification (if they registered for it), for all users with admin access to the Progeny that the item belongs to.
-    /// </summary>
-    /// <param name="userAccessItem">The UserAccess item that was added, updated, or deleted.</param>
-    /// <param name="userInfo">The UserInfo for the user who made changes.</param>
-    /// <param name="title">The title of the notification.</param>
-    Task SendUserAccessNotification(UserAccess userAccessItem, UserInfo userInfo, string title);
-
+    
     /// <summary>
     /// Sends a notification about a specified to-do item to the appropriate recipients.
     /// </summary>

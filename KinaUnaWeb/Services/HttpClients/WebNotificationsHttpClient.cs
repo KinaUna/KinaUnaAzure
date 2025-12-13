@@ -3,11 +3,11 @@ using KinaUna.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -60,7 +60,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!devicesResponse.IsSuccessStatusCode) return pushDevicesList;
             
             string deviceListAsString = await devicesResponse.Content.ReadAsStringAsync();
-            pushDevicesList = JsonConvert.DeserializeObject<List<PushDevices>>(deviceListAsString);
+            pushDevicesList = JsonSerializer.Deserialize<List<PushDevices>>(deviceListAsString, JsonSerializerOptions.Web);
 
             return pushDevicesList;
         }
@@ -83,7 +83,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!httpResponse.IsSuccessStatusCode) return pushDevice;
             
             string deviceAsString = await httpResponse.Content.ReadAsStringAsync();
-            pushDevice = JsonConvert.DeserializeObject<PushDevices>(deviceAsString);
+            pushDevice = JsonSerializer.Deserialize<PushDevices>(deviceAsString, JsonSerializerOptions.Web);
             return pushDevice;
         }
 
@@ -100,11 +100,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string addApiPath = "/api/Notifications/AddPushDevice/";
-            HttpResponseMessage addResponse = await _httpClient.PostAsync(addApiPath, new StringContent(JsonConvert.SerializeObject(device), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage addResponse = await _httpClient.PostAsync(addApiPath, new StringContent(JsonSerializer.Serialize(device, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!addResponse.IsSuccessStatusCode) return addedPushDevice;
 
             string addResponseString = await addResponse.Content.ReadAsStringAsync();
-            addedPushDevice = JsonConvert.DeserializeObject<PushDevices>(addResponseString);
+            addedPushDevice = JsonSerializer.Deserialize<PushDevices>(addResponseString, JsonSerializerOptions.Web);
             return addedPushDevice;
         }
 
@@ -121,11 +121,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string deleteApiPath = "/api/Notifications/RemovePushDevice/";
-            HttpResponseMessage deleteResponse = await _httpClient.PostAsync(deleteApiPath, new StringContent(JsonConvert.SerializeObject(device), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage deleteResponse = await _httpClient.PostAsync(deleteApiPath, new StringContent(JsonSerializer.Serialize(device, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!deleteResponse.IsSuccessStatusCode) return deletedPushDevice;
 
             string deletedResponseString = await deleteResponse.Content.ReadAsStringAsync();
-            deletedPushDevice = JsonConvert.DeserializeObject<PushDevices>(deletedResponseString);
+            deletedPushDevice = JsonSerializer.Deserialize<PushDevices>(deletedResponseString, JsonSerializerOptions.Web);
             return deletedPushDevice;
         }
 
@@ -147,7 +147,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!devicesResponse.IsSuccessStatusCode) return pushDevicesList;
             
             string deviceListAsString = await devicesResponse.Content.ReadAsStringAsync();
-            pushDevicesList = JsonConvert.DeserializeObject<List<PushDevices>>(deviceListAsString);
+            pushDevicesList = JsonSerializer.Deserialize<List<PushDevices>>(deviceListAsString, JsonSerializerOptions.Web);
             return pushDevicesList;
         }
 
@@ -164,11 +164,16 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string apiPath = "/api/Notifications/GetPushDevice/";
-            HttpResponseMessage deviceResponse = await _httpClient.PostAsync(apiPath, new StringContent(JsonConvert.SerializeObject(device), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage deviceResponse = await _httpClient.PostAsync(apiPath, new StringContent(JsonSerializer.Serialize(device, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!deviceResponse.IsSuccessStatusCode) return pushDevice;
 
             string deviceResponseString = await deviceResponse.Content.ReadAsStringAsync();
-            pushDevice = JsonConvert.DeserializeObject<PushDevices>(deviceResponseString);
+            if (string.IsNullOrEmpty(deviceResponseString))
+            {
+                return null;
+            }
+
+            pushDevice = JsonSerializer.Deserialize<PushDevices>(deviceResponseString, JsonSerializerOptions.Web);
             return pushDevice;
         }
 
@@ -185,11 +190,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string addApiPath = "/api/Notifications/AddWebNotification/";
-            HttpResponseMessage addResponse = await _httpClient.PostAsync(addApiPath, new StringContent(JsonConvert.SerializeObject(notification), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage addResponse = await _httpClient.PostAsync(addApiPath, new StringContent(JsonSerializer.Serialize(notification, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!addResponse.IsSuccessStatusCode) return addedNotification;
 
             string addResponseString = await addResponse.Content.ReadAsStringAsync();
-            addedNotification = JsonConvert.DeserializeObject<WebNotification>(addResponseString);
+            addedNotification = JsonSerializer.Deserialize<WebNotification>(addResponseString, JsonSerializerOptions.Web);
             return addedNotification;
         }
 
@@ -206,11 +211,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string addApiPath = "/api/Notifications/UpdateWebNotification/";
-            HttpResponseMessage addResponse = await _httpClient.PutAsync(addApiPath, new StringContent(JsonConvert.SerializeObject(notification), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage addResponse = await _httpClient.PutAsync(addApiPath, new StringContent(JsonSerializer.Serialize(notification, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!addResponse.IsSuccessStatusCode) return addedNotification;
             
             string addResponseString = await addResponse.Content.ReadAsStringAsync();
-            addedNotification = JsonConvert.DeserializeObject<WebNotification>(addResponseString);
+            addedNotification = JsonSerializer.Deserialize<WebNotification>(addResponseString, JsonSerializerOptions.Web);
             return addedNotification;
         }
 
@@ -227,11 +232,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string removeApiPath = "/api/Notifications/RemoveWebNotification/";
-            HttpResponseMessage removeResponse = await _httpClient.PostAsync(removeApiPath, new StringContent(JsonConvert.SerializeObject(notification), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage removeResponse = await _httpClient.PostAsync(removeApiPath, new StringContent(JsonSerializer.Serialize(notification, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!removeResponse.IsSuccessStatusCode) return removedNotification;
 
             string removeResponseString = await removeResponse.Content.ReadAsStringAsync();
-            removedNotification = JsonConvert.DeserializeObject<WebNotification>(removeResponseString);
+            removedNotification = JsonSerializer.Deserialize<WebNotification>(removeResponseString, JsonSerializerOptions.Web);
             return removedNotification;
         }
 
@@ -253,7 +258,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!httpResponse.IsSuccessStatusCode) return notification;
             
             string notificationAsString = await httpResponse.Content.ReadAsStringAsync();
-            notification = JsonConvert.DeserializeObject<WebNotification>(notificationAsString);
+            notification = JsonSerializer.Deserialize<WebNotification>(notificationAsString, JsonSerializerOptions.Web);
             return notification;
         }
 
@@ -275,7 +280,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!notificationsResponse.IsSuccessStatusCode) return usersWebNotifications;
             
             string notificationsListAsString = await notificationsResponse.Content.ReadAsStringAsync();
-            usersWebNotifications = JsonConvert.DeserializeObject<List<WebNotification>>(notificationsListAsString);
+            usersWebNotifications = JsonSerializer.Deserialize<List<WebNotification>>(notificationsListAsString, JsonSerializerOptions.Web);
             return usersWebNotifications;
         }
 
@@ -300,7 +305,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!notificationsResponse.IsSuccessStatusCode) return usersWebNotifications;
             
             string notificationsListAsString = await notificationsResponse.Content.ReadAsStringAsync();
-            usersWebNotifications = JsonConvert.DeserializeObject<List<WebNotification>>(notificationsListAsString);
+            usersWebNotifications = JsonSerializer.Deserialize<List<WebNotification>>(notificationsListAsString, JsonSerializerOptions.Web);
             return usersWebNotifications;
         }
 
@@ -321,7 +326,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!notificationsResponse.IsSuccessStatusCode) return 0;
 
             string notificationsCountAsString = await notificationsResponse.Content.ReadAsStringAsync();
-            int notificationsCount = JsonConvert.DeserializeObject<int>(notificationsCountAsString);
+            int notificationsCount = JsonSerializer.Deserialize<int>(notificationsCountAsString, JsonSerializerOptions.Web);
             return notificationsCount;
 
         }

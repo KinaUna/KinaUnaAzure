@@ -32,12 +32,15 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<Progeny> ProgenyList { get; init; }
         [NotMapped]
         public bool CanUserAddItems { get; init; }
-        [NotMapped]
-        public List<UserAccess> AccessList { get; init; }
+        
         [NotMapped]
         public SelectListItem[] TimezoneList { get; init; }
         [NotMapped]
         public string ChangeLink { get; set; }
+
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
         public UserInfoViewModel()
         {
             ReadOnlyCollection<TimeZoneInfo> tzs = TimeZoneInfo.GetSystemTimeZones();

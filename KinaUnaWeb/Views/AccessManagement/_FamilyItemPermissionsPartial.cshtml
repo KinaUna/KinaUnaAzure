@@ -1,0 +1,209 @@
+﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
+@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.FamiliesViewModels.FamilyItemPermissionsViewModel
+@inject ILocaleManager LocaleManager
+@{
+    bool familyChanged = false;
+    if (Model.ItemId > 0)
+    {
+        if (Model.TimeLineItem != null)
+        {
+            if (Model.TimeLineItem.FamilyId != Model.FamilyId)
+            {
+                familyChanged = true;
+            }
+        }
+    }
+    foreach (SelectListItem selectListItem in Model.PermissionLevelsSelectListItems)
+    {
+        selectListItem.Text = await LocaleManager.GetTranslation(selectListItem.Text + "_select_", PageNames.AccessManagement, Model.LanguageId);
+    }
+
+    foreach (SelectListItem selectListItem in Model.PermissionTypeSelectListItems)
+    {
+        selectListItem.Text = await LocaleManager.GetTranslation(selectListItem.Text, PageNames.AccessManagement, Model.LanguageId);
+    }
+
+    string noUserAccountString = await LocaleManager.GetTranslation("No user account", PageNames.AccessManagement, Model.LanguageId);
+    string groupMembersString = await LocaleManager.GetTranslation("Group members", PageNames.AccessManagement, Model.LanguageId);
+    string hideElements = string.Empty;
+    if (Model.PermissionTypeSelectListItems.Count < 2)
+    {
+        hideElements = "d-none"; // If there's only one option, no need to show the element.
+    }
+}
+<div class="form-group @hideElements">
+    <label class="col-auto control-label" for="permission-type-select">
+        @await LocaleManager.GetTranslation("Permission type", PageNames.AccessManagement, Model.LanguageId):
+    </label>
+    <div class="col-auto">
+        <select id="permission-type-select" class="selectpicker form-control form-control-inherit-color" data-style="btn-kinaunaselect" asp-items="@Model.PermissionTypeSelectListItems"></select>
+    </div>
+</div>
+<div class="space-20  @hideElements"></div>
+<div class="col-12 d-none" id="inherit-permissions-div">
+    @foreach (UserGroup group in Model.UserGroupsList)
+    {
+        PermissionLevel permissionLevel = group.PermissionLevel;
+        if (permissionLevel == PermissionLevel.Add)
+        {
+            permissionLevel = PermissionLevel.View;
+        }
+        <div class="row m-0">
+            <div class="col-12">
+                @group.Name: @await LocaleManager.GetTranslation(permissionLevel.ToString(), PageNames.AccessManagement, Model.LanguageId)
+            </div>
+            <div class="col-12">
+                <div class="row ml-1 text-opacity-50 small">
+                    <div class="col-12">@groupMembersString:</div>
+                    <div class="col-12">
+                        @foreach (UserGroupMember member in group.Members)
+                        {
+                            UserInfo user = Model.UserList.FirstOrDefault(u => u.UserId == member.UserId);
+                            if (user != null)
+                            {
+                                <div class="ml-2">
+                                    @user.UserEmail (@user.FullName())
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="ml-2">
+                                    @member.Email (@noUserAccountString)
+                                </div>
+                            }
+                        }
+                    </div>
+                    <div class="space-10"></div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+<div id="custom-permissions-div" class="d-none col-12">
+    <div class="row m-0">
+        <div class="col-12">
+            @await LocaleManager.GetTranslation("Custom Permissions", PageNames.AccessManagement, Model.LanguageId):
+        </div>
+    </div>
+    <div class="row m-0">
+        <div id="item-permissions-groups-div" class="col-12">
+            @if (Model.ItemId == 0 || familyChanged || Model.ItemPermissionsList.Exists(p => p.PermissionLevel >= PermissionLevel.CreatorOnly))
+            {
+                foreach (FamilyPermission permission in Model.FamilyPermissionsList)
+                {
+                    int permissionLevelValue = (int)permission.PermissionLevel;
+                    bool isAdmin = permissionLevelValue == (int)PermissionLevel.Admin;
+                    if (permission.GroupId > 0)
+                    {
+                        UserGroup group = Model.UserGroupsList.FirstOrDefault(g => g.UserGroupId == permission.GroupId);
+                        if (group != null)
+                        {
+                            <div class="permission-group-div" data-family-permission-id="@permission.FamilyPermissionId" data-permission-level="@permissionLevelValue">
+                                @group.Name <select class="selectpicker form-control form-control-inherit-color" data-style="btn-kinaunaselect" data-family-permission-id="@permission.FamilyPermissionId" asp-items="@Model.CreatePermissionLevelsSelectListItems(permissionLevelValue, isAdmin)"></select>
+                            </div>
+                            <div class="row ml-1 text-opacity-50 small">
+                                <div class="col-12">@groupMembersString:</div>
+                                <div class="col-12">
+                                    @foreach (UserGroupMember member in group.Members)
+                                    {
+                                        UserInfo user = Model.UserList.FirstOrDefault(u => u.UserId == member.UserId);
+                                        if (user != null)
+                                        {
+                                            <div class="ml-2">
+                                                @user.UserEmail (@user.FullName())
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="ml-2">
+                                                @member.Email (@noUserAccountString)
+                                            </div>
+                                        }
+                                    }
+                                    <div class="space-10"></div>
+                                </div>
+                            </div>
+                        }
+                    }
+                }
+            }
+            @if (Model.ItemId > 0 && !familyChanged && !Model.ItemPermissionsList.Exists(p => p.PermissionLevel >= PermissionLevel.CreatorOnly))
+            {
+                foreach (TimelineItemPermission permission in Model.ItemPermissionsList)
+                {
+                    int permissionLevelValue = (int)permission.PermissionLevel;
+                    bool isAdmin = permissionLevelValue == (int)PermissionLevel.Admin;
+                    if (permission.GroupId > 0)
+                    {
+                        UserGroup group = Model.UserGroupsList.FirstOrDefault(g => g.UserGroupId == permission.GroupId);
+                        if (group != null)
+                        {
+                            <div class="permission-group-div" data-item-permission-id="@permission.TimelineItemPermissionId" data-permission-level="@permissionLevelValue">
+                                @group.Name <select class="selectpicker form-control form-control-inherit-color" data-style="btn-kinaunaselect" data-item-permission-id="@permission.TimelineItemPermissionId" asp-items="@Model.CreatePermissionLevelsSelectListItems(permissionLevelValue, isAdmin)"></select>
+                            </div>
+                            <div class="row ml-1 text-opacity-50 small">
+                                <div class="col-12">@groupMembersString:</div>
+                                <div class="col-12">
+                                    @foreach (UserGroupMember member in group.Members)
+                                    {
+                                        UserInfo user = Model.UserList.FirstOrDefault(u => u.UserId == member.UserId);
+                                        if (user != null)
+                                        {
+                                            <div class="ml-2">
+                                                @user.UserEmail (@user.FullName())
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="ml-2">
+                                                @member.Email (@noUserAccountString)
+                                            </div>
+                                        }
+                                    }
+                                    <div class="space-10"></div>
+                                </div>
+                            </div>
+                        }
+                    }
+                }
+
+                foreach (UserGroup otherGroup in Model.UserGroupsList)
+                {
+                    if (!Model.ItemPermissionsList.Exists(ip => ip.GroupId == otherGroup.UserGroupId))
+                    {
+                        int permissionLevelValue = (int)PermissionLevel.None;
+                        <div class="permission-group-div" data-item-permission-id="0" data-permission-group-id="@otherGroup.UserGroupId" data-permission-level="@permissionLevelValue">
+                            @otherGroup.Name <select class="selectpicker form-control form-control-inherit-color" data-style="btn-kinaunaselect" data-item-permission-id="0" data-permission-group-id="@otherGroup.UserGroupId" asp-items="@Model.CreatePermissionLevelsSelectListItems(permissionLevelValue, false)"></select>
+                        </div>
+                        <div class="row ml-1 text-opacity-50 small">
+                            <div class="col-12">@groupMembersString:</div>
+                            <div class="col-12">
+                                @foreach (UserGroupMember member in otherGroup.Members)
+                                {
+                                    UserInfo user = Model.UserList.FirstOrDefault(u => u.UserId == member.UserId);
+                                    if (user != null)
+                                    {
+                                        <div class="ml-2">
+                                            @user.UserEmail (@user.FullName())
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="ml-2">
+                                            @member.Email (@noUserAccountString)
+                                        </div>
+                                    }
+                                }
+                                <div class="space-10"></div>
+                            </div>
+                        </div>
+                    }
+                }
+            }
+        </div>
+    </div>
+</div>
+<div class="space-20"></div>

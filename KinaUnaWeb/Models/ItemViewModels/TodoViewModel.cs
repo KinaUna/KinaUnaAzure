@@ -1,14 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using KinaUna.Data.Models.DTOs;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 
 namespace KinaUnaWeb.Models.ItemViewModels
 {
     public class TodoViewModel: BaseItemsViewModel
     {
         public TodoItem TodoItem { get; set; } = new();
-        public List<SelectListItem> ProgenyList { get; set; }
-        public List<SelectListItem> AccessLevelListEn { get; set; }
         public List<SelectListItem> StatusList { get; set; }
         public int CopyFromTodoId { get; set; } = 0;
         public bool CopySubtasks { get; set; } = false;
@@ -16,6 +16,10 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public List<KanbanBoard> KanbanBoards { get; set; } = [];
         public List<SelectListItem> KanbanBoardsList { get; set; } = [];
         public int AddToKanbanBoardId { get; set; } = 0;
+
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
         public TodoViewModel()
         {
             ProgenyList = [];
@@ -24,7 +28,6 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public TodoViewModel(BaseItemsViewModel baseItemsViewModel)
         {
             SetBaseProperties(baseItemsViewModel);
-            SetAccessLevelList();
             SetStatusList(0);
             ProgenyList = [];
         }
@@ -82,14 +85,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 }
             }
         }
-
-        public void SetAccessLevelList()
-        {
-            AccessLevelList accessLevelList = new();
-            AccessLevelListEn = accessLevelList.AccessLevelListEn;
-            AccessLevelListEn[TodoItem.AccessLevel].Selected = true;
-        }
-
+        
         public void SetProgenyList()
         {
             TodoItem.ProgenyId = CurrentProgenyId;
@@ -106,13 +102,29 @@ namespace KinaUnaWeb.Models.ItemViewModels
             }
         }
 
+        public void SetFamilyList()
+        {
+            TodoItem.FamilyId = CurrentFamilyId;
+            foreach (SelectListItem item in FamilyList)
+            {
+                if (item.Value == CurrentFamilyId.ToString())
+                {
+                    item.Selected = true;
+                }
+                else
+                {
+                    item.Selected = false;
+                }
+            }
+        }
+
         public void SetPropertiesFromTodoItem(TodoItem todoItem)
         {
             TodoItem.TodoItemId = todoItem.TodoItemId;
             TodoItem.ParentTodoItemId = todoItem.ParentTodoItemId;
             TodoItem.ProgenyId = todoItem.ProgenyId;
+            TodoItem.FamilyId = todoItem.FamilyId;
             TodoItem.Description = todoItem.Description;
-            TodoItem.AccessLevel = todoItem.AccessLevel;
             TodoItem.Context = todoItem.Context;
             TodoItem.Location = todoItem.Location;
             TodoItem.Title = todoItem.Title;
@@ -126,6 +138,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
             TodoItem.Tags = todoItem.Tags;
             TodoItem.UId = todoItem.UId;
             TodoItem.Progeny = todoItem.Progeny;
+            TodoItem.Family = todoItem.Family;
+            TodoItem.ItemPerMission = todoItem.ItemPerMission;
         }
 
         /// <summary>
@@ -142,8 +156,8 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 TodoItemId = TodoItem.TodoItemId,
                 ParentTodoItemId = TodoItem.ParentTodoItemId,
                 ProgenyId = CurrentProgenyId,
+                FamilyId = CurrentFamilyId,
                 Description = TodoItem.Description,
-                AccessLevel = TodoItem.AccessLevel,
                 Context = TodoItem.Context,
                 Title = TodoItem.Title,
                 CreatedTime = TimeZoneInfo.ConvertTimeToUtc(TodoItem.CreatedTime, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)),
@@ -156,7 +170,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
                 Tags = TodoItem.Tags,
                 Location = TodoItem.Location,
                 UId = TodoItem.UId,
-                Progeny = TodoItem.Progeny
+                Progeny = TodoItem.Progeny,
+                Family = TodoItem.Family,
+                ItemPermissionsDtoList = string.IsNullOrWhiteSpace(ItemPermissionsListAsString)? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(ItemPermissionsListAsString, JsonSerializerOptions.Web)
             };
 
             return todoItem;

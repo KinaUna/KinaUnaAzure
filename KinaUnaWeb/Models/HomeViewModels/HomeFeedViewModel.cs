@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using KinaUna.Data;
 
 namespace KinaUnaWeb.Models.HomeViewModels
 {
@@ -9,7 +11,7 @@ namespace KinaUnaWeb.Models.HomeViewModels
         public string ImageLink600 { get; set; }
         
         public string CurrentTime { get; set; }
-        public string Years { get; set; }
+        public List<string> YearsDataList { get; set; }
         public string Months { get; set; }
         public string[] Weeks { get; set; }
         public string Days { get; set; }
@@ -23,7 +25,7 @@ namespace KinaUnaWeb.Models.HomeViewModels
         public bool PicTimeValid { get; set; }
         
         public string PicTime { get; set; }
-        public string PicYears { get; set; }
+        public List<string> PicYearsDataList { get; set; }
         public string PicMonths { get; set; }
         public string[] PicWeeks { get; set; }
         public string PicDays { get; set; }
@@ -34,6 +36,7 @@ namespace KinaUnaWeb.Models.HomeViewModels
         
         public PictureTime PictureTime { get; set; }
         public Picture DisplayPicture { get; set; }
+        public List<Progeny> TriviaProgenies { get; set; } = [];
 
         public HomeFeedViewModel()
         {
@@ -48,7 +51,11 @@ namespace KinaUnaWeb.Models.HomeViewModels
         public void SetBirthTimeData()
         {
             BirthTime progBirthTime;
-            if (!string.IsNullOrEmpty(CurrentProgeny.NickName) && CurrentProgeny.BirthDay.HasValue && CurrentAccessLevel < (int)AccessLevel.Public)
+            if (string.IsNullOrEmpty(CurrentProgeny.TimeZone))
+            {
+                CurrentProgeny.TimeZone = Constants.DefaultTimezone;
+            }
+            if (!string.IsNullOrEmpty(CurrentProgeny.NickName) && CurrentProgeny.BirthDay.HasValue)
             {
                 progBirthTime = new BirthTime(CurrentProgeny.BirthDay.Value,
                     TimeZoneInfo.FindSystemTimeZoneById(CurrentProgeny.TimeZone));
@@ -60,7 +67,7 @@ namespace KinaUnaWeb.Models.HomeViewModels
             }
 
             CurrentTime = progBirthTime.CurrentTime;
-            Years = progBirthTime.CalcYears();
+            YearsDataList = progBirthTime.CalcYears();
             Months = progBirthTime.CalcMonths();
             Weeks = progBirthTime.CalcWeeks();
             Days = progBirthTime.CalcDays();
@@ -79,7 +86,6 @@ namespace KinaUnaWeb.Models.HomeViewModels
             {
                 ProgenyId = 0,
                 Progeny = CurrentProgeny,
-                AccessLevel = (int)AccessLevel.Public,
                 PictureLink600 = hostUrl + "/photodb/0/default_temp.jpg"
             };
             tempPicture.ProgenyId = CurrentProgeny.Id;
@@ -91,7 +97,7 @@ namespace KinaUnaWeb.Models.HomeViewModels
         public void SetPictureTimeData()
         {
             PicTime = PictureTime.PictureDateTime;
-            PicYears = PictureTime.CalcYears();
+            PicYearsDataList = PictureTime.CalcYears();
             PicMonths = PictureTime.CalcMonths();
             PicWeeks = PictureTime.CalcWeeks();
             PicDays = PictureTime.CalcDays();

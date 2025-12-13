@@ -3,12 +3,12 @@ using KinaUna.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -57,12 +57,12 @@ namespace KinaUnaWeb.Services.HttpClients
 
             Contact contactItem = new();
             string contactsApiPath = "/api/Contacts/" + contactId;
-            HttpResponseMessage contactResponse = await _httpClient.GetAsync(contactsApiPath).ConfigureAwait(false);
+            HttpResponseMessage contactResponse = await _httpClient.GetAsync(contactsApiPath);
             if (!contactResponse.IsSuccessStatusCode) return contactItem;
 
-            string contactAsString = await contactResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+            string contactAsString = await contactResponse.Content.ReadAsStringAsync();
 
-            contactItem = JsonConvert.DeserializeObject<Contact>(contactAsString);
+            contactItem = JsonSerializer.Deserialize<Contact>(contactAsString, JsonSerializerOptions.Web);
 
             return contactItem;
         }
@@ -79,11 +79,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string contactsApiPath = "/api/Contacts/";
-            HttpResponseMessage contactResponse = await _httpClient.PostAsync(contactsApiPath, new StringContent(JsonConvert.SerializeObject(contact), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage contactResponse = await _httpClient.PostAsync(contactsApiPath, new StringContent(JsonSerializer.Serialize(contact, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!contactResponse.IsSuccessStatusCode) return new Contact();
 
             string contactAsString = await contactResponse.Content.ReadAsStringAsync();
-            contact = JsonConvert.DeserializeObject<Contact>(contactAsString);
+            contact = JsonSerializer.Deserialize<Contact>(contactAsString, JsonSerializerOptions.Web);
             return contact;
 
         }
@@ -100,9 +100,9 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateContactApiPath = "/api/Contacts/" + contact.ContactId;
-            HttpResponseMessage updateContactResponseString = await _httpClient.PutAsync(updateContactApiPath, new StringContent(JsonConvert.SerializeObject(contact), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage updateContactResponseString = await _httpClient.PutAsync(updateContactApiPath, new StringContent(JsonSerializer.Serialize(contact, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             string returnString = await updateContactResponseString.Content.ReadAsStringAsync();
-            return JsonConvert.DeserializeObject<Contact>(returnString);
+            return JsonSerializer.Deserialize<Contact>(returnString, JsonSerializerOptions.Web);
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string contactApiPath = "/api/Contacts/" + contactId;
-            await _httpClient.DeleteAsync(contactApiPath).ConfigureAwait(false);
+            await _httpClient.DeleteAsync(contactApiPath);
 
             return true;
         }
@@ -126,21 +126,26 @@ namespace KinaUnaWeb.Services.HttpClients
         /// Gets the list of Contact objects for a progeny that a user has access to.
         /// </summary>
         /// <param name="progenyId">The Id of the Progeny.</param>
+        /// <param name="familyId">The Id of the Family.</param>
         /// <param name="tagFilter">String to filter the result list by, only items with the tagFilter string in the Tags property are included. If empty string all items are included.</param>
         /// <returns>List of Contact objects.</returns>
-        public async Task<List<Contact>> GetContactsList(int progenyId, string tagFilter = "")
+        public async Task<List<Contact>> GetContactsList(int progenyId, int familyId, string tagFilter = "")
         {
             List<Contact> progenyContactsList = [];
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
-
             string contactsApiPath = "/api/Contacts/Progeny/" + progenyId;
-            HttpResponseMessage contactsResponse = await _httpClient.GetAsync(contactsApiPath).ConfigureAwait(false);
+            if (familyId > 0)
+            {
+                contactsApiPath = "/api/Contacts/Family/" + familyId;
+            }
+            
+            HttpResponseMessage contactsResponse = await _httpClient.GetAsync(contactsApiPath);
             if (!contactsResponse.IsSuccessStatusCode) return progenyContactsList;
 
-            string contactsAsString = await contactsResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-            progenyContactsList = JsonConvert.DeserializeObject<List<Contact>>(contactsAsString);
+            string contactsAsString = await contactsResponse.Content.ReadAsStringAsync();
+            progenyContactsList = JsonSerializer.Deserialize<List<Contact>>(contactsAsString, JsonSerializerOptions.Web);
 
             if (!string.IsNullOrEmpty(tagFilter))
             {

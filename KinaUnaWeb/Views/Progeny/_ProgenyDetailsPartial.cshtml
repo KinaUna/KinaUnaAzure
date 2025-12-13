@@ -1,8 +1,10 @@
 ﻿@using System.Globalization
 @using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.AccessManagement
+@using KinaUnaWeb.Models.ProgeniesViewModels
 @using KinaUnaWeb.Services
-@model KinaUnaWeb.Models.FamilyViewModels.ProgenyDetailsViewModel
+@model ProgenyDetailsViewModel
 @inject ILocaleManager LocaleManager
 @{
     string title = Model.CurrentProgeny.NickName + " : " + await LocaleManager.GetTranslation("Details", PageNames.Progeny, Model.LanguageId);
@@ -11,13 +13,13 @@
     {
         websiteLink = "https://" + Model.ProgenyInfo.Website;
     }
-    string emailString = await LocaleManager.GetTranslation("Email:", PageNames.Contacts, Model.LanguageId);
+    string emailString = await LocaleManager.GetTranslation("Contact email", PageNames.Progeny, Model.LanguageId);
     string emailCopiedString = await LocaleManager.GetTranslation("Email copied to clipboard", PageNames.Contacts, Model.LanguageId);
     string timeSeparator = CultureInfo.CurrentUICulture.DateTimeFormat.TimeSeparator;
     string longDateTimeFormat = "dd-MMMM-yyyy HH" + timeSeparator + "mm";
 }
 <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
-    <div class="timeline-card-body item-details-content">
+    <div class="timeline-card-body item-details-content modal-content">
         <div class="row sticky-top m-0 item-details-header">
             <div class="col-12 bg-add-item-header">
                 <img src="@Model.CurrentProgeny.GetProfilePictureUrl()" class="item-details-title-picture"/>
@@ -47,19 +49,29 @@
                     @if (!string.IsNullOrEmpty(Model.CurrentProgeny.Name))
                     {
                         <div class="col-12">
-                            <div><strong>@await LocaleManager.GetTranslation("Name:", PageNames.Progeny, Model.LanguageId)</strong> @Model.CurrentProgeny.Name</div>
+                            <div class="space-20"></div>
+                            <div><strong>@await LocaleManager.GetTranslation("Name", PageNames.Progeny, Model.LanguageId):</strong> @Model.CurrentProgeny.Name</div>
                         </div>
                     }
                     @if (Model.CurrentProgeny.BirthDay.HasValue)
                     {
                         <div class="col-12">
-                            <div><strong>@await LocaleManager.GetTranslation("Birthday:", PageNames.Progeny, Model.LanguageId)</strong> @Model.CurrentProgeny.BirthDay.Value.ToString(longDateTimeFormat)</div>
+                            <div class="space-20"></div>
+                            <div><strong>@await LocaleManager.GetTranslation("Birthday", PageNames.Progeny, Model.LanguageId):</strong> @Model.CurrentProgeny.BirthDay.Value.ToString(longDateTimeFormat)</div>
                         </div>
                     }
                     @if (!string.IsNullOrEmpty(Model.CurrentProgeny.TimeZone))
                     {
                         <div class="col-12">
-                            <div><strong>@await LocaleManager.GetTranslation("Time zone", PageNames.Progeny, Model.LanguageId)</strong> @Model.CurrentProgeny.TimeZone</div>
+                            <div class="space-20"></div>
+                            <div><strong>@await LocaleManager.GetTranslation("Time zone", PageNames.Progeny, Model.LanguageId):</strong> @Model.CurrentProgeny.TimeZone</div>
+                        </div>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.CurrentProgeny.Email))
+                    {
+                        <div class="col-12">
+                            <div class="space-20"></div>
+                            <div><strong>@await LocaleManager.GetTranslation("KinaUna account email", PageNames.Progeny, Model.LanguageId):</strong> @Model.CurrentProgeny.Email</div>
                         </div>
                     }
                 </div>
@@ -70,7 +82,7 @@
                         <div class="col-12">
                             <div class="row">
                                 <div class="col-auto">
-                                    <strong>@await LocaleManager.GetTranslation("Mobile:", PageNames.Contacts, Model.LanguageId)</strong>
+                                    <strong>@await LocaleManager.GetTranslation("Mobile", PageNames.Contacts, Model.LanguageId):</strong>
                                 </div>
                                 <div class="col-auto">
                                     <div class="row">
@@ -179,20 +191,23 @@
             <div class="col-12">
                 <div class="space-20"></div>
                 <div class="row">
-                    <div class="col-12">
-                        <a data-delete-item-type="user" data-delete-item-item-id="@Model.UserAccess.AccessId" class="btn btn-warning delete-item-button float-right">
+                    <div class="col-12"> @* Todo: Implement remove my access *@
+                        <a data-delete-item-type="user" data-delete-item-item-id="@Model.CurrentProgeny.ProgenyPerMission.ProgenyPermissionId" class="btn btn-warning delete-item-button float-right">
                             <i class="fas fa-trash-alt"></i> @await LocaleManager.GetTranslation("Remove my access", PageNames.AddItem, Model.LanguageId)
                         </a>
                     </div>
                 </div>
             </div>
 
-            @if (Model.IsCurrentUserProgenyAdmin)
+            @if (Model.CurrentProgeny.ProgenyPerMission.PermissionLevel >= PermissionLevel.Edit)
             {
                 <div class="space-100"></div>
                 <div class="col-12">
                     <a data-edit-item-type="progeny" data-edit-item-item-id="@Model.CurrentProgeny.Id" class="btn btn-info edit-item-button item-details-edit-button"><i class="fas fa-pencil-alt"></i></a>
-                    <a data-delete-item-type="progeny" data-delete-item-item-id="@Model.CurrentProgeny.Id.ToString()" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    @if (Model.CurrentProgeny.ProgenyPerMission.PermissionLevel >= PermissionLevel.Admin)
+                    {
+                        <a data-delete-item-type="progeny" data-delete-item-item-id="@Model.CurrentProgeny.Id.ToString()" class="btn btn-danger item-details-delete-button float-right"><i class="fas fa-trash-alt"></i></a>
+                    }
                 </div>
             }
         </div>

@@ -11,7 +11,7 @@
     string longDateTimeFormatMoment = "DD-MMMM-YYYY HH" + timeSeparator + "mm";
     string zebraDateTimeFormat = "d-F-Y H" + timeSeparator + "i";
     string repeatUntilZebraDateTimeFormat = "d-F-Y";
-    
+    int permissionsDataType = (int)KinaUnaTypes.TimeLineType.Calendar;
     foreach (SelectListItem frequencySelectItem in Model.RecurrenceFrequencyList)
     {
         frequencySelectItem.Text = await LocaleManager.GetTranslation(frequencySelectItem.Text, PageNames.Calendar, Model.LanguageId);
@@ -27,13 +27,13 @@
         monthSelectItem.Text = await LocaleManager.GetTranslation(monthSelectItem.Text, PageNames.CalendarTools, Model.LanguageId);
     }
 
-    char mondayAbreviation = (await LocaleManager.GetTranslation("Monday", PageNames.CalendarTools, Model.LanguageId))[0];
-    char tuesdayAbreviation = (await LocaleManager.GetTranslation("Tuesday", PageNames.CalendarTools, Model.LanguageId))[0];
-    char wednesdayAbreviation = (await LocaleManager.GetTranslation("Wednesday", PageNames.CalendarTools, Model.LanguageId))[0];
-    char thursdayAbreviation = (await LocaleManager.GetTranslation("Thursday", PageNames.CalendarTools, Model.LanguageId))[0];
-    char fridayAbreviation = (await LocaleManager.GetTranslation("Friday", PageNames.CalendarTools, Model.LanguageId))[0];
-    char saturdayAbreviation = (await LocaleManager.GetTranslation("Saturday", PageNames.CalendarTools, Model.LanguageId))[0];
-    char sundayAbreviation = (await LocaleManager.GetTranslation("Sunday", PageNames.CalendarTools, Model.LanguageId))[0];
+    char mondayAbbreviation = (await LocaleManager.GetTranslation("Monday", PageNames.CalendarTools, Model.LanguageId))[0];
+    char tuesdayAbbreviation = (await LocaleManager.GetTranslation("Tuesday", PageNames.CalendarTools, Model.LanguageId))[0];
+    char wednesdayAbbreviation = (await LocaleManager.GetTranslation("Wednesday", PageNames.CalendarTools, Model.LanguageId))[0];
+    char thursdayAbbreviation = (await LocaleManager.GetTranslation("Thursday", PageNames.CalendarTools, Model.LanguageId))[0];
+    char fridayAbbreviation = (await LocaleManager.GetTranslation("Friday", PageNames.CalendarTools, Model.LanguageId))[0];
+    char saturdayAbbreviation = (await LocaleManager.GetTranslation("Saturday", PageNames.CalendarTools, Model.LanguageId))[0];
+    char sundayAbbreviation = (await LocaleManager.GetTranslation("Sunday", PageNames.CalendarTools, Model.LanguageId))[0];
 }
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="longDateTimeFormatDiv" class="d-none" data-long-date-time-format="@longDateTimeFormat"></div>
@@ -49,24 +49,30 @@
         </div>
     </div>
     <form id="save-item-form" asp-action="AddEvent" asp-controller="Calendar" role="form">
-            <div class="space-20"></div>
-    @if (Model.ProgenyList.Count > 1)
+    <div class="space-20"></div>
+    <div class="form-group">
+        <label class="col-auto control-label">@addEventForString</label>
+        <div class="col-auto">
+            <button id="add-item-for-individual-button" class="btn btn-primary" type="button">Individual</button>
+            <button id="add-item-for-family-button" class="btn btn-outline-primary" type="button">Family</button>
+        </div>
+    </div>
+    @if (Model.ProgenyList.Count > 0)
     {
-        <div class="form-group">
-            <label asp-for="CalendarItem.ProgenyId" class="control-label col-auto">@addEventForString </label>
+        <div id="individual-select-from-group" class="form-group">
+            <label asp-for="CalendarItem.ProgenyId" class="col-auto control-label">@addEventForString </label>
             <div class="col-auto">
                 <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="CalendarItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
             </div>
         </div>
     }
-    else
+    @if (Model.FamilyList.Count > 0)
     {
-        <div class="form-group">
-            <label asp-for="CalendarItem.ProgenyId" class="control-label col-auto">@addEventForString</label>
+        <div id="family-select-from-group" class="form-group d-none">
+                    <label asp-for="CalendarItem.FamilyId" class="col-auto control-label">@addEventForString </label>
             <div class="col-auto">
-                <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text"/>
+                <select id="item-family-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.FamilyList.Count" asp-for="CalendarItem.FamilyId" asp-items="@Model.FamilyList"></select>
             </div>
-            <input asp-for="CalendarItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden"/>
         </div>
     }
     <div class="form-group">
@@ -126,13 +132,13 @@
         </div>
         <div id="event-repeat-weekly-div" class="form-group col-12 d-none">
             <label class="control-label col-auto w-100">Repeat on days:</label>
-            <button class="weekday-icon selected" data-weekday="MO" type="button">@mondayAbreviation</button>
-            <button class="weekday-icon selected" data-weekday="TU" type="button">@tuesdayAbreviation</button>
-            <button class="weekday-icon selected" data-weekday="WE" type="button">@wednesdayAbreviation</button>
-            <button class="weekday-icon selected" data-weekday="TH" type="button">@thursdayAbreviation</button>
-            <button class="weekday-icon selected" data-weekday="FR" type="button">@fridayAbreviation</button>
-            <button class="weekday-icon selected" data-weekday="SA" type="button">@saturdayAbreviation</button>
-            <button class="weekday-icon selected" data-weekday="SU" type="button">@sundayAbreviation</button>
+            <button class="weekday-icon selected" data-weekday="MO" type="button">@mondayAbbreviation</button>
+            <button class="weekday-icon selected" data-weekday="TU" type="button">@tuesdayAbbreviation</button>
+            <button class="weekday-icon selected" data-weekday="WE" type="button">@wednesdayAbbreviation</button>
+            <button class="weekday-icon selected" data-weekday="TH" type="button">@thursdayAbbreviation</button>
+            <button class="weekday-icon selected" data-weekday="FR" type="button">@fridayAbbreviation</button>
+            <button class="weekday-icon selected" data-weekday="SA" type="button">@saturdayAbbreviation</button>
+            <button class="weekday-icon selected" data-weekday="SU" type="button">@sundayAbbreviation</button>
             <input id="event-repeat-weekly-days-input" value="@Model.CalendarItem.RecurrenceRule.ByDay" hidden="hidden"/>
         </div>
         <div id="event-repeat-monthly-div" class="col-12 d-none">
@@ -198,13 +204,13 @@
                 </div>
                 <div class="col-auto">
                     <div class="row m-3">
-                        <button class="monthday-icon" data-weekday="MO" type="button">@mondayAbreviation</button>
-                        <button class="monthday-icon" data-weekday="TU" type="button">@tuesdayAbreviation</button>
-                        <button class="monthday-icon" data-weekday="WE" type="button">@wednesdayAbreviation</button>
-                        <button class="monthday-icon" data-weekday="TH" type="button">@thursdayAbreviation</button>
-                        <button class="monthday-icon" data-weekday="FR" type="button">@fridayAbreviation</button>
-                        <button class="monthday-icon" data-weekday="SA" type="button">@saturdayAbreviation</button>
-                        <button class="monthday-icon" data-weekday="SU" type="button">@sundayAbreviation</button>
+                        <button class="monthday-icon" data-weekday="MO" type="button">@mondayAbbreviation</button>
+                        <button class="monthday-icon" data-weekday="TU" type="button">@tuesdayAbbreviation</button>
+                        <button class="monthday-icon" data-weekday="WE" type="button">@wednesdayAbbreviation</button>
+                        <button class="monthday-icon" data-weekday="TH" type="button">@thursdayAbbreviation</button>
+                        <button class="monthday-icon" data-weekday="FR" type="button">@fridayAbbreviation</button>
+                        <button class="monthday-icon" data-weekday="SA" type="button">@saturdayAbbreviation</button>
+                        <button class="monthday-icon" data-weekday="SU" type="button">@sundayAbbreviation</button>
                     </div>
 
                 </div>
@@ -280,13 +286,13 @@
                 </div>
                 <div class="col-auto">
                     <div class="row m-3">
-                        <button class="yearly-monthday-icon" data-weekday="MO" type="button">@mondayAbreviation</button>
-                        <button class="yearly-monthday-icon" data-weekday="TU" type="button">@tuesdayAbreviation</button>
-                        <button class="yearly-monthday-icon" data-weekday="WE" type="button">@wednesdayAbreviation</button>
-                        <button class="yearly-monthday-icon" data-weekday="TH" type="button">@thursdayAbreviation</button>
-                        <button class="yearly-monthday-icon" data-weekday="FR" type="button">@fridayAbreviation</button>
-                        <button class="yearly-monthday-icon" data-weekday="SA" type="button">@saturdayAbreviation</button>
-                        <button class="yearly-monthday-icon" data-weekday="SU" type="button">@sundayAbreviation</button>
+                        <button class="yearly-monthday-icon" data-weekday="MO" type="button">@mondayAbbreviation</button>
+                        <button class="yearly-monthday-icon" data-weekday="TU" type="button">@tuesdayAbbreviation</button>
+                        <button class="yearly-monthday-icon" data-weekday="WE" type="button">@wednesdayAbbreviation</button>
+                        <button class="yearly-monthday-icon" data-weekday="TH" type="button">@thursdayAbbreviation</button>
+                        <button class="yearly-monthday-icon" data-weekday="FR" type="button">@fridayAbbreviation</button>
+                        <button class="yearly-monthday-icon" data-weekday="SA" type="button">@saturdayAbbreviation</button>
+                        <button class="yearly-monthday-icon" data-weekday="SU" type="button">@sundayAbbreviation</button>
                     </div>
 
                 </div>
@@ -334,12 +340,9 @@
             <input id="context-input" asp-for="CalendarItem.Context" placeholder="@await LocaleManager.GetTranslation("Add context...", PageNames.Calendar, Model.LanguageId)" class="form-control"/>
         </div>
     </div>
-    <div class="form-group">
-        <label asp-for="CalendarItem.AccessLevel" class="col-lg-3 col-sm-3 control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-        <div class="col-auto">
-            <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="CalendarItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
-        </div>
-    </div>
+    <div id="item-permissions-editor-div" class="d-none" data-item-type="@permissionsDataType" data-item-id="@Model.CalendarItem.EventId"></div>
+    <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
+    <input id="inherit-permissions-input" asp-for="InheritPermissions" value="@Model.InheritPermissions" type="hidden"/>
     <input id="event-recurrence-byday-input" asp-for="CalendarItem.RecurrenceRule.ByDay" value="@Model.CalendarItem.RecurrenceRule.ByDay" hidden="hidden"/>
     <div>
         <div class="form-group">

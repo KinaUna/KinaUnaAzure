@@ -15,12 +15,12 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherFriend"></param>
         public static void CopyPropertiesForUpdate(this Friend currentFriend, Friend otherFriend )
         {
-            currentFriend.AccessLevel = otherFriend.AccessLevel;
             currentFriend.Author = otherFriend.Author;
+            currentFriend.ModifiedBy = otherFriend.ModifiedBy;
+            currentFriend.ModifiedTime = DateTime.UtcNow;
             currentFriend.Context = otherFriend.Context;
             currentFriend.Name = otherFriend.Name;
             currentFriend.Type = otherFriend.Type;
-            currentFriend.ProgenyId = otherFriend.ProgenyId;
             currentFriend.Description = otherFriend.Description;
             currentFriend.FriendSince = otherFriend.FriendSince ?? DateTime.UtcNow;
             currentFriend.Notes = otherFriend.Notes;
@@ -30,6 +30,7 @@ namespace KinaUna.Data.Extensions
             }
 
             currentFriend.Tags = otherFriend.Tags;
+            currentFriend.ItemPermissionsDtoList = otherFriend.ItemPermissionsDtoList;
         }
 
         /// <summary>
@@ -39,8 +40,11 @@ namespace KinaUna.Data.Extensions
         /// <param name="otherFriend"></param>
         public static void CopyPropertiesForAdd(this Friend currentFriend, Friend otherFriend)
         {
-            currentFriend.AccessLevel = otherFriend.AccessLevel;
             currentFriend.Author = otherFriend.Author;
+            currentFriend.CreatedBy = otherFriend.CreatedBy;
+            currentFriend.CreatedTime = DateTime.UtcNow;
+            currentFriend.ModifiedBy = otherFriend.CreatedBy;
+            currentFriend.ModifiedTime = DateTime.UtcNow;
             currentFriend.Context = otherFriend.Context;
             currentFriend.Name = otherFriend.Name;
             currentFriend.Type = otherFriend.Type;
@@ -51,6 +55,7 @@ namespace KinaUna.Data.Extensions
             currentFriend.Notes = otherFriend.Notes;
             currentFriend.PictureLink = otherFriend.PictureLink;
             currentFriend.Tags = otherFriend.Tags;
+            currentFriend.ItemPermissionsDtoList = otherFriend.ItemPermissionsDtoList;
         }
 
         /// <summary>

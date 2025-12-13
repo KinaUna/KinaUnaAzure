@@ -1,55 +1,138 @@
-using KinaUna.Data;
+using KinaUna.Data.Contexts;
 using KinaUna.Data.Models;
+using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.DTOs;
+using KinaUna.Data.Models.Family;
 using KinaUnaProgenyApi.Controllers;
 using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.FamiliesServices;
 using KinaUnaProgenyApi.Services.TodosServices;
-using KinaUnaProgenyApi.Services.UserAccessService;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Moq;
-using OpenIddict.Abstractions;
 using System.Security.Claims;
+using KinaUna.Data;
 
 namespace KinaUnaProgenyApi.Tests.Controllers
 {
-    public class SubtasksControllerTests
+    public class SubtasksControllerTests : IDisposable
     {
-        private readonly Mock<IUserAccessService> _mockUserAccessService;
+        private readonly ProgenyDbContext _progenyDbContext;
         private readonly Mock<ISubtasksService> _mockSubtasksService;
         private readonly Mock<ITodosService> _mockTodosService;
         private readonly Mock<IProgenyService> _mockProgenyService;
+        private readonly Mock<IFamiliesService> _mockFamiliesService;
+        private readonly Mock<IAccessManagementService> _mockAccessManagementService;
         private readonly SubtasksController _controller;
-        
-        private const string TestUserEmail = "test@kinauna.com";
-        private const string TestUserId = "test-user-id";
+
+        private readonly UserInfo _testUser;
+        private readonly UserInfo _otherUser;
+        private readonly Progeny _testProgeny;
+        private readonly Family _testFamily;
+        private readonly TodoItem _parentTodoItem;
+
+        private const string TestUserEmail = Constants.DefaultUserEmail;
+        private const string TestUserId = Constants.DefaultUserId;
+        private const string OtherUserEmail = "other@example.com";
+        private const string OtherUserId = "other-user-id";
         private const int TestProgenyId = 1;
+        private const int TestFamilyId = 1;
         private const int TestParentTodoItemId = 100;
         private const int TestSubtaskId = 200;
-        private const int TestAccessLevel = 0;
 
         public SubtasksControllerTests()
         {
-            _mockUserAccessService = new Mock<IUserAccessService>();
+            // Setup in-memory DbContext
+            DbContextOptions<ProgenyDbContext> progenyOptions = new DbContextOptionsBuilder<ProgenyDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                .Options;
+            _progenyDbContext = new ProgenyDbContext(progenyOptions);
+
+            // Setup test data
+            _testUser = new UserInfo
+            {
+                UserId = TestUserId,
+                UserEmail = TestUserEmail,
+                ViewChild = 1,
+                IsKinaUnaAdmin = false
+            };
+
+            _otherUser = new UserInfo
+            {
+                UserId = OtherUserId,
+                UserEmail = OtherUserEmail,
+                ViewChild = 1,
+                IsKinaUnaAdmin = false
+            };
+
+            _testProgeny = new Progeny
+            {
+                Id = TestProgenyId,
+                Name = "Test Progeny",
+                Admins = TestUserEmail
+            };
+
+            _testFamily = new Family
+            {
+                FamilyId = TestFamilyId,
+                Name = "Test Family",
+                Admins = TestUserEmail
+            };
+
+            _parentTodoItem = CreateTestTodoItem(
+                TestParentTodoItemId,
+                TestProgenyId,
+                TestFamilyId,
+                parentTodoItemId: 0);
+
+            // Seed database
+            SeedTestData();
+
+            // Setup mocks
             _mockSubtasksService = new Mock<ISubtasksService>();
             _mockTodosService = new Mock<ITodosService>();
             _mockProgenyService = new Mock<IProgenyService>();
+            _mockFamiliesService = new Mock<IFamiliesService>();
+            Mock<IUserInfoService> mockUserInfoService = new();
+            _mockAccessManagementService = new Mock<IAccessManagementService>();
 
+            // Default mock setups
+            mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
+                .ReturnsAsync(_testUser);
+
+            mockUserInfoService.Setup(x => x.GetUserInfoByUserId(OtherUserId))
+                .ReturnsAsync(_otherUser);
+
+            // Initialize controller
             _controller = new SubtasksController(
-                _mockUserAccessService.Object,
                 _mockSubtasksService.Object,
                 _mockTodosService.Object,
-                _mockProgenyService.Object);
+                _mockProgenyService.Object,
+                _mockFamiliesService.Object,
+                mockUserInfoService.Object,
+                _mockAccessManagementService.Object);
 
             SetupControllerContext();
         }
 
-        private void SetupControllerContext()
+        private void SeedTestData()
+        {
+            _progenyDbContext.UserInfoDb.Add(_testUser);
+            _progenyDbContext.UserInfoDb.Add(_otherUser);
+            _progenyDbContext.ProgenyDb.Add(_testProgeny);
+            _progenyDbContext.FamiliesDb.Add(_testFamily);
+            _progenyDbContext.TodoItemsDb.Add(_parentTodoItem);
+            _progenyDbContext.SaveChanges();
+        }
+
+        private void SetupControllerContext(string userId = TestUserId, string userEmail = TestUserEmail)
         {
             List<Claim> claims =
             [
-                new(OpenIddictConstants.Claims.Email, TestUserEmail),
-                new(OpenIddictConstants.Claims.Subject, TestUserId)
+                new(ClaimTypes.Email, userEmail),
+                new(ClaimTypes.NameIdentifier, userId)
             ];
             ClaimsIdentity identity = new(claims, "TestAuthType");
             ClaimsPrincipal claimsPrincipal = new(identity);
@@ -63,31 +146,27 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             };
         }
 
-        private static TodoItem CreateTestTodoItem(int id, int progenyId, int parentTodoItemId = 0, int accessLevel = 0)
+        private static TodoItem CreateTestTodoItem(
+            int id,
+            int progenyId,
+            int familyId,
+            int parentTodoItemId = 0)
         {
             return new TodoItem
             {
                 TodoItemId = id,
                 ProgenyId = progenyId,
+                FamilyId = familyId,
                 ParentTodoItemId = parentTodoItemId,
-                AccessLevel = accessLevel,
                 Title = $"Test Todo {id}",
                 Description = $"Test Description {id}",
                 Status = (int)KinaUnaTypes.TodoStatusType.NotStarted,
                 CreatedBy = TestUserId,
-                UId = Guid.NewGuid().ToString()
+                ModifiedBy = TestUserId,
+                UId = Guid.NewGuid().ToString(),
+                CreatedTime = DateTime.UtcNow,
+                ModifiedTime = DateTime.UtcNow
             };
-        }
-
-        private static Progeny CreateTestProgeny(int id, bool userIsAdmin = true)
-        {
-            Progeny progeny = new()
-            {
-                Id = id,
-                Name = $"Test Progeny {id}",
-                Admins = userIsAdmin ? TestUserEmail : "other@example.com"
-            };
-            return progeny;
         }
 
         private static SubtasksRequest CreateTestSubtasksRequest(int parentTodoItemId, int progenyId = TestProgenyId)
@@ -96,6 +175,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             {
                 ParentTodoItemId = parentTodoItemId,
                 ProgenyId = progenyId,
+                FamilyId = TestFamilyId,
                 Skip = 0,
                 NumberOfItems = 10
             };
@@ -108,12 +188,10 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         {
             // Arrange
             SubtasksRequest request = CreateTestSubtasksRequest(TestParentTodoItemId);
-            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId, accessLevel: TestAccessLevel);
-            Progeny progeny = CreateTestProgeny(TestProgenyId);
-            List<TodoItem> subtasks = 
+            List<TodoItem> subtasks =
             [
-                CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId),
-                CreateTestTodoItem(TestSubtaskId + 1, TestProgenyId, TestParentTodoItemId)
+                CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestFamilyId, TestParentTodoItemId),
+                CreateTestTodoItem(TestSubtaskId + 1, TestProgenyId, TestFamilyId, TestParentTodoItemId)
             ];
             SubtasksResponse expectedResponse = new()
             {
@@ -122,15 +200,15 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 SubtasksRequest = request
             };
 
-            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
-                .ReturnsAsync(parentTodoItem);
-            _mockUserAccessService.Setup(x => x.GetValidatedAccessLevel(TestProgenyId, TestUserEmail, TestAccessLevel))
-                .ReturnsAsync(CustomResult<int>.Success(TestAccessLevel));
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
-                .ReturnsAsync(progeny);
-            _mockSubtasksService.Setup(x => x.GetSubtasksForTodoItem(TestParentTodoItemId))
+            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId, _testUser))
+                .ReturnsAsync(_parentTodoItem);
+            _mockSubtasksService.Setup(x => x.GetSubtasksForTodoItem(TestParentTodoItemId, _testUser))
                 .ReturnsAsync(subtasks);
-            _mockSubtasksService.Setup(x => x.CreateSubtaskResponseForTodoItem(subtasks, request))
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, _testUser))
+                .ReturnsAsync(_testProgeny);
+            _mockFamiliesService.Setup(x => x.GetFamilyById(TestFamilyId, _testUser))
+                .ReturnsAsync(_testFamily);
+            _mockSubtasksService.Setup(x => x.CreateSubtaskResponseForTodoItem(subtasks, request, _testUser))
                 .Returns(expectedResponse);
 
             // Act
@@ -141,7 +219,12 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             SubtasksResponse response = Assert.IsType<SubtasksResponse>(okResult.Value);
             Assert.Equal(TestParentTodoItemId, response.ParentTodoItemId);
             Assert.Equal(2, response.Subtasks.Count);
-            Assert.All(response.Subtasks, subtask => Assert.Equal(progeny, subtask.Progeny));
+            // ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Local
+            Assert.All(response.Subtasks, subtask =>
+            {
+                Assert.Equal(_testProgeny, subtask.Progeny);
+                Assert.Equal(_testFamily, subtask.Family);
+            });
         }
 
         [Fact]
@@ -150,7 +233,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             // Arrange
             SubtasksRequest request = CreateTestSubtasksRequest(TestParentTodoItemId);
 
-            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId, _testUser))
                 .ReturnsAsync((TodoItem?)null);
 
             // Act
@@ -162,57 +245,13 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetSubtasksForTodoItem_Should_Return_Access_Error_When_User_Has_No_Access()
-        {
-            // Arrange
-            SubtasksRequest request = CreateTestSubtasksRequest(TestParentTodoItemId);
-            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId, accessLevel: TestAccessLevel);
-            CustomError accessError = CustomError.UnauthorizedError("User does not have access");
-
-            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
-                .ReturnsAsync(parentTodoItem);
-            _mockUserAccessService.Setup(x => x.GetValidatedAccessLevel(TestProgenyId, TestUserEmail, TestAccessLevel))
-                .ReturnsAsync(CustomResult<int>.Failure(accessError));
-
-            // Act
-            IActionResult result = await _controller.GetSubtasksForTodoItem(request);
-
-            // Assert
-            // The ToActionResult() method will convert the CustomResult to an appropriate ActionResult
-            Assert.IsNotType<OkObjectResult>(result);
-        }
-
-        [Fact]
-        public async Task GetSubtasksForTodoItem_Should_Return_NotFound_When_Progeny_Not_Exists()
-        {
-            // Arrange
-            SubtasksRequest request = CreateTestSubtasksRequest(TestParentTodoItemId);
-            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId, accessLevel: TestAccessLevel);
-
-            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
-                .ReturnsAsync(parentTodoItem);
-            _mockUserAccessService.Setup(x => x.GetValidatedAccessLevel(TestProgenyId, TestUserEmail, TestAccessLevel))
-                .ReturnsAsync(CustomResult<int>.Success(TestAccessLevel));
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
-                .ReturnsAsync((Progeny?)null);
-
-            // Act
-            IActionResult result = await _controller.GetSubtasksForTodoItem(request);
-
-            // Assert
-            NotFoundObjectResult notFoundResult = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Equal("Progeny not found.", notFoundResult.Value);
-        }
-
-        [Fact]
-        public async Task GetSubtasksForTodoItem_Should_Set_ProgenyId_From_TodoItem()
+        public async Task GetSubtasksForTodoItem_Should_Set_ProgenyId_And_FamilyId_From_TodoItem()
         {
             // Arrange
             SubtasksRequest request = CreateTestSubtasksRequest(TestParentTodoItemId);
             request.ProgenyId = 999; // Different progeny ID in request
-            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId, accessLevel: TestAccessLevel);
-            Progeny progeny = CreateTestProgeny(TestProgenyId);
-            List<TodoItem> subtasks = [CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId)];
+            request.FamilyId = 888; // Different family ID in request
+            List<TodoItem> subtasks = [CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestFamilyId, TestParentTodoItemId)];
             SubtasksResponse expectedResponse = new()
             {
                 ParentTodoItemId = TestParentTodoItemId,
@@ -220,15 +259,15 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 SubtasksRequest = request
             };
 
-            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
-                .ReturnsAsync(parentTodoItem);
-            _mockUserAccessService.Setup(x => x.GetValidatedAccessLevel(TestProgenyId, TestUserEmail, TestAccessLevel))
-                .ReturnsAsync(CustomResult<int>.Success(TestAccessLevel));
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
-                .ReturnsAsync(progeny);
-            _mockSubtasksService.Setup(x => x.GetSubtasksForTodoItem(TestParentTodoItemId))
+            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId, _testUser))
+                .ReturnsAsync(_parentTodoItem);
+            _mockSubtasksService.Setup(x => x.GetSubtasksForTodoItem(TestParentTodoItemId, _testUser))
                 .ReturnsAsync(subtasks);
-            _mockSubtasksService.Setup(x => x.CreateSubtaskResponseForTodoItem(subtasks, It.IsAny<SubtasksRequest>()))
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, _testUser))
+                .ReturnsAsync(_testProgeny);
+            _mockFamiliesService.Setup(x => x.GetFamilyById(TestFamilyId, _testUser))
+                .ReturnsAsync(_testFamily);
+            _mockSubtasksService.Setup(x => x.CreateSubtaskResponseForTodoItem(subtasks, It.IsAny<SubtasksRequest>(), _testUser))
                 .Returns(expectedResponse);
 
             // Act
@@ -237,6 +276,73 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             // Assert
             Assert.IsType<OkObjectResult>(result);
             Assert.Equal(TestProgenyId, request.ProgenyId); // Should be updated from parent TodoItem
+            Assert.Equal(TestFamilyId, request.FamilyId); // Should be updated from parent TodoItem
+        }
+
+        [Fact]
+        public async Task GetSubtasksForTodoItem_Should_Handle_Subtasks_Without_Progeny()
+        {
+            // Arrange
+            SubtasksRequest request = CreateTestSubtasksRequest(TestParentTodoItemId);
+            TodoItem subtaskWithoutProgeny = CreateTestTodoItem(TestSubtaskId, 0, TestFamilyId, TestParentTodoItemId);
+            List<TodoItem> subtasks = [subtaskWithoutProgeny];
+            SubtasksResponse expectedResponse = new()
+            {
+                ParentTodoItemId = TestParentTodoItemId,
+                Subtasks = subtasks,
+                SubtasksRequest = request
+            };
+
+            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId, _testUser))
+                .ReturnsAsync(_parentTodoItem);
+            _mockSubtasksService.Setup(x => x.GetSubtasksForTodoItem(TestParentTodoItemId, _testUser))
+                .ReturnsAsync(subtasks);
+            _mockFamiliesService.Setup(x => x.GetFamilyById(TestFamilyId, _testUser))
+                .ReturnsAsync(_testFamily);
+            _mockSubtasksService.Setup(x => x.CreateSubtaskResponseForTodoItem(subtasks, request, _testUser))
+                .Returns(expectedResponse);
+
+            // Act
+            IActionResult result = await _controller.GetSubtasksForTodoItem(request);
+
+            // Assert
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            SubtasksResponse response = Assert.IsType<SubtasksResponse>(okResult.Value);
+            Assert.Single(response.Subtasks);
+            _mockProgenyService.Verify(x => x.GetProgeny(It.IsAny<int>(), It.IsAny<UserInfo>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task GetSubtasksForTodoItem_Should_Handle_Subtasks_Without_Family()
+        {
+            // Arrange
+            SubtasksRequest request = CreateTestSubtasksRequest(TestParentTodoItemId);
+            TodoItem subtaskWithoutFamily = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
+            List<TodoItem> subtasks = [subtaskWithoutFamily];
+            SubtasksResponse expectedResponse = new()
+            {
+                ParentTodoItemId = TestParentTodoItemId,
+                Subtasks = subtasks,
+                SubtasksRequest = request
+            };
+
+            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId, _testUser))
+                .ReturnsAsync(_parentTodoItem);
+            _mockSubtasksService.Setup(x => x.GetSubtasksForTodoItem(TestParentTodoItemId, _testUser))
+                .ReturnsAsync(subtasks);
+            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, _testUser))
+                .ReturnsAsync(_testProgeny);
+            _mockSubtasksService.Setup(x => x.CreateSubtaskResponseForTodoItem(subtasks, request, _testUser))
+                .Returns(expectedResponse);
+
+            // Act
+            IActionResult result = await _controller.GetSubtasksForTodoItem(request);
+
+            // Assert
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            SubtasksResponse response = Assert.IsType<SubtasksResponse>(okResult.Value);
+            Assert.Single(response.Subtasks);
+            _mockFamiliesService.Verify(x => x.GetFamilyById(It.IsAny<int>(), It.IsAny<UserInfo>()), Times.Never);
         }
 
         #endregion
@@ -244,15 +350,13 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         #region GetSubtask Tests
 
         [Fact]
-        public async Task GetSubtask_Should_Return_Ok_When_Subtask_Exists_And_User_Has_Access()
+        public async Task GetSubtask_Should_Return_Ok_When_Subtask_Exists()
         {
             // Arrange
-            TodoItem subtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId, TestAccessLevel);
+            TodoItem subtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestFamilyId, TestParentTodoItemId);
 
-            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
+            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId, _testUser))
                 .ReturnsAsync(subtask);
-            _mockUserAccessService.Setup(x => x.GetValidatedAccessLevel(TestProgenyId, TestUserEmail, TestAccessLevel))
-                .ReturnsAsync(CustomResult<int>.Success(TestAccessLevel));
 
             // Act
             IActionResult result = await _controller.GetSubtask(TestSubtaskId);
@@ -267,7 +371,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task GetSubtask_Should_Return_NotFound_When_Subtask_Not_Exists()
         {
             // Arrange
-            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
+            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId, _testUser))
                 .ReturnsAsync((TodoItem?)null);
 
             // Act
@@ -278,23 +382,19 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         }
 
         [Fact]
-        public async Task GetSubtask_Should_Return_Access_Error_When_User_Has_No_Access()
+        public async Task GetSubtask_Should_Return_NotFound_When_Subtask_Has_Zero_Id()
         {
             // Arrange
-            TodoItem subtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId, TestAccessLevel);
-            CustomError accessError = CustomError.UnauthorizedError("User does not have access");
+            TodoItem subtask = CreateTestTodoItem(0, TestProgenyId, TestFamilyId, TestParentTodoItemId);
 
-            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
+            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId, _testUser))
                 .ReturnsAsync(subtask);
-            _mockUserAccessService.Setup(x => x.GetValidatedAccessLevel(TestProgenyId, TestUserEmail, TestAccessLevel))
-                .ReturnsAsync(CustomResult<int>.Failure(accessError));
 
             // Act
             IActionResult result = await _controller.GetSubtask(TestSubtaskId);
 
             // Assert
-            Assert.IsNotType<OkObjectResult>(result);
-            Assert.IsNotType<NotFoundResult>(result);
+            Assert.IsType<NotFoundResult>(result);
         }
 
         #endregion
@@ -302,19 +402,20 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         #region Post Tests
 
         [Fact]
-        public async Task Post_Should_Return_Ok_When_Valid_Subtask_And_User_Is_Admin()
+        public async Task Post_Should_Return_Ok_When_Valid_Subtask_With_Progeny_Permission()
         {
             // Arrange
-            TodoItem subtaskToAdd = CreateTestTodoItem(0, TestProgenyId, TestParentTodoItemId, TestAccessLevel);
-            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId, accessLevel: TestAccessLevel);
-            Progeny progeny = CreateTestProgeny(TestProgenyId, userIsAdmin: true);
-            TodoItem addedSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId, TestAccessLevel);
+            TodoItem subtaskToAdd = CreateTestTodoItem(0, TestProgenyId, 0, TestParentTodoItemId);
+            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId, 0);
+            TodoItem addedSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
 
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
-                .ReturnsAsync(progeny);
-            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+            _mockAccessManagementService.Setup(x => x.HasProgenyPermission(TestProgenyId, _testUser, PermissionLevel.Add))
+                .ReturnsAsync(true);
+            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId, _testUser))
                 .ReturnsAsync(parentTodoItem);
-            _mockSubtasksService.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+            _mockSubtasksService.Setup(x => x.AddSubtask(It.IsAny<TodoItem>(), _testUser))
+                .ReturnsAsync(addedSubtask);
+            _mockSubtasksService.Setup(x => x.GetSubtask(It.IsAny<int>(), _testUser))
                 .ReturnsAsync(addedSubtask);
 
             // Act
@@ -326,38 +427,49 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             Assert.Equal(TestSubtaskId, returnedSubtask.TodoItemId);
 
             // Verify that the subtask inherits properties from parent
-            _mockSubtasksService.Verify(x => x.AddSubtask(It.Is<TodoItem>(s => 
-                s.AccessLevel == parentTodoItem.AccessLevel &&
+            _mockSubtasksService.Verify(x => x.AddSubtask(It.Is<TodoItem>(s =>
                 s.ProgenyId == parentTodoItem.ProgenyId &&
                 s.CreatedBy == TestUserId &&
-                !string.IsNullOrWhiteSpace(s.UId))), Times.Once);
+                s.ModifiedBy == TestUserId &&
+                !string.IsNullOrWhiteSpace(s.UId)), _testUser), Times.Once);
         }
 
         [Fact]
-        public async Task Post_Should_Return_BadRequest_When_Progeny_Not_Exists()
+        public async Task Post_Should_Return_Ok_When_Valid_Subtask_With_Family_Permission()
         {
             // Arrange
-            TodoItem subtaskToAdd = CreateTestTodoItem(0, TestProgenyId, TestParentTodoItemId);
+            TodoItem subtaskToAdd = CreateTestTodoItem(0, 0, TestFamilyId, TestParentTodoItemId);
+            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, 0, TestFamilyId);
+            TodoItem addedSubtask = CreateTestTodoItem(TestSubtaskId, 0, TestFamilyId, TestParentTodoItemId);
 
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
-                .ReturnsAsync((Progeny?)null);
+            _mockAccessManagementService.Setup(x => x.HasFamilyPermission(TestFamilyId, _testUser, PermissionLevel.Add))
+                .ReturnsAsync(true);
+            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId, _testUser))
+                .ReturnsAsync(parentTodoItem);
+            _mockSubtasksService.Setup(x => x.AddSubtask(It.IsAny<TodoItem>(), _testUser))
+                .ReturnsAsync(addedSubtask);
+            _mockSubtasksService.Setup(x => x.GetSubtask(It.IsAny<int>(), _testUser))
+                .ReturnsAsync(addedSubtask);
 
             // Act
             IActionResult result = await _controller.Post(subtaskToAdd);
 
             // Assert
-            Assert.IsType<BadRequestResult>(result);
+            OkObjectResult okResult = Assert.IsType<OkObjectResult>(result);
+            TodoItem returnedSubtask = Assert.IsType<TodoItem>(okResult.Value);
+            Assert.Equal(TestSubtaskId, returnedSubtask.TodoItemId);
         }
 
         [Fact]
-        public async Task Post_Should_Return_Unauthorized_When_User_Is_Not_Admin()
+        public async Task Post_Should_Return_Unauthorized_When_No_Progeny_Or_Family_Permission()
         {
             // Arrange
-            TodoItem subtaskToAdd = CreateTestTodoItem(0, TestProgenyId, TestParentTodoItemId);
-            Progeny progeny = CreateTestProgeny(TestProgenyId, userIsAdmin: false);
+            TodoItem subtaskToAdd = CreateTestTodoItem(0, TestProgenyId, 0, TestParentTodoItemId);
 
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
-                .ReturnsAsync(progeny);
+            _mockAccessManagementService.Setup(x => x.HasProgenyPermission(TestProgenyId, _testUser, PermissionLevel.Add))
+                .ReturnsAsync(false);
+            _mockAccessManagementService.Setup(x => x.HasFamilyPermission(It.IsAny<int>(), _testUser, PermissionLevel.Add))
+                .ReturnsAsync(false);
 
             // Act
             IActionResult result = await _controller.Post(subtaskToAdd);
@@ -370,12 +482,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Post_Should_Return_BadRequest_When_Parent_TodoItem_Not_Exists()
         {
             // Arrange
-            TodoItem subtaskToAdd = CreateTestTodoItem(0, TestProgenyId, TestParentTodoItemId);
-            Progeny progeny = CreateTestProgeny(TestProgenyId, userIsAdmin: true);
+            TodoItem subtaskToAdd = CreateTestTodoItem(0, TestProgenyId, 0, TestParentTodoItemId);
 
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
-                .ReturnsAsync(progeny);
-            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+            _mockAccessManagementService.Setup(x => x.HasProgenyPermission(TestProgenyId, _testUser, PermissionLevel.Add))
+                .ReturnsAsync(true);
+            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId, _testUser))
                 .ReturnsAsync((TodoItem?)null);
 
             // Act
@@ -387,42 +498,40 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         }
 
         [Fact]
-        public async Task Post_Should_Return_BadRequest_When_AddSubtask_Fails()
+        public async Task Post_Should_Return_Unauthorized_When_AddSubtask_Returns_Null()
         {
             // Arrange
-            TodoItem subtaskToAdd = CreateTestTodoItem(0, TestProgenyId, TestParentTodoItemId);
-            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId);
-            Progeny progeny = CreateTestProgeny(TestProgenyId, userIsAdmin: true);
+            TodoItem subtaskToAdd = CreateTestTodoItem(0, TestProgenyId, 0, TestParentTodoItemId);
+            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId, 0);
 
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
-                .ReturnsAsync(progeny);
-            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+            _mockAccessManagementService.Setup(x => x.HasProgenyPermission(TestProgenyId, _testUser, PermissionLevel.Add))
+                .ReturnsAsync(true);
+            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId, _testUser))
                 .ReturnsAsync(parentTodoItem);
-            _mockSubtasksService.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+            _mockSubtasksService.Setup(x => x.AddSubtask(It.IsAny<TodoItem>(), _testUser))
                 .ReturnsAsync((TodoItem?)null);
 
             // Act
             IActionResult result = await _controller.Post(subtaskToAdd);
 
             // Assert
-            Assert.IsType<BadRequestResult>(result);
+            Assert.IsType<UnauthorizedResult>(result);
         }
 
         [Fact]
         public async Task Post_Should_Generate_UId_When_Not_Provided()
         {
             // Arrange
-            TodoItem subtaskToAdd = CreateTestTodoItem(0, TestProgenyId, TestParentTodoItemId);
+            TodoItem subtaskToAdd = CreateTestTodoItem(0, TestProgenyId, 0, TestParentTodoItemId);
             subtaskToAdd.UId = ""; // Empty UId
-            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId);
-            Progeny progeny = CreateTestProgeny(TestProgenyId, userIsAdmin: true);
-            TodoItem addedSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
+            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId, 0);
+            TodoItem addedSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
 
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
-                .ReturnsAsync(progeny);
-            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+            _mockAccessManagementService.Setup(x => x.HasProgenyPermission(TestProgenyId, _testUser, PermissionLevel.Add))
+                .ReturnsAsync(true);
+            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId, _testUser))
                 .ReturnsAsync(parentTodoItem);
-            _mockSubtasksService.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
+            _mockSubtasksService.Setup(x => x.AddSubtask(It.IsAny<TodoItem>(), _testUser))
                 .ReturnsAsync(addedSubtask);
 
             // Act
@@ -430,8 +539,34 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             // Assert
             Assert.IsType<OkObjectResult>(result);
-            _mockSubtasksService.Verify(x => x.AddSubtask(It.Is<TodoItem>(s => 
-                !string.IsNullOrWhiteSpace(s.UId))), Times.Once);
+            _mockSubtasksService.Verify(x => x.AddSubtask(It.Is<TodoItem>(s =>
+                !string.IsNullOrWhiteSpace(s.UId)), _testUser), Times.Once);
+        }
+
+        [Fact]
+        public async Task Post_Should_Preserve_Existing_UId_When_Provided()
+        {
+            // Arrange
+            string existingUId = "existing-uid-123";
+            TodoItem subtaskToAdd = CreateTestTodoItem(0, TestProgenyId, 0, TestParentTodoItemId);
+            subtaskToAdd.UId = existingUId;
+            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId, 0);
+            TodoItem addedSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
+
+            _mockAccessManagementService.Setup(x => x.HasProgenyPermission(TestProgenyId, _testUser, PermissionLevel.Add))
+                .ReturnsAsync(true);
+            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId, _testUser))
+                .ReturnsAsync(parentTodoItem);
+            _mockSubtasksService.Setup(x => x.AddSubtask(It.IsAny<TodoItem>(), _testUser))
+                .ReturnsAsync(addedSubtask);
+
+            // Act
+            IActionResult result = await _controller.Post(subtaskToAdd);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
+            _mockSubtasksService.Verify(x => x.AddSubtask(It.Is<TodoItem>(s =>
+                s.UId == existingUId), _testUser), Times.Once);
         }
 
         #endregion
@@ -439,24 +574,26 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         #region Put Tests
 
         [Fact]
-        public async Task Put_Should_Return_Ok_When_Valid_Update_And_User_Is_Admin()
+        public async Task Put_Should_Return_Ok_When_Valid_Update_And_User_Has_Permission()
         {
             // Arrange
-            TodoItem existingSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
-            TodoItem updateValues = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
+            TodoItem existingSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
+            TodoItem updateValues = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
             updateValues.Title = "Updated Title";
-            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId, accessLevel: TestAccessLevel);
-            Progeny progeny = CreateTestProgeny(TestProgenyId, userIsAdmin: true);
-            TodoItem updatedSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
+            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId, 0);
+            TodoItem updatedSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
             updatedSubtask.Title = "Updated Title";
 
-            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
+            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId, _testUser))
                 .ReturnsAsync(existingSubtask);
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
-                .ReturnsAsync(progeny);
-            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+            _mockAccessManagementService.Setup(x => x.HasItemPermission(
+                KinaUnaTypes.TimeLineType.TodoItem, TestSubtaskId, _testUser, PermissionLevel.Edit))
+                .ReturnsAsync(true);
+            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId, _testUser))
                 .ReturnsAsync(parentTodoItem);
-            _mockSubtasksService.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>()))
+            _mockSubtasksService.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>(), _testUser))
+                .ReturnsAsync(updatedSubtask);
+            _mockSubtasksService.Setup(x => x.GetSubtask(It.IsAny<int>(), _testUser))
                 .ReturnsAsync(updatedSubtask);
 
             // Act
@@ -468,20 +605,19 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             Assert.Equal("Updated Title", returnedSubtask.Title);
 
             // Verify that the subtask inherits properties from parent
-            _mockSubtasksService.Verify(x => x.UpdateSubtask(It.Is<TodoItem>(s => 
-                s.AccessLevel == parentTodoItem.AccessLevel &&
+            _mockSubtasksService.Verify(x => x.UpdateSubtask(It.Is<TodoItem>(s =>
                 s.ProgenyId == parentTodoItem.ProgenyId &&
                 s.ModifiedBy == TestUserId &&
-                !string.IsNullOrWhiteSpace(s.UId))), Times.Once);
+                !string.IsNullOrWhiteSpace(s.UId)), _testUser), Times.Once);
         }
 
         [Fact]
         public async Task Put_Should_Return_NotFound_When_Subtask_Not_Exists()
         {
             // Arrange
-            TodoItem updateValues = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
+            TodoItem updateValues = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
 
-            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
+            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId, _testUser))
                 .ReturnsAsync((TodoItem?)null);
 
             // Act
@@ -492,36 +628,17 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         }
 
         [Fact]
-        public async Task Put_Should_Return_BadRequest_When_Progeny_Not_Exists()
+        public async Task Put_Should_Return_Unauthorized_When_User_Has_No_Permission()
         {
             // Arrange
-            TodoItem existingSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
-            TodoItem updateValues = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
+            TodoItem existingSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
+            TodoItem updateValues = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
 
-            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
+            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId, _testUser))
                 .ReturnsAsync(existingSubtask);
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
-                .ReturnsAsync((Progeny?)null);
-
-            // Act
-            IActionResult result = await _controller.Put(TestSubtaskId, updateValues);
-
-            // Assert
-            Assert.IsType<BadRequestResult>(result);
-        }
-
-        [Fact]
-        public async Task Put_Should_Return_Unauthorized_When_User_Is_Not_Admin()
-        {
-            // Arrange
-            TodoItem existingSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
-            TodoItem updateValues = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
-            Progeny progeny = CreateTestProgeny(TestProgenyId, userIsAdmin: false);
-
-            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
-                .ReturnsAsync(existingSubtask);
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
-                .ReturnsAsync(progeny);
+            _mockAccessManagementService.Setup(x => x.HasItemPermission(
+                KinaUnaTypes.TimeLineType.TodoItem, TestSubtaskId, _testUser, PermissionLevel.Edit))
+                .ReturnsAsync(false);
 
             // Act
             IActionResult result = await _controller.Put(TestSubtaskId, updateValues);
@@ -534,15 +651,15 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Put_Should_Return_BadRequest_When_Parent_TodoItem_Not_Exists()
         {
             // Arrange
-            TodoItem existingSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
-            TodoItem updateValues = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
-            Progeny progeny = CreateTestProgeny(TestProgenyId, userIsAdmin: true);
+            TodoItem existingSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
+            TodoItem updateValues = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
 
-            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
+            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId, _testUser))
                 .ReturnsAsync(existingSubtask);
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
-                .ReturnsAsync(progeny);
-            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+            _mockAccessManagementService.Setup(x => x.HasItemPermission(
+                KinaUnaTypes.TimeLineType.TodoItem, TestSubtaskId, _testUser, PermissionLevel.Edit))
+                .ReturnsAsync(true);
+            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId, _testUser))
                 .ReturnsAsync((TodoItem?)null);
 
             // Act
@@ -554,23 +671,48 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         }
 
         [Fact]
+        public async Task Put_Should_Return_Unauthorized_When_UpdateSubtask_Returns_Null()
+        {
+            // Arrange
+            TodoItem existingSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
+            TodoItem updateValues = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
+            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId, 0);
+
+            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId, _testUser))
+                .ReturnsAsync(existingSubtask);
+            _mockAccessManagementService.Setup(x => x.HasItemPermission(
+                KinaUnaTypes.TimeLineType.TodoItem, TestSubtaskId, _testUser, PermissionLevel.Edit))
+                .ReturnsAsync(true);
+            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId, _testUser))
+                .ReturnsAsync(parentTodoItem);
+            _mockSubtasksService.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>(), _testUser))
+                .ReturnsAsync((TodoItem?)null);
+
+            // Act
+            IActionResult result = await _controller.Put(TestSubtaskId, updateValues);
+
+            // Assert
+            Assert.IsType<UnauthorizedResult>(result);
+        }
+
+        [Fact]
         public async Task Put_Should_Generate_UId_When_Not_Provided()
         {
             // Arrange
-            TodoItem existingSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
-            TodoItem updateValues = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
+            TodoItem existingSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
+            TodoItem updateValues = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
             updateValues.UId = ""; // Empty UId
-            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId);
-            Progeny progeny = CreateTestProgeny(TestProgenyId, userIsAdmin: true);
-            TodoItem updatedSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
+            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId, 0);
+            TodoItem updatedSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
 
-            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
+            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId, _testUser))
                 .ReturnsAsync(existingSubtask);
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
-                .ReturnsAsync(progeny);
-            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
+            _mockAccessManagementService.Setup(x => x.HasItemPermission(
+                KinaUnaTypes.TimeLineType.TodoItem, TestSubtaskId, _testUser, PermissionLevel.Edit))
+                .ReturnsAsync(true);
+            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId, _testUser))
                 .ReturnsAsync(parentTodoItem);
-            _mockSubtasksService.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>()))
+            _mockSubtasksService.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>(), _testUser))
                 .ReturnsAsync(updatedSubtask);
 
             // Act
@@ -578,8 +720,38 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             // Assert
             Assert.IsType<OkObjectResult>(result);
-            _mockSubtasksService.Verify(x => x.UpdateSubtask(It.Is<TodoItem>(s => 
-                !string.IsNullOrWhiteSpace(s.UId))), Times.Once);
+            _mockSubtasksService.Verify(x => x.UpdateSubtask(It.Is<TodoItem>(s =>
+                !string.IsNullOrWhiteSpace(s.UId)), _testUser), Times.Once);
+        }
+
+        [Fact]
+        public async Task Put_Should_Preserve_Existing_UId_When_Provided()
+        {
+            // Arrange
+            string existingUId = "existing-uid-456";
+            TodoItem existingSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
+            TodoItem updateValues = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
+            updateValues.UId = existingUId;
+            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId, 0);
+            TodoItem updatedSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
+
+            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId, _testUser))
+                .ReturnsAsync(existingSubtask);
+            _mockAccessManagementService.Setup(x => x.HasItemPermission(
+                KinaUnaTypes.TimeLineType.TodoItem, TestSubtaskId, _testUser, PermissionLevel.Edit))
+                .ReturnsAsync(true);
+            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId, _testUser))
+                .ReturnsAsync(parentTodoItem);
+            _mockSubtasksService.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>(), _testUser))
+                .ReturnsAsync(updatedSubtask);
+
+            // Act
+            IActionResult result = await _controller.Put(TestSubtaskId, updateValues);
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
+            _mockSubtasksService.Verify(x => x.UpdateSubtask(It.Is<TodoItem>(s =>
+                s.UId == existingUId), _testUser), Times.Once);
         }
 
         #endregion
@@ -590,14 +762,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Delete_Should_Return_NoContent_When_Successfully_Deleted()
         {
             // Arrange
-            TodoItem existingSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
-            Progeny progeny = CreateTestProgeny(TestProgenyId, userIsAdmin: true);
+            TodoItem existingSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
 
-            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
+            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId, _testUser))
                 .ReturnsAsync(existingSubtask);
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
-                .ReturnsAsync(progeny);
-            _mockSubtasksService.Setup(x => x.DeleteSubtask(It.IsAny<TodoItem>(), false))
+            _mockSubtasksService.Setup(x => x.DeleteSubtask(It.IsAny<TodoItem>(), _testUser, false))
                 .ReturnsAsync(true);
 
             // Act
@@ -605,16 +774,16 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
             // Assert
             Assert.IsType<NoContentResult>(result);
-            _mockSubtasksService.Verify(x => x.DeleteSubtask(It.Is<TodoItem>(s => 
+            _mockSubtasksService.Verify(x => x.DeleteSubtask(It.Is<TodoItem>(s =>
                 s.TodoItemId == TestSubtaskId &&
-                s.ModifiedBy == TestUserId), false), Times.Once);
+                s.ModifiedBy == TestUserId), _testUser, false), Times.Once);
         }
 
         [Fact]
         public async Task Delete_Should_Return_NotFound_When_Subtask_Not_Exists()
         {
             // Arrange
-            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
+            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId, _testUser))
                 .ReturnsAsync((TodoItem?)null);
 
             // Act
@@ -625,34 +794,15 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         }
 
         [Fact]
-        public async Task Delete_Should_Return_BadRequest_When_Progeny_Not_Exists()
+        public async Task Delete_Should_Return_Unauthorized_When_Delete_Returns_False()
         {
             // Arrange
-            TodoItem existingSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
+            TodoItem existingSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, 0, TestParentTodoItemId);
 
-            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
+            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId, _testUser))
                 .ReturnsAsync(existingSubtask);
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
-                .ReturnsAsync((Progeny?)null);
-
-            // Act
-            IActionResult result = await _controller.Delete(TestSubtaskId);
-
-            // Assert
-            Assert.IsType<BadRequestResult>(result);
-        }
-
-        [Fact]
-        public async Task Delete_Should_Return_Unauthorized_When_User_Is_Not_Admin()
-        {
-            // Arrange
-            TodoItem existingSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
-            Progeny progeny = CreateTestProgeny(TestProgenyId, userIsAdmin: false);
-
-            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
-                .ReturnsAsync(existingSubtask);
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
-                .ReturnsAsync(progeny);
+            _mockSubtasksService.Setup(x => x.DeleteSubtask(It.IsAny<TodoItem>(), _testUser, false))
+                .ReturnsAsync(false);
 
             // Act
             IActionResult result = await _controller.Delete(TestSubtaskId);
@@ -661,116 +811,12 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             Assert.IsType<UnauthorizedResult>(result);
         }
 
-        [Fact]
-        public async Task Delete_Should_Return_BadRequest_When_Delete_Fails()
-        {
-            // Arrange
-            TodoItem existingSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
-            Progeny progeny = CreateTestProgeny(TestProgenyId, userIsAdmin: true);
-
-            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
-                .ReturnsAsync(existingSubtask);
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
-                .ReturnsAsync(progeny);
-            _mockSubtasksService.Setup(x => x.DeleteSubtask(It.IsAny<TodoItem>(), false))
-                .ReturnsAsync(false);
-
-            // Act
-            IActionResult result = await _controller.Delete(TestSubtaskId);
-
-            // Assert
-            Assert.IsType<BadRequestResult>(result);
-        }
-
         #endregion
 
-        #region Edge Cases and User Context Tests
-
-        [Fact]
-        public async Task GetSubtasksForTodoItem_Should_Use_DefaultUserEmail_When_User_Email_Is_Null()
+        public void Dispose()
         {
-            // Arrange
-            SubtasksRequest request = CreateTestSubtasksRequest(TestParentTodoItemId);
-            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId, accessLevel: TestAccessLevel);
-            
-            // Setup controller context with no email claim
-            List<Claim> claims = [new(OpenIddictConstants.Claims.Subject, TestUserId)];
-            ClaimsIdentity identity = new(claims, "TestAuthType");
-            ClaimsPrincipal claimsPrincipal = new(identity);
-            _controller.ControllerContext = new ControllerContext
-            {
-                HttpContext = new DefaultHttpContext { User = claimsPrincipal }
-            };
-
-            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
-                .ReturnsAsync(parentTodoItem);
-            _mockUserAccessService.Setup(x => x.GetValidatedAccessLevel(TestProgenyId, Constants.DefaultUserEmail, TestAccessLevel))
-                .ReturnsAsync(CustomResult<int>.Success(TestAccessLevel));
-
-            // Act
-            await _controller.GetSubtasksForTodoItem(request);
-
-            // Assert
-            _mockUserAccessService.Verify(x => x.GetValidatedAccessLevel(TestProgenyId, Constants.DefaultUserEmail, TestAccessLevel), Times.Once);
+            _progenyDbContext.Dispose();
+            GC.SuppressFinalize(this);
         }
-
-        [Fact]
-        public async Task Post_Should_Preserve_Existing_UId_When_Provided()
-        {
-            // Arrange
-            string existingUId = "existing-uid-123";
-            TodoItem subtaskToAdd = CreateTestTodoItem(0, TestProgenyId, TestParentTodoItemId);
-            subtaskToAdd.UId = existingUId;
-            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId);
-            Progeny progeny = CreateTestProgeny(TestProgenyId, userIsAdmin: true);
-            TodoItem addedSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
-
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
-                .ReturnsAsync(progeny);
-            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
-                .ReturnsAsync(parentTodoItem);
-            _mockSubtasksService.Setup(x => x.AddSubtask(It.IsAny<TodoItem>()))
-                .ReturnsAsync(addedSubtask);
-
-            // Act
-            IActionResult result = await _controller.Post(subtaskToAdd);
-
-            // Assert
-            Assert.IsType<OkObjectResult>(result);
-            _mockSubtasksService.Verify(x => x.AddSubtask(It.Is<TodoItem>(s => 
-                s.UId == existingUId)), Times.Once);
-        }
-
-        [Fact]
-        public async Task Put_Should_Preserve_Existing_UId_When_Provided()
-        {
-            // Arrange
-            string existingUId = "existing-uid-456";
-            TodoItem existingSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
-            TodoItem updateValues = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
-            updateValues.UId = existingUId;
-            TodoItem parentTodoItem = CreateTestTodoItem(TestParentTodoItemId, TestProgenyId);
-            Progeny progeny = CreateTestProgeny(TestProgenyId, userIsAdmin: true);
-            TodoItem updatedSubtask = CreateTestTodoItem(TestSubtaskId, TestProgenyId, TestParentTodoItemId);
-
-            _mockSubtasksService.Setup(x => x.GetSubtask(TestSubtaskId))
-                .ReturnsAsync(existingSubtask);
-            _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId))
-                .ReturnsAsync(progeny);
-            _mockTodosService.Setup(x => x.GetTodoItem(TestParentTodoItemId))
-                .ReturnsAsync(parentTodoItem);
-            _mockSubtasksService.Setup(x => x.UpdateSubtask(It.IsAny<TodoItem>()))
-                .ReturnsAsync(updatedSubtask);
-
-            // Act
-            IActionResult result = await _controller.Put(TestSubtaskId, updateValues);
-
-            // Assert
-            Assert.IsType<OkObjectResult>(result);
-            _mockSubtasksService.Verify(x => x.UpdateSubtask(It.Is<TodoItem>(s => 
-                s.UId == existingUId)), Times.Once);
-        }
-
-        #endregion
     }
 }

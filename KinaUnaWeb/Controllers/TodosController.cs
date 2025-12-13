@@ -1,5 +1,7 @@
 ﻿using KinaUna.Data.Extensions;
+using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.DTOs;
+using KinaUna.Data.Models.Family;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Models.TypeScriptModels.TodoItems;
@@ -27,6 +29,7 @@ namespace KinaUnaWeb.Controllers
         IViewModelSetupService viewModelSetupService,
         IUserInfosHttpClient userInfosHttpClient,
         IProgenyHttpClient progenyHttpClient,
+        IFamiliesHttpClient familiesHttpClient,
         ISubtasksHttpClient subtasksHttpClient,
         IKanbanItemsHttpClient kanbanItemsHttpClient,
         IKanbanBoardsHttpClient kanbanBoardsHttpClient) : Controller
@@ -37,12 +40,13 @@ namespace KinaUnaWeb.Controllers
         /// If a TodoItemId is passed, it will be shown in a popup.
         /// </summary>
         /// <param name="todoItemId">The TodoItemId to show in a popup.</param>
+        /// <param name="familyId"></param>
         /// <param name="childId"></param>
         /// <returns></returns>
         [AllowAnonymous]
-        public async Task<IActionResult> Index(int? todoItemId, int childId = 0)
+        public async Task<IActionResult> Index(int? todoItemId, int childId = 0, int familyId = 0)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId, familyId, false);
             TodoItemsListViewModel model = new(baseModel)
             {
                 PopUpTodoItemId = todoItemId ?? 0
@@ -83,6 +87,7 @@ namespace KinaUnaWeb.Controllers
             TodoItemsRequest request = new()
             {
                 ProgenyIds = parameters.Progenies,
+                FamilyIds = parameters.Families,
                 StartYear = parameters.StartYear,
                 StartMonth = parameters.StartMonth,
                 StartDay = parameters.StartDay,
@@ -158,16 +163,32 @@ namespace KinaUnaWeb.Controllers
             if (parameters.TodoItemId == 0)
             {
                 todoItemResponse.TodoItem = new TodoItem { TodoItemId = 0 };
+                todoItemResponse.TodoItem.ItemPerMission = new TimelineItemPermission()
+                {
+                    PermissionLevel = PermissionLevel.View
+                };
             }
             else
             {
                 todoItemResponse.TodoItem = await todoItemsHttpClient.GetTodoItem(parameters.TodoItemId);
-                todoItemResponse.TodoItem.Progeny = await progenyHttpClient.GetProgeny(todoItemResponse.TodoItem.ProgenyId);
+                if (todoItemResponse.TodoItem == null)
+                {
+                    return PartialView("_NotFoundPartial");
+                }
+
+                if (todoItemResponse.TodoItem.ProgenyId > 0)
+                {
+                    todoItemResponse.TodoItem.Progeny = await progenyHttpClient.GetProgeny(todoItemResponse.TodoItem.ProgenyId);
+                }
+
+                if (todoItemResponse.TodoItem.FamilyId > 0)
+                {
+                    todoItemResponse.TodoItem.Family = await familiesHttpClient.GetFamily(todoItemResponse.TodoItem.FamilyId);
+                }
+
                 todoItemResponse.TodoItemId = todoItemResponse.TodoItem.TodoItemId;
 
-                BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(parameters.LanguageId, User.GetEmail(), todoItemResponse.TodoItem.ProgenyId);
-                todoItemResponse.IsCurrentUserProgenyAdmin = baseModel.IsCurrentUserProgenyAdmin;
-                UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(todoItemResponse.TodoItem.CreatedBy);
+                UserInfo todoUserInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(todoItemResponse.TodoItem.CreatedBy);
                 todoItemResponse.TodoItem.CreatedBy = todoUserInfo.FullName();
             }
 
@@ -186,54 +207,98 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> ViewTodo(int todoId, bool partialView = false)
         {
             TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(todoId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
+            if (todoItem == null || todoItem.TodoItemId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId, todoItem.FamilyId, false);
             TodoViewModel model = new(baseModel)
             {
                 TodoItem = todoItem
             };
 
-            model.TodoItem.Progeny = model.CurrentProgeny;
-            model.TodoItem.Progeny.PictureLink = model.TodoItem.Progeny.GetProfilePictureUrl();
-            UserInfo todoUserInfo = await userInfosHttpClient.GetUserInfoByUserId(model.TodoItem.CreatedBy);
+            if (model.TodoItem.ProgenyId > 0)
+            {
+                model.TodoItem.Progeny = model.CurrentProgeny;
+            }
+
+            if (model.TodoItem.FamilyId > 0)
+            {
+                model.TodoItem.Family = model.CurrentFamily;
+            }
+
+            UserInfo todoUserInfo = await userInfosHttpClient.GetSimpleUserInfoByUserId(model.TodoItem.CreatedBy);
             model.TodoItem.CreatedBy = todoUserInfo.FullName();
             model.SetStatusList(model.TodoItem.Status);
             model.KanbanItems = await kanbanItemsHttpClient.GetKanbanItemsForTodoItem(todoId);
             foreach (KanbanItem kanbanItem in model.KanbanItems)
             {
                 kanbanItem.KanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(kanbanItem.KanbanBoardId);
-                kanbanItem.KanbanBoard.Progeny = await progenyHttpClient.GetProgeny(kanbanItem.KanbanBoard.ProgenyId);
+                if (kanbanItem.KanbanBoard.ProgenyId > 0)
+                {
+                    kanbanItem.KanbanBoard.Progeny = await progenyHttpClient.GetProgeny(kanbanItem.KanbanBoard.ProgenyId);
+                }
+
+                if (kanbanItem.KanbanBoard.FamilyId > 0)
+                {
+                    kanbanItem.KanbanBoard.Family = await familiesHttpClient.GetFamily(kanbanItem.KanbanBoard.FamilyId);
+                }
             }
 
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
+            model.FamilyList = await viewModelSetupService.GetFamilySelectList();
+            model.SetFamilyList();
 
             List<int> progenyIds = [];
             progenyIds.AddRange(model.ProgenyList.ConvertAll(p => int.Parse(p.Value)));
+            List<int> familyIds = [];
+            familyIds.AddRange(model.FamilyList.ConvertAll(p => int.Parse(p.Value)));
             KanbanBoardsRequest kanbanBoardsRequest = new()
             {
                 ProgenyIds = progenyIds,
+                FamilyIds = familyIds,
                 IncludeDeleted = false,
                 Skip = 0,
                 NumberOfItems = 0 // Get all.
             };
-            KanbanBoardsResponse kanbanBoardsResponse = await kanbanBoardsHttpClient.GetProgeniesKanbanBoardsList(kanbanBoardsRequest);
+            KanbanBoardsResponse kanbanBoardsResponse = await kanbanBoardsHttpClient.GetKanbanBoardsList(kanbanBoardsRequest);
             model.KanbanBoards = kanbanBoardsResponse.KanbanBoards;
-            model.KanbanBoardsList = new List<SelectListItem>();
+            model.KanbanBoardsList = [];
             foreach (KanbanBoard kanbanBoard in model.KanbanBoards)
             {
+                if (kanbanBoard.ItemPerMission.PermissionLevel < PermissionLevel.Add)
+                {
+                    continue;
+                }
                 // If there is a KanbanItem with the KanbanBoardId for this TodoItem already, don't include it.
                 if (model.KanbanItems.Exists(k => k.KanbanBoardId == kanbanBoard.KanbanBoardId))
                 {
                     continue;
                 }
 
-                kanbanBoard.Progeny = await progenyHttpClient.GetProgeny(kanbanBoard.ProgenyId);
-                SelectListItem item = new()
+                if (kanbanBoard.ProgenyId > 0)
                 {
-                    Text = kanbanBoard.Title + " (" + kanbanBoard.Progeny.NickName + ")",
-                    Value = kanbanBoard.KanbanBoardId.ToString()
-                };
-                model.KanbanBoardsList.Add(item);
+                    kanbanBoard.Progeny = await progenyHttpClient.GetProgeny(kanbanBoard.ProgenyId);
+                    SelectListItem item = new()
+                    {
+                        Text = kanbanBoard.Title + " (" + kanbanBoard.Progeny.NickName + ")",
+                        Value = kanbanBoard.KanbanBoardId.ToString()
+                    };
+                    model.KanbanBoardsList.Add(item);
+                }
+
+                if (kanbanBoard.FamilyId > 0)
+                {
+                    kanbanBoard.Family = await familiesHttpClient.GetFamily(kanbanBoard.FamilyId);
+                    SelectListItem item = new()
+                    {
+                        Text = kanbanBoard.Title + " (" + kanbanBoard.Family.Name + ")",
+                        Value = kanbanBoard.KanbanBoardId.ToString()
+                    };
+                    model.KanbanBoardsList.Add(item);
+                }
+                
             }
 
             if (partialView)
@@ -251,50 +316,66 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> AddTodo()
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0, false);
             TodoViewModel model = new(baseModel);
             if (model.CurrentUser == null)
             {
                 return PartialView("_NotFoundPartial");
             }
 
-            if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
-            {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
-                model.SetProgenyList();
-            }
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
+            model.SetProgenyList();
+            model.FamilyList = await viewModelSetupService.GetFamilySelectList();
+            model.SetFamilyList();
 
             model.TodoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
 
-            model.SetAccessLevelList();
-
             List<int> progenyIds = [];
             progenyIds.AddRange(model.ProgenyList.ConvertAll(p => int.Parse(p.Value)));
+            List<int> familyIds = [];
+            familyIds.AddRange(model.FamilyList.ConvertAll(p => int.Parse(p.Value)));
             KanbanBoardsRequest kanbanBoardsRequest = new()
             {
                 ProgenyIds = progenyIds,
+                FamilyIds = familyIds,
                 IncludeDeleted = false,
                 Skip = 0,
                 NumberOfItems = 0 // Get all.
             };
-            KanbanBoardsResponse kanbanBoardsResponse = await kanbanBoardsHttpClient.GetProgeniesKanbanBoardsList(kanbanBoardsRequest);
+            KanbanBoardsResponse kanbanBoardsResponse = await kanbanBoardsHttpClient.GetKanbanBoardsList(kanbanBoardsRequest);
             model.KanbanBoards = kanbanBoardsResponse.KanbanBoards;
             model.KanbanBoardsList = new List<SelectListItem>();
-            SelectListItem noKanbanBoardSelected = new SelectListItem();
-            noKanbanBoardSelected.Selected = true;
-            noKanbanBoardSelected.Text = "Do not add to a Kanban board";
-            noKanbanBoardSelected.Value = "0";
+            SelectListItem noKanbanBoardSelected = new SelectListItem
+            {
+                Selected = true,
+                Text = "Do not add to a Kanban board",
+                Value = "0"
+            };
             model.KanbanBoardsList.Add(noKanbanBoardSelected);
+            
             foreach (KanbanBoard kanbanBoard in model.KanbanBoards)
             {
-                kanbanBoard.Progeny = await progenyHttpClient.GetProgeny(kanbanBoard.ProgenyId);
-                SelectListItem item = new()
+                if (kanbanBoard.ProgenyId > 0)
                 {
-                    Text = kanbanBoard.Title + " (" + kanbanBoard.Progeny.NickName + ")",
-                    Value = kanbanBoard.KanbanBoardId.ToString(),
-                    Selected = false
-                };
-                model.KanbanBoardsList.Add(item);
+                    kanbanBoard.Progeny = await progenyHttpClient.GetProgeny(kanbanBoard.ProgenyId);
+                    SelectListItem item = new()
+                    {
+                        Text = kanbanBoard.Title + " (" + kanbanBoard.Progeny.NickName + ")",
+                        Value = kanbanBoard.KanbanBoardId.ToString()
+                    };
+                    model.KanbanBoardsList.Add(item);
+                }
+
+                if (kanbanBoard.FamilyId > 0)
+                {
+                    kanbanBoard.Family = await familiesHttpClient.GetFamily(kanbanBoard.FamilyId);
+                    SelectListItem item = new()
+                    {
+                        Text = kanbanBoard.Title + " (" + kanbanBoard.Family.Name + ")",
+                        Value = kanbanBoard.KanbanBoardId.ToString()
+                    };
+                    model.KanbanBoardsList.Add(item);
+                }
             }
 
             return PartialView("_AddTodoPartial", model);
@@ -309,16 +390,33 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddTodo([FromForm] TodoViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.TodoItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.TodoItem.ProgenyId, model.TodoItem.FamilyId, false);
             model.SetBaseProperties(baseModel);
-
-            List<Progeny> progAdminList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
-            if (progAdminList.Count == 0)
+            bool canUserAdd = false;
+            if (model.TodoItem.ProgenyId > 0)
             {
-                // Todo: Show that no children are available to add TodoItem for.
-                return RedirectToAction("Index");
+                List<Progeny> progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Add);
+                if (progenies.Exists(p => p.Id == model.TodoItem.ProgenyId))
+                {
+                    canUserAdd = true;
+                }
             }
 
+            if (model.TodoItem.FamilyId > 0)
+            {
+                List<Family> families = await familiesHttpClient.GetFamiliesUserCanAccess(PermissionLevel.Add);
+                if (families.Exists(f => f.FamilyId == model.TodoItem.FamilyId))
+                {
+                    canUserAdd = true;
+                }
+            }
+
+            if (!canUserAdd)
+            {
+                // Todo: Show that no entities are available to add TodoItems for.
+                return PartialView("_NotFoundPartial");
+            }
+            
             TodoItem todoItem = model.CreateTodoItem();
 
             model.TodoItem = await todoItemsHttpClient.AddTodoItem(todoItem);
@@ -354,6 +452,16 @@ namespace KinaUnaWeb.Controllers
             {
                 model.TodoItem.DueDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.DueDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
+
+            if (model.TodoItem.ProgenyId > 0)
+            {
+                model.TodoItem.Progeny = await progenyHttpClient.GetProgeny(model.TodoItem.ProgenyId);
+            }
+            if (model.TodoItem.FamilyId > 0)
+            {
+                model.TodoItem.Family = await familiesHttpClient.GetFamily(model.TodoItem.FamilyId);
+            }
+
             return PartialView("_TodoAddedPartial", model);
         }
 
@@ -366,23 +474,23 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditTodo(int itemId)
         {
             TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(itemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
-            TodoViewModel model = new(baseModel);
-
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (todoItem == null || todoItem.TodoItemId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (todoItem.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
             {
                 return PartialView("_AccessDeniedPartial");
             }
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId, todoItem.FamilyId, false);
+            TodoViewModel model = new(baseModel);
+            
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
+            model.SetProgenyList();
+            model.FamilyList = await viewModelSetupService.GetFamilySelectList();
+            model.SetFamilyList();
 
-            if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
-            {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
-                model.SetProgenyList();
-            }
-
-            model.SetPropertiesFromTodoItem(todoItem);
-
-            model.SetAccessLevelList();
+            model.SetPropertiesFromTodoItem(todoItem); 
             model.SetStatusList(model.TodoItem.Status);
 
             model.KanbanItems = await kanbanItemsHttpClient.GetKanbanItemsForTodoItem(model.TodoItem.TodoItemId);
@@ -399,14 +507,19 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditTodo(TodoViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.TodoItem.ProgenyId);
-            model.SetBaseProperties(baseModel);
-
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            TodoItem existingTodoItem = await todoItemsHttpClient.GetTodoItem(model.TodoItem.TodoItemId);
+            if (existingTodoItem == null || existingTodoItem.TodoItemId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (existingTodoItem.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
             {
                 return PartialView("_AccessDeniedPartial");
             }
 
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.TodoItem.ProgenyId, model.TodoItem.FamilyId, false);
+            model.SetBaseProperties(baseModel);
+            
             TodoItem editedTodoItem = model.CreateTodoItem();
 
             model.TodoItem = await todoItemsHttpClient.UpdateTodoItem(editedTodoItem);
@@ -427,6 +540,16 @@ namespace KinaUnaWeb.Controllers
             {
                 model.TodoItem.DueDate = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.DueDate.Value, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             }
+
+            if (model.TodoItem.ProgenyId > 0)
+            {
+                model.TodoItem.Progeny = await progenyHttpClient.GetProgeny(model.TodoItem.ProgenyId);
+            }
+            if (model.TodoItem.FamilyId > 0)
+            {
+                model.TodoItem.Family = await familiesHttpClient.GetFamily(model.TodoItem.FamilyId);
+            }
+
             return PartialView("_TodoUpdatedPartial", model);
         }
 
@@ -439,19 +562,28 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteTodo(int itemId)
         {
             TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(itemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
-            TodoViewModel model = new(baseModel);
-
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (todoItem == null || todoItem.TodoItemId == 0)
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_NotFoundPartial");
             }
-
+            if (todoItem.ItemPerMission.PermissionLevel < PermissionLevel.Admin)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId, todoItem.FamilyId, false);
+            TodoViewModel model = new(baseModel);
+            
             model.TodoItem = todoItem;
             model.SetStatusList(model.TodoItem.Status);
-            model.TodoItem.Progeny = model.CurrentProgeny;
-            model.TodoItem.Progeny.PictureLink = model.TodoItem.Progeny.GetProfilePictureUrl();
+            if (model.TodoItem.ProgenyId > 0)
+            {
+                model.TodoItem.Progeny = model.CurrentProgeny;
+            }
+
+            if (model.TodoItem.FamilyId > 0)
+            {
+                model.TodoItem.Family = model.CurrentFamily;
+            }
 
             return PartialView("_DeleteTodoPartial", model);
         }
@@ -466,15 +598,19 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteTodo(TodoViewModel model)
         {
             TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(model.TodoItem.TodoItemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
-            model.SetBaseProperties(baseModel);
-
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (todoItem == null || todoItem.TodoItemId == 0)
             {
-                // Todo: Show no access info.
-                return RedirectToAction("Index");
+                return PartialView("_NotFoundPartial");
             }
 
+            if (todoItem.ItemPerMission.PermissionLevel < PermissionLevel.Admin)
+            {
+                return PartialView("_AccessDeniedPartial");
+            }
+            
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId, todoItem.FamilyId, false);
+            model.SetBaseProperties(baseModel);
+            
             _ = await todoItemsHttpClient.DeleteTodoItem(todoItem.TodoItemId);
             return Json(todoItem);
         }
@@ -488,25 +624,22 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> CopyTodo(int itemId)
         {
             TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(itemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
+            if (todoItem == null || todoItem.TodoItemId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId, todoItem.FamilyId, false);
             TodoViewModel model = new(baseModel);
 
-            if (model.CurrentAccessLevel > todoItem.AccessLevel)
-            {
-                return PartialView("_AccessDeniedPartial");
-            }
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
+            model.SetProgenyList();
+            model.FamilyList = await viewModelSetupService.GetFamilySelectList();
+            model.SetFamilyList();
 
             model.SetPropertiesFromTodoItem(todoItem);
-
-            if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
-            {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
-                model.SetProgenyList();
-            }
-
-            model.SetAccessLevelList();
             model.SetStatusList(model.TodoItem.Status);
-
+            
             return PartialView("_CopyTodoPartial", model);
         }
 
@@ -519,13 +652,34 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CopyTodo([FromForm] TodoViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.TodoItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.TodoItem.ProgenyId, model.TodoItem.FamilyId, false);
             model.SetBaseProperties(baseModel);
 
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            bool canUserAdd = false;
+            if (model.TodoItem.ProgenyId > 0)
             {
+                List<Progeny> progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Add);
+                if (progenies.Exists(p => p.Id == model.TodoItem.ProgenyId))
+                {
+                    canUserAdd = true;
+                }
+            }
+
+            if (model.TodoItem.FamilyId > 0)
+            {
+                List<Family> families = await familiesHttpClient.GetFamiliesUserCanAccess(PermissionLevel.Add);
+                if (families.Exists(f => f.FamilyId == model.TodoItem.FamilyId))
+                {
+                    canUserAdd = true;
+                }
+            }
+
+            if (!canUserAdd)
+            {
+                // Todo: Show that no entities are available to add TodoItems for.
                 return PartialView("_AccessDeniedPartial");
             }
+
 
             TodoItem copiedTodoItem = model.CreateTodoItem();
 
@@ -538,6 +692,7 @@ namespace KinaUnaWeb.Controllers
                 {
                     ParentTodoItemId = model.CopyFromTodoId,
                     ProgenyId = model.TodoItem.ProgenyId,
+                    FamilyId = model.TodoItem.FamilyId,
                     Skip = 0,
                     NumberOfItems = 0 // Get all.
                 };
@@ -566,6 +721,16 @@ namespace KinaUnaWeb.Controllers
 
             model.TodoItem.CreatedTime = TimeZoneInfo.ConvertTimeFromUtc(model.TodoItem.CreatedTime, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
             model.SetStatusList(model.TodoItem.Status);
+
+            if (model.TodoItem.ProgenyId > 0)
+            {
+                model.TodoItem.Progeny = await progenyHttpClient.GetProgeny(model.TodoItem.ProgenyId);
+            }
+            if (model.TodoItem.FamilyId > 0)
+            {
+                model.TodoItem.Family = await familiesHttpClient.GetFamily(model.TodoItem.FamilyId);
+            }
+
             return PartialView("_TodoCopiedPartial", model);
         }
 
@@ -582,11 +747,9 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> SetTodoAsNotStarted(int todoId)
         {
             TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(todoId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
-            TodoViewModel model = new(baseModel);
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (todoItem == null || todoItem.TodoItemId == 0 || todoItem.ItemPerMission.PermissionLevel < PermissionLevel.Edit && todoItem.Progeny?.UserId != User.GetUserId())
             {
-                return Unauthorized("Access denied.");
+                return Json(new TodoItem());
             }
 
             todoItem.CompletedDate = null;
@@ -612,11 +775,9 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> SetTodoAsInProgress(int todoId)
         {
             TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(todoId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
-            TodoViewModel model = new(baseModel);
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (todoItem == null || todoItem.TodoItemId == 0 || todoItem.ItemPerMission.PermissionLevel < PermissionLevel.Edit && todoItem.Progeny?.UserId != User.GetUserId())
             {
-                return Unauthorized("Access denied.");
+                return Json(new TodoItem());
             }
 
             todoItem.CompletedDate = null;
@@ -643,11 +804,9 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> SetTodoAsCompleted(int todoId)
         {
             TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(todoId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
-            TodoViewModel model = new(baseModel);
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (todoItem == null || todoItem.TodoItemId == 0 || todoItem.ItemPerMission.PermissionLevel < PermissionLevel.Edit && todoItem.Progeny?.UserId != User.GetUserId())
             {
-                return Unauthorized("Access denied.");
+                return Json(new TodoItem());
             }
 
             todoItem.CompletedDate = DateTime.UtcNow;
@@ -674,11 +833,9 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> SetTodoAsCancelled(int todoId)
         {
             TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(todoId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
-            TodoViewModel model = new(baseModel);
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (todoItem == null || todoItem.TodoItemId == 0 || todoItem.ItemPerMission.PermissionLevel < PermissionLevel.Edit && todoItem.Progeny?.UserId != User.GetUserId())
             {
-                return Unauthorized("Access denied.");
+                return Json(new TodoItem());
             }
 
             todoItem.CompletedDate = null;
@@ -690,6 +847,18 @@ namespace KinaUnaWeb.Controllers
             return Json(result);
         }
 
+        /// <summary>
+        /// Prepares and returns a partial view for adding a to-do item to a Kanban board.
+        /// </summary>
+        /// <remarks>This method retrieves the specified to-do item and prepares a view model containing
+        /// the relevant Kanban boards  and associated data. The view model includes the current user's permissions,
+        /// progeny, and family information,  as well as the list of Kanban boards where the to-do item can be added.
+        /// Boards where the to-do item already exists  or where the user lacks sufficient permissions are
+        /// excluded.</remarks>
+        /// <param name="todoItemId">The unique identifier of the to-do item to be added to a Kanban board. Must be a positive integer.</param>
+        /// <returns>A <see cref="Task{IActionResult}"/> representing the asynchronous operation.  The result is a partial view
+        /// containing the necessary data to add the specified to-do item to a Kanban board. Returns <see
+        /// cref="NotFoundResult"/> if the to-do item does not exist.</returns>
         public async Task<IActionResult> AddTodoItemToKanbanBoard(int todoItemId)
         {
             TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(todoItemId);
@@ -697,8 +866,8 @@ namespace KinaUnaWeb.Controllers
             {
                 return NotFound();
             }
-
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
+            
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId, todoItem.FamilyId, false);
             KanbanItemViewModel model = new(baseModel)
             {
                 KanbanItem = new KanbanItem
@@ -706,31 +875,39 @@ namespace KinaUnaWeb.Controllers
                     TodoItem = todoItem,
                 }
             };
-            if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
+            model.SetProgenyList();
+            model.FamilyList = await viewModelSetupService.GetFamilySelectList();
+            model.SetFamilyList();
+            if (model.KanbanItem.TodoItem.ProgenyId > 0)
             {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
-                model.SetProgenyList();
                 model.KanbanItem.TodoItem.Progeny = model.CurrentProgeny;
             }
 
-            model.SetAccessLevelList();
+            if (model.KanbanItem.TodoItem.FamilyId > 0)
+            {
+                model.KanbanItem.TodoItem.Family = model.CurrentFamily;
+            }
+
             model.SetStatusList(model.KanbanItem.TodoItem.Status);
-
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
-            model.SetProgenyList();
-
+            
             List<int> progenyIds = [];
             progenyIds.AddRange(model.ProgenyList.ConvertAll(p => int.Parse(p.Value)));
+            List<int> familyIds = [];
+            familyIds.AddRange(model.FamilyList.ConvertAll(f => int.Parse(f.Value)));
             KanbanBoardsRequest kanbanBoardsRequest = new()
             {
                 ProgenyIds = progenyIds,
+                FamilyIds = familyIds,
                 IncludeDeleted = false,
                 Skip = 0,
                 NumberOfItems = 0 // Get all.
             };
-            KanbanBoardsResponse kanbanBoardsResponse = await kanbanBoardsHttpClient.GetProgeniesKanbanBoardsList(kanbanBoardsRequest);
+            
+            KanbanBoardsResponse kanbanBoardsResponse = await kanbanBoardsHttpClient.GetKanbanBoardsList(kanbanBoardsRequest);
             model.KanbanBoards = kanbanBoardsResponse.KanbanBoards;
-            model.KanbanBoardsList = new List<SelectListItem>();
+            model.KanbanBoardsList = [];
 
             foreach (KanbanBoard kanbanBoard in model.KanbanBoards)
             {
@@ -741,18 +918,43 @@ namespace KinaUnaWeb.Controllers
                     continue;
                 }
 
-                kanbanBoard.Progeny = await progenyHttpClient.GetProgeny(kanbanBoard.ProgenyId);
-                SelectListItem item = new()
+                if (kanbanBoard.ItemPerMission.PermissionLevel < PermissionLevel.Add)
                 {
-                    Text = kanbanBoard.Title + " (" + kanbanBoard.Progeny.NickName + ")",
-                    Value = kanbanBoard.KanbanBoardId.ToString()
-                };
-                model.KanbanBoardsList.Add(item);
+                    continue;
+                }
+
+                if (kanbanBoard.ProgenyId > 0)
+                {
+                    kanbanBoard.Progeny = await progenyHttpClient.GetProgeny(kanbanBoard.ProgenyId);
+                    SelectListItem item = new()
+                    {
+                        Text = kanbanBoard.Title + " (" + kanbanBoard.Progeny.NickName + ")",
+                        Value = kanbanBoard.KanbanBoardId.ToString()
+                    };
+                    model.KanbanBoardsList.Add(item);
+                }
+
+                if (kanbanBoard.FamilyId > 0)
+                {
+                    kanbanBoard.Family = await familiesHttpClient.GetFamily(kanbanBoard.FamilyId);
+                    SelectListItem item = new()
+                    {
+                        Text = kanbanBoard.Title + " (" + kanbanBoard.Family.Name + ")",
+                        Value = kanbanBoard.KanbanBoardId.ToString()
+                    };
+                    model.KanbanBoardsList.Add(item);
+                }
+
             }
 
             return PartialView("_AddTodoItemToKanbanBoardPartial", model);
         }
 
+        /// <summary>
+        /// Adds the specified to-do item to a Kanban board based on the provided model.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> AddTodoItemToKanbanBoard([FromForm] KanbanItemViewModel model)
@@ -764,15 +966,15 @@ namespace KinaUnaWeb.Controllers
                 return NotFound();
             }
 
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId, todoItem.FamilyId, false);
             model.SetBaseProperties(baseModel);
-            List<Progeny> progAdminList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
-            if (progAdminList.Count == 0)
+            
+            KanbanBoard kanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(kanbanBoardId);
+            if (kanbanBoard.ItemPerMission.PermissionLevel < PermissionLevel.Add)
             {
-                return BadRequest();
+                return Unauthorized();
             }
 
-            KanbanBoard kanbanBoard = await kanbanBoardsHttpClient.GetKanbanBoard(kanbanBoardId);
             kanbanBoard.SetColumnsListFromColumns();
             KanbanBoardColumn column = kanbanBoard.ColumnsList.SingleOrDefault(k => k.ColumnIndex == 0);
             if (column != null)
@@ -803,6 +1005,11 @@ namespace KinaUnaWeb.Controllers
             return Json(addedKanbanItem);
         }
 
+        /// <summary>
+        /// Gets the page for assigning the specified to-do item to a different progeny or family.
+        /// </summary>
+        /// <param name="todoItemId"></param>
+        /// <returns></returns>
         public async Task<IActionResult> AssignTodoItemTo(int todoItemId)
         {
             TodoItem todoItem = await todoItemsHttpClient.GetTodoItem(todoItemId);
@@ -811,28 +1018,49 @@ namespace KinaUnaWeb.Controllers
                 return NotFound();
             }
 
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
+            if (todoItem.ItemPerMission.PermissionLevel < PermissionLevel.Edit && todoItem.Progeny?.UserId != User.GetUserId())
+            {
+                return Unauthorized();
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId, todoItem.FamilyId, false);
             TodoViewModel model = new(baseModel)
             {
                 TodoItem = todoItem
             };
-
-            if (User.Identity != null && User.Identity.IsAuthenticated && model.CurrentUser.UserId != null)
+            
+            if (model.TodoItem.ProgenyId > 0)
             {
-                model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
-                model.SetProgenyList();
                 model.TodoItem.Progeny = model.CurrentProgeny;
             }
+            if (model.TodoItem.FamilyId > 0)
+            {
+                model.TodoItem.Family = model.CurrentFamily;
+            }
 
-            model.SetAccessLevelList();
-            model.SetStatusList(model.TodoItem.Status);
-
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
+            model.FamilyList = await viewModelSetupService.GetFamilySelectList();
+            // model.SetFamilyList();
+            if (model.FamilyList.Count > 0)
+            {
+                foreach (SelectListItem familySelectListItem in model.FamilyList)
+                {
+                    familySelectListItem.Value = "-" + familySelectListItem.Value;
+                    model.ProgenyList.Add(familySelectListItem);
+                }
+            }
             model.SetProgenyList();
+            
+            model.SetStatusList(model.TodoItem.Status);
             
             return PartialView("_AssignTodoItemToPartial", model);
         }
 
+        /// <summary>
+        /// Assigns the specified to-do item to a different progeny or family based on the provided model.
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [ValidateAntiForgeryToken]
         [HttpPost]
         public async Task<IActionResult> AssignTodoItemTo([FromForm] TodoViewModel model)
@@ -842,27 +1070,56 @@ namespace KinaUnaWeb.Controllers
             {
                 return NotFound();
             }
-
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), todoItem.ProgenyId);
-            model.SetBaseProperties(baseModel);
-            List<Progeny> progAdminList = await progenyHttpClient.GetProgenyAdminList(model.CurrentUser.UserEmail);
-            if (progAdminList.Count == 0)
+            if (todoItem.ItemPerMission.PermissionLevel < PermissionLevel.Edit && todoItem.Progeny?.UserId != User.GetUserId())
             {
-                return BadRequest();
+                return Unauthorized();
             }
-            // Check if user is allowed to assign to the new progeny id.
-            Progeny assignToProgeny = progAdminList.SingleOrDefault(p => p.Id == model.TodoItem.ProgenyId);
-            if (assignToProgeny == null || assignToProgeny.Id == 0)
+
+            if (model.TodoItem.ProgenyId < 0)
             {
-                return Unauthorized("Access denied.");
+                model.TodoItem.FamilyId = Math.Abs(model.TodoItem.ProgenyId);
+                model.TodoItem.ProgenyId = 0;
+            }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.TodoItem.ProgenyId, model.TodoItem.FamilyId, false);
+            model.SetBaseProperties(baseModel);
+            
+            // Check if user is allowed to assign to the new progeny/family id.
+            if (model.TodoItem.ProgenyId > 0)
+            {
+                if (model.CurrentProgeny.ProgenyPerMission.PermissionLevel < PermissionLevel.Add)
+                {
+                    return Unauthorized();
+                }
+            }
+
+            if (model.TodoItem.FamilyId > 0)
+            {
+                if (model.CurrentFamily.FamilyPermission.PermissionLevel < PermissionLevel.Add)
+                {
+                    return Unauthorized();
+                }
             }
 
             todoItem.ProgenyId = model.TodoItem.ProgenyId;
+            todoItem.FamilyId = model.TodoItem.FamilyId;
+
             TodoItem updatedTodoItem = await todoItemsHttpClient.UpdateTodoItem(todoItem);
 
             return Json(updatedTodoItem);
         }
 
+        /// <summary>
+        /// Updates the status of Kanban items associated with the specified to-do item.
+        /// </summary>
+        /// <remarks>This method retrieves all Kanban items linked to the specified to-do item and updates
+        /// their column assignment based on the status of the to-do item. The column assignment is determined by
+        /// matching the to-do item's status with the column's configured status in the associated Kanban board. If a
+        /// match is found, the Kanban item's column ID is updated, and the item is sent to the Kanban items service for
+        /// persistence.</remarks>
+        /// <param name="todoItem">The to-do item whose associated Kanban items will be updated. The status of the to-do item determines the
+        /// column assignment for the Kanban items.</param>
+        /// <returns></returns>
         private async Task UpdateKanbanItemsStatus(TodoItem todoItem)
         {
             List<KanbanItem> kanbanItems = await kanbanItemsHttpClient.GetKanbanItemsForTodoItem(todoItem.TodoItemId);

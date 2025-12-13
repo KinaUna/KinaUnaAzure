@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
@@ -7,7 +8,6 @@ using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
-using Newtonsoft.Json;
 
 namespace KinaUnaProgenyApi.Services
 {
@@ -42,12 +42,12 @@ namespace KinaUnaProgenyApi.Services
             string cachedComment = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "comment" + commentId);
             if (!string.IsNullOrEmpty(cachedComment))
             {
-                comment = JsonConvert.DeserializeObject<Comment>(cachedComment);
+                comment = JsonSerializer.Deserialize<Comment>(cachedComment, JsonSerializerOptions.Web);
             }
             else
             {
                 comment = await _mediaContext.CommentsDb.AsNoTracking().SingleOrDefaultAsync(c => c.CommentId == commentId);
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "comment" + commentId, JsonConvert.SerializeObject(comment), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "comment" + commentId, JsonSerializer.Serialize(comment, JsonSerializerOptions.Web), _cacheOptionsSliding);
             }
 
             return comment;
@@ -62,7 +62,7 @@ namespace KinaUnaProgenyApi.Services
         private async Task<Comment> SetComment(int commentId)
         {
             Comment comment = await _mediaContext.CommentsDb.AsNoTracking().SingleOrDefaultAsync(c => c.CommentId == commentId);
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "comment" + commentId, JsonConvert.SerializeObject(comment), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "comment" + commentId, JsonSerializer.Serialize(comment, JsonSerializerOptions.Web), _cacheOptionsSliding);
             if (comment == null) return null;
 
             _ = await SetCommentsList(comment.CommentThreadNumber);
@@ -126,12 +126,12 @@ namespace KinaUnaProgenyApi.Services
             string cachedCommentsList = await _cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "commentslist" + commentThreadId);
             if (!string.IsNullOrEmpty(cachedCommentsList))
             {
-                commentsList = JsonConvert.DeserializeObject<List<Comment>>(cachedCommentsList);
+                commentsList = JsonSerializer.Deserialize<List<Comment>>(cachedCommentsList, JsonSerializerOptions.Web);
             }
             else
             {
                 commentsList = await _mediaContext.CommentsDb.AsNoTracking().Where(c => c.CommentThreadNumber == commentThreadId).ToListAsync();
-                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "commentslist" + commentThreadId, JsonConvert.SerializeObject(commentsList), _cacheOptionsSliding);
+                await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "commentslist" + commentThreadId, JsonSerializer.Serialize(commentsList, JsonSerializerOptions.Web), _cacheOptionsSliding);
             }
 
             return commentsList;
@@ -145,7 +145,7 @@ namespace KinaUnaProgenyApi.Services
         public async Task<List<Comment>> SetCommentsList(int commentThreadId)
         {
             List<Comment> commentsList = await _mediaContext.CommentsDb.AsNoTracking().Where(c => c.CommentThreadNumber == commentThreadId).ToListAsync();
-            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "commentslist" + commentThreadId, JsonConvert.SerializeObject(commentsList), _cacheOptionsSliding);
+            await _cache.SetStringAsync(Constants.AppName + Constants.ApiVersion + "commentslist" + commentThreadId, JsonSerializer.Serialize(commentsList, JsonSerializerOptions.Web), _cacheOptionsSliding);
 
             return commentsList;
         }

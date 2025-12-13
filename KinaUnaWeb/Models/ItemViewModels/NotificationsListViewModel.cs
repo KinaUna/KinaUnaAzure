@@ -10,6 +10,9 @@ namespace KinaUnaWeb.Models.ItemViewModels
         public int Start { get; set; } = 0;
         public int Count { get; set; } = 10;
 
+        /// <summary>
+        /// Parameterless constructor. Needed for initialization of the view model when objects are created in Razor views/passed as parameters in POST methods.
+        /// </summary>
         public NotificationsListViewModel()
         {
             NotificationsList = [];

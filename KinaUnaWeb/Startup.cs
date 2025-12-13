@@ -51,20 +51,25 @@ namespace KinaUnaWeb
                 .PersistKeysToAzureBlobStorage(storageConnectionString, "dataprotection", "kukeys.xml");
             services.AddDistributedMemoryCache();
             services.AddMemoryCache();
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddTransient<ILocaleManager, LocaleManager>();
             services.AddHttpClient();
-            services.AddTransient<IProgenyManager, ProgenyManager>();
-            services.AddHttpClient<IProgenyHttpClient, ProgenyHttpClient>();
-            services.AddHttpClient<IMediaHttpClient, MediaHttpClient>();
-            services.AddTransient<IIdentityParser<ApplicationUser>, IdentityParser>();
+
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<ITokenService, TokenService>();
             services.AddSingleton<ImageStore>();
+
+            services.AddTransient<ILocaleManager, LocaleManager>();
+            services.AddTransient<IProgenyManager, ProgenyManager>();
+            services.AddTransient<IIdentityParser<ApplicationUser>, IdentityParser>();
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddTransient<IPushMessageSender, PushMessageSender>();
             services.AddTransient<IWebNotificationsService, WebNotificationsService>();
-            services.AddHttpClient<IWebNotificationsHttpClient, WebNotificationsHttpClient>();
+            services.AddTransient<IViewModelSetupService, ViewModelSetupService>();
+            services.AddTransient<ITimeLineItemsService, TimeLineItemsService>();
+            
             services.AddHttpClient<IUserInfosHttpClient, UserInfosHttpClient>();
             services.AddHttpClient<ITimelineHttpClient, TimelineHttpClient>();
+            services.AddHttpClient<IProgenyHttpClient, ProgenyHttpClient>();
+            services.AddHttpClient<IMediaHttpClient, MediaHttpClient>();
             services.AddHttpClient<IWordsHttpClient, WordsHttpClient>();
             services.AddHttpClient<IVaccinationsHttpClient, VaccinationsHttpClient>();
             services.AddHttpClient<ISkillsHttpClient, SkillsHttpClient>();
@@ -82,14 +87,14 @@ namespace KinaUnaWeb
             services.AddHttpClient<IPageTextsHttpClient, PageTextsHttpClient>();
             services.AddHttpClient<ITasksHttpClient, TasksHttpClient>();
             services.AddHttpClient<ICalendarRemindersHttpClient, CalendarRemindersHttpClient>();
-            services.AddTransient<IViewModelSetupService, ViewModelSetupService>();
-            services.AddTransient<ITimeLineItemsService, TimeLineItemsService>();
-            services.AddTransient<ITodoItemsHttpClient, TodoItemsHttpClient>();
-            services.AddTransient<ISubtasksHttpClient, SubtasksHttpClient>();
-            services.AddTransient<IKanbanBoardsHttpClient, KanbanBoardsHttpClient>();
-            services.AddTransient<IKanbanItemsHttpClient, KanbanItemsHttpClient>();
+            services.AddHttpClient<IWebNotificationsHttpClient, WebNotificationsHttpClient>();
+            services.AddHttpClient<ITodoItemsHttpClient, TodoItemsHttpClient>();
+            services.AddHttpClient<ISubtasksHttpClient, SubtasksHttpClient>();
+            services.AddHttpClient<IKanbanBoardsHttpClient, KanbanBoardsHttpClient>();
+            services.AddHttpClient<IKanbanItemsHttpClient, KanbanItemsHttpClient>();
             services.AddHttpClient<IAutoSuggestsHttpClient, AutoSuggestsHttpClient>();
-            services.AddSingleton<ITokenService, TokenService>();
+            services.AddHttpClient<IFamiliesHttpClient, FamiliesHttpClient>();
+            services.AddHttpClient<IUserGroupsHttpClient, UserGroupsHttpClient>();
 
             string authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey) ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + " was not found in the configuration data.");
             string webServerClientId = Configuration.GetValue<string>(AuthConstants.WebServerClientIdKey) ?? throw new InvalidOperationException(AuthConstants.WebServerClientIdKey + " was not found in the configuration data.");
@@ -246,13 +251,24 @@ namespace KinaUnaWeb
                     .RequireAuthenticatedUser()
                     .Build();
                 options.Filters.Add(new AuthorizeFilter(policy));
-            }).AddNewtonsoftJson().AddViewLocalization();
+            }).AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+                options.JsonSerializerOptions.DictionaryKeyPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+                options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+            }).AddViewLocalization();
             
             services.AddExceptionHandler<AuthenticationExceptionHandler>();
             services.AddExceptionHandler<GlobalExceptionHandler>();
             services.AddProblemDetails();
 
-            services.AddSignalR().AddMessagePackProtocol().AddNewtonsoftJsonProtocol();
+            services.AddSignalR().AddMessagePackProtocol().AddJsonProtocol(options =>
+            {
+                options.PayloadSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+                options.PayloadSerializerOptions.DictionaryKeyPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+                options.PayloadSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
+            }
+            );
             services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
             services.AddApplicationInsightsTelemetry();
         }

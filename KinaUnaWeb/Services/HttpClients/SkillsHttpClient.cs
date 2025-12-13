@@ -3,11 +3,11 @@ using KinaUna.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients
@@ -60,7 +60,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!skillResponse.IsSuccessStatusCode) return new Skill();
 
             string skillAsString = await skillResponse.Content.ReadAsStringAsync();
-            Skill skillItem = JsonConvert.DeserializeObject<Skill>(skillAsString);
+            Skill skillItem = JsonSerializer.Deserialize<Skill>(skillAsString, JsonSerializerOptions.Web);
             return skillItem ?? new Skill();
         }
 
@@ -76,11 +76,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             const string skillsApiPath = "/api/Skills/";
-            HttpResponseMessage skillsResponse = await _httpClient.PostAsync(skillsApiPath, new StringContent(JsonConvert.SerializeObject(skill), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage skillsResponse = await _httpClient.PostAsync(skillsApiPath, new StringContent(JsonSerializer.Serialize(skill, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!skillsResponse.IsSuccessStatusCode) return new Skill();
 
             string skillsAsString = await skillsResponse.Content.ReadAsStringAsync();
-            skill = JsonConvert.DeserializeObject<Skill>(skillsAsString);
+            skill = JsonSerializer.Deserialize<Skill>(skillsAsString, JsonSerializerOptions.Web);
             return skill ?? new Skill();
         }
 
@@ -96,11 +96,11 @@ namespace KinaUnaWeb.Services.HttpClients
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
 
             string updateSkillsApiPath = "/api/Skills/" + skill.SkillId;
-            HttpResponseMessage skillResponse = await _httpClient.PutAsync(updateSkillsApiPath, new StringContent(JsonConvert.SerializeObject(skill), System.Text.Encoding.UTF8, "application/json"));
+            HttpResponseMessage skillResponse = await _httpClient.PutAsync(updateSkillsApiPath, new StringContent(JsonSerializer.Serialize(skill, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
             if (!skillResponse.IsSuccessStatusCode) return new Skill();
 
             string skillAsString = await skillResponse.Content.ReadAsStringAsync();
-            skill = JsonConvert.DeserializeObject<Skill>(skillAsString);
+            skill = JsonSerializer.Deserialize<Skill>(skillAsString, JsonSerializerOptions.Web);
             return skill;
 
         }
@@ -139,7 +139,7 @@ namespace KinaUnaWeb.Services.HttpClients
             if (!skillsResponse.IsSuccessStatusCode) return progenySkillsList;
 
             string skillsAsString = await skillsResponse.Content.ReadAsStringAsync();
-            progenySkillsList = JsonConvert.DeserializeObject<List<Skill>>(skillsAsString);
+            progenySkillsList = JsonSerializer.Deserialize<List<Skill>>(skillsAsString, JsonSerializerOptions.Web);
 
             return progenySkillsList;
         }

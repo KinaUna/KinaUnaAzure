@@ -9,6 +9,7 @@
     const string zebraDateTimeFormat = "d-F-Y";
     bool allowHereMaps = Context.Request.HereMapsCookieSet();
     string copyLocationToString = await LocaleManager.GetTranslation("Copy location to:", PageNames.Locations, Model.LanguageId);
+    int permissionsDataType = (int)KinaUnaTypes.TimeLineType.Location;
 }
 <div id="current-moment-locale-div" class="d-none" data-current-locale="@Model.LanguageIdString"></div>
 <div id="add-location-zebra-date-time-format-div" class="d-none" data-zebra-date-time-format="@zebraDateTimeFormat"></div>
@@ -22,23 +23,29 @@
         </div>
         <form id="save-item-form" asp-action="CopyLocation" asp-controller="Locations" role="form" method="post" enctype="multipart/form-data">
             <div class="space-20"></div>
-            @if (Model.ProgenyList.Count > 1)
+            <div class="form-group">
+                <label class="col-auto control-label">@copyLocationToString</label>
+                <div class="col-auto">
+                    <button id="add-item-for-individual-button" class="btn btn-primary" type="button">Individual</button>
+                    <button id="add-item-for-family-button" class="btn btn-outline-primary" type="button">Family</button>
+                </div>
+            </div>
+            @if (Model.ProgenyList.Count > 0)
             {
-                <div class="form-group">
-                    <label asp-for="LocationItem.ProgenyId" class="col-auto control-label">@copyLocationToString</label>
+                <div id="individual-select-from-group" class="form-group">
+                    <label asp-for="LocationItem.ProgenyId" class="col-auto control-label">@copyLocationToString </label>
                     <div class="col-auto">
                         <select id="item-progeny-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.ProgenyList.Count" asp-for="LocationItem.ProgenyId" asp-items="@Model.ProgenyList"></select>
                     </div>
                 </div>
             }
-            else
+            @if (Model.FamilyList.Count > 0)
             {
-                <div class="form-group">
-                    <label asp-for="LocationItem.ProgenyId" class="col-auto control-label">@copyLocationToString</label>
+                <div id="family-select-from-group" class="form-group d-none">
+                    <label asp-for="LocationItem.FamilyId" class="col-auto control-label">@copyLocationToString </label>
                     <div class="col-auto">
-                        <input type="text" readonly class="form-control" value="@Model.ProgenyList[0].Text" />
+                        <select id="item-family-id-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.FamilyList.Count" asp-for="LocationItem.FamilyId" asp-items="@Model.FamilyList"></select>
                     </div>
-                    <input asp-for="LocationItem.ProgenyId" value="@Model.ProgenyList[0].Value" type="hidden" />
                 </div>
             }
             <div class="form-group">
@@ -134,12 +141,9 @@
                     <input id="tag-list" type="text" asp-for="LocationItem.Tags" value="@Model.LocationItem.Tags" placeholder="@await LocaleManager.GetTranslation("Add tag...", PageNames.Locations, Model.LanguageId)" class="form-control" />
                 </div>
             </div>
-            <div class="form-group">
-                <label asp-for="LocationItem.AccessLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Access level", PageNames.AccessManagement, Model.LanguageId)</label>
-                <div class="col-auto">
-                    <select class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.AccessLevelListEn.Count" asp-for="LocationItem.AccessLevel" asp-items="@Model.AccessLevelListEn"></select>
-                </div>
-            </div>
+            <div id="item-permissions-editor-div" class="d-none" data-item-type="@permissionsDataType" data-item-id="@Model.LocationItem.LocationId"></div>
+            <input id="item-permissions-list-as-string-input" asp-for="ItemPermissionsListAsString" value="@Model.ItemPermissionsListAsString" type="hidden"/>
+            <input id="inherit-permissions-input" asp-for="InheritPermissions" value="@Model.InheritPermissions" type="hidden"/>
             <div class="space-20"></div>
             <div>
                 <div class="form-group">

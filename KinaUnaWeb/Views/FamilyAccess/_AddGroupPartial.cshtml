@@ -1,0 +1,77 @@
+﻿@using KinaUna.Data
+@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.FamilyAccessViewModels.UserGroupViewModel
+@inject ILocaleManager LocaleManager
+@{
+    string pageTitle = await LocaleManager.GetTranslation("Add new group for", PageNames.AccessManagement, Model.LanguageId);
+    string nameString = string.Empty;
+    if (Model.CurrentProgenyId > 0 && Model.CurrentProgeny != null)
+    {
+        nameString = Model.CurrentProgeny.NickName;
+    }
+    else if (Model.CurrentFamily != null)
+    {
+        nameString = Model.CurrentFamily.Name;
+    }
+
+    foreach (SelectListItem selectListItem in Model.PermissionLevelsList)
+    {
+        selectListItem.Text = await LocaleManager.GetTranslation(selectListItem.Text, PageNames.AccessManagement, Model.LanguageId);
+    }
+
+    Model.OtherGroups.FirstOrDefault()?.Text = await LocaleManager.GetTranslation("Don't copy permissions", PageNames.AccessManagement, Model.LanguageId);
+}
+
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body modal-content item-details-content">
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-add-item-header">
+                <span class="h4 mr-3 align-bottom">@pageTitle: @nameString</span>
+                <button id="close-add-group-modal-button" type="button" class="btn btn-link item-details-close-button close-add-group-modal-button"><span>×</span></button>
+            </div>
+        </div>
+        <form id="add-group-form" asp-action="AddGroup" asp-controller="FamilyAccess" role="form" method="post">
+            <div class="space-20"></div>
+            <div class="form-group">
+                <label asp-for="UserGroup.Name" class="col-auto control-label">@await LocaleManager.GetTranslation("Group name", PageNames.AccessManagement, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <input id="group-name-input" class="form-control" asp-for="UserGroup.Name" value="@Model.UserGroup.Name" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="UserGroup.Description" class="col-auto control-label">@await LocaleManager.GetTranslation("Description", PageNames.Family, Model.LanguageId)</label>
+                <div class="col-auto">
+                    <textarea class="form-control" rows="4" asp-for="UserGroup.Description">@Model.UserGroup.Description</textarea>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="PermissionLevel" class="col-auto control-label">@await LocaleManager.GetTranslation("Select group's permission", PageNames.AccessManagement, Model.LanguageId):</label>
+                <div class="col-auto">
+                    <select id="family-member-permission-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.PermissionLevelsList.Count" asp-for="PermissionLevel" asp-items="@Model.PermissionLevelsList"></select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="UserGroup.CopyPermissionsFromGroupId" class="col-auto control-label">@await LocaleManager.GetTranslation("Copy permissions from group", PageNames.AccessManagement, Model.LanguageId):</label>
+                <div class="col-auto">
+                    <select id="copy-permission-select" class="selectpicker form-control-noline" data-style="btn-kinaunaselect" data-size="@Model.OtherGroups.Count" asp-for="UserGroup.CopyPermissionsFromGroupId" asp-items="@Model.OtherGroups"></select>
+                </div>
+            </div>
+            <input type="hidden" asp-for="UserGroup.FamilyId" value="@Model.UserGroup.FamilyId" />
+            <input type="hidden" asp-for="UserGroup.ProgenyId" value="@Model.UserGroup.ProgenyId" />
+            <input type="hidden" asp-for="UserGroup.UserGroupId" value="@Model.UserGroup.UserGroupId" />
+            <div class="space-20"></div>
+            <div class="form-group">
+                <div class="col-auto control-label"></div>
+                <div class="col-auto">
+                    <button id="save-group-button" disabled="disabled" class="btn btn-success" type="submit">@await LocaleManager.GetTranslation("Add", PageNames.AddItem, Model.LanguageId)</button>
+                    <button class="btn btn-danger item-details-cancel-button close-add-group-modal-button">@await LocaleManager.GetTranslation("Cancel", PageNames.AddItem, Model.LanguageId)</button>
+                </div>
+                <div id="validation-errors-div" class="col-auto">
+                    <div id="name-required-div" class="d-none text-warning">
+                        @await LocaleManager.GetTranslation("Name is required and cannot be blank.", PageNames.Family, Model.LanguageId)
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

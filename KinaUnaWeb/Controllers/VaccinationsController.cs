@@ -1,17 +1,20 @@
-﻿using System;
+﻿using KinaUna.Data.Extensions;
+using KinaUna.Data.Models.AccessManagement;
+using KinaUna.Data.Models.DTOs;
+using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.ItemViewModels;
 using KinaUnaWeb.Services;
+using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
-using KinaUna.Data.Extensions;
-using KinaUnaWeb.Models;
-using KinaUnaWeb.Services.HttpClients;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class VaccinationsController(IVaccinationsHttpClient vaccinationsHttpClient, IViewModelSetupService viewModelSetupService) : Controller
+    public class VaccinationsController(IVaccinationsHttpClient vaccinationsHttpClient, IViewModelSetupService viewModelSetupService, IProgenyHttpClient progenyHttpClient) : Controller
     {
         /// <summary>
         /// Vaccinations Index page. Shows a list of all vaccinations for a progeny.
@@ -25,11 +28,21 @@ namespace KinaUnaWeb.Controllers
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), childId);
             VaccinationViewModel model = new(baseModel);
             
-            List<Vaccination> vaccinations = await vaccinationsHttpClient.GetVaccinationsList(model.CurrentProgenyId);
-            model.SetVaccinationsList(vaccinations);
             model.VaccinationId = vaccinationId;
 
             return View(model);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> VaccinationsTable(int progenyId)
+        {
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), progenyId);
+            VaccinationViewModel model = new(baseModel);
+
+            List<Vaccination> vaccinations = await vaccinationsHttpClient.GetVaccinationsList(model.CurrentProgenyId);
+            model.SetVaccinationsList(vaccinations);
+
+            return PartialView("_VaccinationsTablePartial", model);
         }
 
         /// <summary>
@@ -42,14 +55,18 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> ViewVaccination(int vaccinationId, bool partialView = false)
         {
             Vaccination vaccination = await vaccinationsHttpClient.GetVaccination(vaccinationId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vaccination.ProgenyId);
-            VaccinationViewModel model = new(baseModel);
-
-            if (vaccination.AccessLevel < model.CurrentAccessLevel)
+            if (vaccination == null || vaccination.VaccinationId == 0)
             {
+                if (partialView)
+                {
+                    return PartialView("_NotFoundPartial");
+                }
                 return RedirectToAction("Index");
             }
 
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vaccination.ProgenyId, 0, false);
+            VaccinationViewModel model = new(baseModel);
+            
             model.SetPropertiesFromVaccinationItem(vaccination);
             model.VaccinationItem.Progeny = model.CurrentProgeny;
             model.VaccinationItem.Progeny.PictureLink = model.VaccinationItem.Progeny.GetProfilePictureUrl();
@@ -69,18 +86,11 @@ namespace KinaUnaWeb.Controllers
         [HttpGet]
         public async Task<IActionResult> AddVaccination()
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0, false);
             VaccinationViewModel model = new(baseModel);
             
-            if (model.CurrentUser == null)
-            {
-                return PartialView("_AccessDeniedPartial");
-            }
-
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
-
-            model.SetAccessLevelList();
 
             return PartialView("_AddVaccinationPartial", model);
         }
@@ -96,16 +106,30 @@ namespace KinaUnaWeb.Controllers
         {
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.VaccinationItem.ProgenyId);
             model.SetBaseProperties(baseModel);
-
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            bool canUserAdd = false;
+            if (model.VaccinationItem.ProgenyId > 0)
             {
+                List<Progeny> progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Add);
+                if (progenies.Exists(p => p.Id == model.VaccinationItem.ProgenyId))
+                {
+                    canUserAdd = true;
+                }
+            }
+
+            if (!canUserAdd)
+            {
+                // Todo: Show that no entities are available to add vaccination for.
                 return PartialView("_AccessDeniedPartial");
             }
-           
+
             model.VaccinationItem.Author = model.CurrentUser.UserId;
+            model.VaccinationItem.ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString, JsonSerializerOptions.Web);
 
             model.VaccinationItem = await vaccinationsHttpClient.AddVaccination(model.VaccinationItem);
+
             model.VaccinationItem.VaccinationDate = TimeZoneInfo.ConvertTimeFromUtc(model.VaccinationItem.VaccinationDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+            model.VaccinationItem.Progeny = await progenyHttpClient.GetProgeny(model.VaccinationItem.ProgenyId);
 
             return PartialView("_VaccinationAddedPartial", model);
         }
@@ -119,17 +143,22 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> EditVaccination(int itemId)
         {
             Vaccination vaccination = await vaccinationsHttpClient.GetVaccination(itemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vaccination.ProgenyId);
-            VaccinationViewModel model = new(baseModel);
-
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (vaccination == null || vaccination.VaccinationId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (vaccination.ItemPermission.PermissionLevel < PermissionLevel.Edit)
             {
                 return PartialView("_AccessDeniedPartial");
             }
-            
-            model.SetPropertiesFromVaccinationItem(vaccination);
 
-            model.SetAccessLevelList();
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vaccination.ProgenyId, 0, false);
+            VaccinationViewModel model = new(baseModel);
+
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(vaccination.ProgenyId);
+            model.SetProgenyList();
+
+            model.SetPropertiesFromVaccinationItem(vaccination);
 
             return PartialView("_EditVaccinationPartial", model);
         }
@@ -143,16 +172,26 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditVaccination(VaccinationViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.VaccinationItem.ProgenyId);
-            model.SetBaseProperties(baseModel);
-        
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            Vaccination existingVaccination = await vaccinationsHttpClient.GetVaccination(model.VaccinationItem.VaccinationId);
+            if (existingVaccination == null || existingVaccination.VaccinationId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (existingVaccination.ItemPermission.PermissionLevel < PermissionLevel.Edit)
             {
                 return PartialView("_AccessDeniedPartial");
             }
 
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.VaccinationItem.ProgenyId, 0, false);
+            model.SetBaseProperties(baseModel);
+            model.VaccinationItem.ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString, JsonSerializerOptions.Web);
+
+
             model.VaccinationItem = await vaccinationsHttpClient.UpdateVaccination(model.VaccinationItem);
+            
             model.VaccinationItem.VaccinationDate = TimeZoneInfo.ConvertTimeFromUtc(model.VaccinationItem.VaccinationDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+            model.VaccinationItem.Progeny = await progenyHttpClient.GetProgeny(model.VaccinationItem.ProgenyId);
 
             return PartialView("_VaccinationUpdatedPartial", model);
         }
@@ -166,15 +205,21 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteVaccination(int itemId)
         {
             Vaccination vaccination = await vaccinationsHttpClient.GetVaccination(itemId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vaccination.ProgenyId);
-            VaccinationViewModel model = new(baseModel);
-
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (vaccination == null || vaccination.VaccinationId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (vaccination.ItemPermission.PermissionLevel < PermissionLevel.Admin)
             {
                 return PartialView("_AccessDeniedPartial");
             }
 
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vaccination.ProgenyId, 0, false);
+            VaccinationViewModel model = new(baseModel);
+            
             model.VaccinationItem = vaccination;
+
+            model.VaccinationItem.Progeny = await progenyHttpClient.GetProgeny(model.VaccinationItem.ProgenyId);
 
             return View(model);
         }
@@ -189,13 +234,17 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> DeleteVaccination(VaccinationViewModel model)
         {
             Vaccination vaccination = await vaccinationsHttpClient.GetVaccination(model.VaccinationItem.VaccinationId);
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vaccination.ProgenyId);
-            model.SetBaseProperties(baseModel);
-
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            if (vaccination == null || vaccination.VaccinationId == 0)
+            {
+                return PartialView("_NotFoundPartial");
+            }
+            if (vaccination.ItemPermission.PermissionLevel < PermissionLevel.Admin)
             {
                 return PartialView("_AccessDeniedPartial");
             }
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vaccination.ProgenyId, 0, false);
+            model.SetBaseProperties(baseModel);
 
             _ = await vaccinationsHttpClient.DeleteVaccination(vaccination.VaccinationId);
 
@@ -213,18 +262,11 @@ namespace KinaUnaWeb.Controllers
             Vaccination vaccination = await vaccinationsHttpClient.GetVaccination(itemId);
             BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), vaccination.ProgenyId);
             VaccinationViewModel model = new(baseModel);
-
-            if (model.CurrentAccessLevel > vaccination.AccessLevel)
-            {
-                return PartialView("_AccessDeniedPartial");
-            }
-
-            model.ProgenyList = await viewModelSetupService.GetProgenySelectList(model.CurrentUser);
+            
+            model.ProgenyList = await viewModelSetupService.GetProgenySelectList();
             model.SetProgenyList();
 
             model.SetPropertiesFromVaccinationItem(vaccination);
-
-            model.SetAccessLevelList();
 
             return PartialView("_CopyVaccinationPartial", model);
         }
@@ -238,16 +280,31 @@ namespace KinaUnaWeb.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CopyVaccination(VaccinationViewModel model)
         {
-            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.VaccinationItem.ProgenyId);
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), model.VaccinationItem.ProgenyId, 0, false);
             model.SetBaseProperties(baseModel);
-
-            if (!model.CurrentProgeny.IsInAdminList(model.CurrentUser.UserEmail))
+            
+            bool canUserAdd = false;
+            if (model.VaccinationItem.ProgenyId > 0)
             {
+                List<Progeny> progenies = await progenyHttpClient.GetProgeniesUserCanAccess(PermissionLevel.Add);
+                if (progenies.Exists(p => p.Id == model.VaccinationItem.ProgenyId))
+                {
+                    canUserAdd = true;
+                }
+            }
+
+            if (!canUserAdd)
+            {
+                // Todo: Show that no entities are available to add vaccination for.
                 return PartialView("_AccessDeniedPartial");
             }
 
+            model.VaccinationItem.ItemPermissionsDtoList = string.IsNullOrWhiteSpace(model.ItemPermissionsListAsString) ? [] : JsonSerializer.Deserialize<List<ItemPermissionDto>>(model.ItemPermissionsListAsString, JsonSerializerOptions.Web);
+
             model.VaccinationItem = await vaccinationsHttpClient.AddVaccination(model.VaccinationItem);
             model.VaccinationItem.VaccinationDate = TimeZoneInfo.ConvertTimeFromUtc(model.VaccinationItem.VaccinationDate, TimeZoneInfo.FindSystemTimeZoneById(model.CurrentUser.Timezone));
+
+            model.VaccinationItem.Progeny = await progenyHttpClient.GetProgeny(model.VaccinationItem.ProgenyId);
 
             return PartialView("_VaccinationCopiedPartial", model);
         }
