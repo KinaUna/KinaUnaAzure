@@ -57,7 +57,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             VaccinationItem.VaccinationDate = vaccination.VaccinationDate;
             VaccinationItem.VaccinationDescription = vaccination.VaccinationDescription;
             VaccinationItem.Notes = vaccination.Notes;
-            VaccinationItem.ItemPerMission = vaccination.ItemPerMission;
+            VaccinationItem.ItemPermission = vaccination.ItemPermission;
         }
     }
 }

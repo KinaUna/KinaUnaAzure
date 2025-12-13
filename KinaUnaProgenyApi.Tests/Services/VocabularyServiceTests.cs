@@ -89,7 +89,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal(1, result.WordId);
             Assert.Equal("Test Word", result.Word);
             Assert.Equal("Test Description", result.Description);
-            Assert.NotNull(result.ItemPerMission);
+            Assert.NotNull(result.ItemPermission);
         }
 
         [Fact]

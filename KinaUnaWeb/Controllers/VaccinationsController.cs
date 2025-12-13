@@ -147,7 +147,7 @@ namespace KinaUnaWeb.Controllers
             {
                 return PartialView("_NotFoundPartial");
             }
-            if (vaccination.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
+            if (vaccination.ItemPermission.PermissionLevel < PermissionLevel.Edit)
             {
                 return PartialView("_AccessDeniedPartial");
             }
@@ -177,7 +177,7 @@ namespace KinaUnaWeb.Controllers
             {
                 return PartialView("_NotFoundPartial");
             }
-            if (existingVaccination.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
+            if (existingVaccination.ItemPermission.PermissionLevel < PermissionLevel.Edit)
             {
                 return PartialView("_AccessDeniedPartial");
             }
@@ -209,7 +209,7 @@ namespace KinaUnaWeb.Controllers
             {
                 return PartialView("_NotFoundPartial");
             }
-            if (vaccination.ItemPerMission.PermissionLevel < PermissionLevel.Admin)
+            if (vaccination.ItemPermission.PermissionLevel < PermissionLevel.Admin)
             {
                 return PartialView("_AccessDeniedPartial");
             }
@@ -238,7 +238,7 @@ namespace KinaUnaWeb.Controllers
             {
                 return PartialView("_NotFoundPartial");
             }
-            if (vaccination.ItemPerMission.PermissionLevel < PermissionLevel.Admin)
+            if (vaccination.ItemPermission.PermissionLevel < PermissionLevel.Admin)
             {
                 return PartialView("_AccessDeniedPartial");
             }

@@ -57,7 +57,7 @@ namespace KinaUnaProgenyApi.Services
 
             if (video != null && video.VideoId != 0)
             {
-                video.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, video.VideoId, video.ProgenyId, 0, currentUserInfo);
+                video.ItemPermission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, video.VideoId, video.ProgenyId, 0, currentUserInfo);
             }
 
             return video;
@@ -77,7 +77,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Video, result.VideoId, currentUserInfo, PermissionLevel.View))
                 {
-                    result.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, result.VideoId, result.ProgenyId, 0, currentUserInfo);
+                    result.ItemPermission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Video, result.VideoId, result.ProgenyId, 0, currentUserInfo);
                     return result;
                 }
             }

@@ -55,7 +55,7 @@ namespace KinaUnaProgenyApi.Services
             }
             if (vaccination != null && vaccination.VaccinationId != 0)
             {
-                vaccination.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vaccination, vaccination.VaccinationId, vaccination.ProgenyId, 0, currentUserInfo);
+                vaccination.ItemPermission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vaccination, vaccination.VaccinationId, vaccination.ProgenyId, 0, currentUserInfo);
             }
 
             return vaccination;
@@ -230,7 +230,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Vaccination, vaccination.VaccinationId, currentUserInfo, PermissionLevel.View))
                 {
-                    vaccination.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vaccination, vaccination.VaccinationId, vaccination.ProgenyId, 0, currentUserInfo);
+                    vaccination.ItemPermission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vaccination, vaccination.VaccinationId, vaccination.ProgenyId, 0, currentUserInfo);
                     accessibleVaccinationsList.Add(vaccination);
                 }
             }

@@ -136,7 +136,7 @@ namespace KinaUnaWeb.Controllers
                     comment.DisplayName = commentAuthor.FullName();
                 }
             }
-            if (model.Video.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
+            if (model.Video.ItemPermission.PermissionLevel >= PermissionLevel.Edit)
             {
                 model.ProgenyLocations = [];
                 foreach (Progeny progeny in model.CurrentUser.ProgenyList)
@@ -323,7 +323,7 @@ namespace KinaUnaWeb.Controllers
                 return PartialView("_NotFoundPartial");
             }
 
-            if (videoToUpdate.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
+            if (videoToUpdate.ItemPermission.PermissionLevel < PermissionLevel.Edit)
             {
                 return PartialView("_AccessDeniedPartial");
             }
@@ -398,7 +398,7 @@ namespace KinaUnaWeb.Controllers
                 });
             }
 
-            if (video.ItemPerMission.PermissionLevel < PermissionLevel.Admin)
+            if (video.ItemPermission.PermissionLevel < PermissionLevel.Admin)
             {
                 return RedirectToRoute(new
                 {
@@ -436,7 +436,7 @@ namespace KinaUnaWeb.Controllers
                     action = "Index"
                 });
             }
-            if (video.ItemPerMission.PermissionLevel < PermissionLevel.Admin)
+            if (video.ItemPermission.PermissionLevel < PermissionLevel.Admin)
             {
                 return RedirectToRoute(new
                 {

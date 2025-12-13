@@ -86,8 +86,7 @@ namespace KinaUna.Data.Extensions
         //Source: https://learn.microsoft.com/en-us/answers/questions/1345224/calculate-distance-between-two-coordinates-lat1-lo
         private static double ToRadians(double angleInDeciDegrees)
         {
-            // Angle in 10th
-            // of a degree
+            // Angle in 10th of a degree (deci-degrees)
             return (angleInDeciDegrees *
                     Math.PI) / 180;
         }

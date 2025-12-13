@@ -85,7 +85,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 CommentThreadNumber = 1,
                 Tags = "family,fun",
                 Location = "Home",
-                ItemPerMission = new TimelineItemPermission() {PermissionLevel = PermissionLevel.View}
+                ItemPermission = new TimelineItemPermission() {PermissionLevel = PermissionLevel.View}
             };
 
             _testTimeLineItem = new TimeLineItem

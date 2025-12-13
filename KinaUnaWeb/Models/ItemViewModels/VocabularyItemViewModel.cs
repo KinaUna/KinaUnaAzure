@@ -54,7 +54,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             VocabularyItem.SoundsLike = vocabularyItem.SoundsLike;
             VocabularyItem.Word = vocabularyItem.Word;
             VocabularyItem.WordId = vocabularyItem.WordId;
-            VocabularyItem.ItemPerMission = vocabularyItem.ItemPerMission;
+            VocabularyItem.ItemPermission = vocabularyItem.ItemPermission;
         }
     }
 

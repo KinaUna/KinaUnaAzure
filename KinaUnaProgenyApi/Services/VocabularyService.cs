@@ -58,7 +58,7 @@ namespace KinaUnaProgenyApi.Services
 
             if(vocabularyItem != null && vocabularyItem.WordId != 0)
             {
-                vocabularyItem.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, vocabularyItem.WordId, vocabularyItem.ProgenyId, 0, currentUserInfo);
+                vocabularyItem.ItemPermission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, vocabularyItem.WordId, vocabularyItem.ProgenyId, 0, currentUserInfo);
             }
 
             return vocabularyItem;
@@ -234,7 +234,7 @@ namespace KinaUnaProgenyApi.Services
             {
                 if (await _accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Vocabulary, vocabularyItem.WordId, currentUserInfo, PermissionLevel.View))
                 {
-                    vocabularyItem.ItemPerMission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, vocabularyItem.WordId, vocabularyItem.ProgenyId, 0, currentUserInfo);
+                    vocabularyItem.ItemPermission = await _accessManagementService.GetItemPermissionForUser(KinaUnaTypes.TimeLineType.Vocabulary, vocabularyItem.WordId, vocabularyItem.ProgenyId, 0, currentUserInfo);
                     allowedVocabularyList.Add(vocabularyItem);
                 }
             }

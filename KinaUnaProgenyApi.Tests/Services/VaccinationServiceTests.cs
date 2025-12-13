@@ -124,8 +124,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal(1, result.ProgenyId);
             Assert.Equal("MMR Vaccine", result.VaccinationName);
             Assert.Equal("Measles, Mumps, and Rubella vaccine", result.VaccinationDescription);
-            Assert.NotNull(result.ItemPerMission);
-            Assert.Equal(PermissionLevel.View, result.ItemPerMission.PermissionLevel);
+            Assert.NotNull(result.ItemPermission);
+            Assert.Equal(PermissionLevel.View, result.ItemPermission.PermissionLevel);
         }
 
         [Fact]
@@ -649,7 +649,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
             Assert.Equal(2, result.Count);
             Assert.All(result, vaccination => Assert.Equal(progenyId, vaccination.ProgenyId));
-            Assert.All(result, vaccination => Assert.NotNull(vaccination.ItemPerMission));
+            Assert.All(result, vaccination => Assert.NotNull(vaccination.ItemPermission));
         }
 
         [Fact]
@@ -849,8 +849,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             // ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Local
             Assert.All(result, vaccination =>
             {
-                Assert.NotNull(vaccination.ItemPerMission);
-                Assert.Equal(PermissionLevel.View, vaccination.ItemPerMission.PermissionLevel);
+                Assert.NotNull(vaccination.ItemPermission);
+                Assert.Equal(PermissionLevel.View, vaccination.ItemPermission.PermissionLevel);
             });
         }
 

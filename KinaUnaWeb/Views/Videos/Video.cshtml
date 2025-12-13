@@ -265,7 +265,7 @@
         </form>
     }
 <div class="space-20"></div>
-    @if (Model.Video.ItemPerMission.PermissionLevel >= PermissionLevel.Edit)
+    @if (Model.Video.ItemPermission.PermissionLevel >= PermissionLevel.Edit)
     {
         <div class="col-sm-3" style="margin-top: 35px;"></div>
         <div class="col-md-8">
@@ -377,7 +377,7 @@
                     </div>
                 </div>
             </form>
-            @if (Model.Video.ItemPerMission.PermissionLevel >= PermissionLevel.Admin)
+            @if (Model.Video.ItemPermission.PermissionLevel >= PermissionLevel.Admin)
             {
                 <form asp-controller="Videos" asp-action="DeleteVideo" role="form" method="get">
                     <div class="form-group">

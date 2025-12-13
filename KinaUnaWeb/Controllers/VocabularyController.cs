@@ -170,7 +170,7 @@ namespace KinaUnaWeb.Controllers
                 return PartialView("_NotFoundPartial");
             }
 
-            if (vocab.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
+            if (vocab.ItemPermission.PermissionLevel < PermissionLevel.Edit)
             {
                 return PartialView("_AccessDeniedPartial");
             }
@@ -198,7 +198,7 @@ namespace KinaUnaWeb.Controllers
             {
                 return PartialView("_NotFoundPartial");
             }
-            if (existingVocabularyItem.ItemPerMission.PermissionLevel < PermissionLevel.Edit)
+            if (existingVocabularyItem.ItemPermission.PermissionLevel < PermissionLevel.Edit)
             {
                 return PartialView("_AccessDeniedPartial");
             }
@@ -233,7 +233,7 @@ namespace KinaUnaWeb.Controllers
             {
                 return RedirectToAction("Index", "Vocabulary");
             }
-            if (vocabularyItem.ItemPerMission.PermissionLevel < PermissionLevel.Admin)
+            if (vocabularyItem.ItemPermission.PermissionLevel < PermissionLevel.Admin)
             {
                 return RedirectToAction("Index", "Vocabulary");
             }
@@ -260,7 +260,7 @@ namespace KinaUnaWeb.Controllers
             {
                 return RedirectToAction("Index", "Vocabulary");
             }
-            if (vocabularyItem.ItemPerMission.PermissionLevel < PermissionLevel.Admin)
+            if (vocabularyItem.ItemPermission.PermissionLevel < PermissionLevel.Admin)
             {
                 return RedirectToAction("Index", "Vocabulary");
             }

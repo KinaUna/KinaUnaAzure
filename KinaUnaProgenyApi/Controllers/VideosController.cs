@@ -172,7 +172,7 @@ namespace KinaUnaProgenyApi.Controllers
                 VideoLink = video.VideoLink,
                 ThumbLink = video.ThumbLink,
                 Author = video.Author,
-                ItemPerMission = video.ItemPerMission
+                ItemPerMission = video.ItemPermission
             };
             model.CommentThreadNumber = video.CommentThreadNumber;
             model.Tags = video.Tags;

@@ -67,7 +67,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             VideoCount = videoViewModel.VideoCount;
             PrevVideo = videoViewModel.PrevVideo;
             NextVideo = videoViewModel.NextVideo;
-            Video.ItemPerMission = videoViewModel.ItemPerMission;
+            Video.ItemPermission = videoViewModel.ItemPerMission;
             CommentsList = videoViewModel.CommentsList;
             CommentsCount = CommentsList?.Count ?? 0;
             TagFilter = videoViewModel.TagFilter;
@@ -106,7 +106,7 @@ namespace KinaUnaWeb.Models.ItemViewModels
             Video.VideoId = video.VideoId;
             Video.ThumbLink = video.ThumbLink;
             Video.VideoTime = video.VideoTime;
-            Video.ItemPerMission = video.ItemPerMission;
+            Video.ItemPermission = video.ItemPermission;
             if (video.VideoTime.HasValue)
             {
                 Video.VideoTime = TimeZoneInfo.ConvertTimeFromUtc(video.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));

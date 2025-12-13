@@ -94,7 +94,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal(1, result.VideoId);
             Assert.Equal("https://example.com/video.mp4", result.VideoLink);
             Assert.Equal("Tag1, Tag2", result.Tags);
-            Assert.NotNull(result.ItemPerMission);
+            Assert.NotNull(result.ItemPermission);
         }
 
         [Fact]
@@ -270,7 +270,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
             Assert.Equal(1, result.VideoId);
             Assert.Equal("https://example.com/video.mp4", result.VideoLink);
-            Assert.NotNull(result.ItemPerMission);
+            Assert.NotNull(result.ItemPermission);
         }
 
         [Fact]
