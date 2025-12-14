@@ -33,7 +33,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             if (currentUserInfo == null) return Unauthorized();
 
-            var result = await searchService.SearchCalendarItems(request, currentUserInfo);
+            SearchResponse<CalendarItem> result = await searchService.SearchCalendarItems(request, currentUserInfo);
             return Ok(result);
         }
 
@@ -49,7 +49,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             if (currentUserInfo == null) return Unauthorized();
 
-            var result = await searchService.SearchContacts(request, currentUserInfo);
+            SearchResponse<Contact> result = await searchService.SearchContacts(request, currentUserInfo);
             return Ok(result);
         }
 
@@ -65,7 +65,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             if (currentUserInfo == null) return Unauthorized();
 
-            var result = await searchService.SearchFriends(request, currentUserInfo);
+            SearchResponse<Friend> result = await searchService.SearchFriends(request, currentUserInfo);
             return Ok(result);
         }
 
@@ -81,7 +81,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             if (currentUserInfo == null) return Unauthorized();
 
-            var result = await searchService.SearchKanbanBoards(request, currentUserInfo);
+            SearchResponse<KanbanBoard> result = await searchService.SearchKanbanBoards(request, currentUserInfo);
             return Ok(result);
         }
 
@@ -97,7 +97,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             if (currentUserInfo == null) return Unauthorized();
 
-            var result = await searchService.SearchLocations(request, currentUserInfo);
+            SearchResponse<Location> result = await searchService.SearchLocations(request, currentUserInfo);
             return Ok(result);
         }
 
@@ -113,7 +113,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             if (currentUserInfo == null) return Unauthorized();
 
-            var result = await searchService.SearchMeasurements(request, currentUserInfo);
+            SearchResponse<Measurement> result = await searchService.SearchMeasurements(request, currentUserInfo);
             return Ok(result);
         }
 
@@ -129,7 +129,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             if (currentUserInfo == null) return Unauthorized();
 
-            var result = await searchService.SearchNotes(request, currentUserInfo);
+            SearchResponse<Note> result = await searchService.SearchNotes(request, currentUserInfo);
             return Ok(result);
         }
 
@@ -145,7 +145,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             if (currentUserInfo == null) return Unauthorized();
 
-            var result = await searchService.SearchPictures(request, currentUserInfo);
+            SearchResponse<Picture> result = await searchService.SearchPictures(request, currentUserInfo);
             return Ok(result);
         }
         
@@ -161,7 +161,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             if (currentUserInfo == null) return Unauthorized();
 
-            var result = await searchService.SearchSkills(request, currentUserInfo);
+            SearchResponse<Skill> result = await searchService.SearchSkills(request, currentUserInfo);
             return Ok(result);
         }
 
@@ -177,7 +177,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             if (currentUserInfo == null) return Unauthorized();
 
-            var result = await searchService.SearchSleepRecords(request, currentUserInfo);
+            SearchResponse<Sleep> result = await searchService.SearchSleepRecords(request, currentUserInfo);
             return Ok(result);
         }
 
@@ -193,7 +193,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             if (currentUserInfo == null) return Unauthorized();
 
-            var result = await searchService.SearchTodoItems(request, currentUserInfo);
+            SearchResponse<TodoItem> result = await searchService.SearchTodoItems(request, currentUserInfo);
             return Ok(result);
         }
         
@@ -209,7 +209,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             if (currentUserInfo == null) return Unauthorized();
 
-            var result = await searchService.SearchVaccinations(request, currentUserInfo);
+            SearchResponse<Vaccination> result = await searchService.SearchVaccinations(request, currentUserInfo);
             return Ok(result);
         }
 
@@ -225,7 +225,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             if (currentUserInfo == null) return Unauthorized();
 
-            var result = await searchService.SearchVideos(request, currentUserInfo);
+            SearchResponse<Video> result = await searchService.SearchVideos(request, currentUserInfo);
             return Ok(result);
         }
 
@@ -241,7 +241,7 @@ namespace KinaUnaProgenyApi.Controllers
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
             if (currentUserInfo == null) return Unauthorized();
 
-            var result = await searchService.SearchVocabularyItems(request, currentUserInfo);
+            SearchResponse<VocabularyItem> result = await searchService.SearchVocabularyItems(request, currentUserInfo);
             return Ok(result);
         }
     }
