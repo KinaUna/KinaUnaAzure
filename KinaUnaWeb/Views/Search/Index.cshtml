@@ -1,0 +1,779 @@
+﻿@using KinaUna.Data
+@using KinaUna.Data.Extensions
+@using KinaUnaWeb.Models.Search
+@using KinaUnaWeb.Services
+@model KinaUnaWeb.Models.Search.SearchViewModel
+@inject ILocaleManager LocaleManager
+@inject IProgenyManager ChildManager
+@{
+    ViewData["Title"] = await LocaleManager.GetTranslation("Search", PageNames.Layout, Model.LanguageId);
+    UserInfo userInfo = await ChildManager.GetInfo(User.GetEmail());
+    List<Progeny> progenyList = userInfo.ProgenyList ?? [];
+    List<KinaUna.Data.Models.Family.Family> familyList = userInfo.FamilyList ?? [];
+
+    string searchString = await LocaleManager.GetTranslation("Search", PageNames.Layout, Model.LanguageId);
+    string searchPlaceholder = await LocaleManager.GetTranslation("Enter search terms...", PageNames.Layout, Model.LanguageId);
+    string filterByTypeString = await LocaleManager.GetTranslation("Filter by type", PageNames.Layout, Model.LanguageId);
+    string selectAllString = await LocaleManager.GetTranslation("Select All", PageNames.Layout, Model.LanguageId);
+    string clearAllString = await LocaleManager.GetTranslation("Clear All", PageNames.Layout, Model.LanguageId);
+    string searchInString = await LocaleManager.GetTranslation("Search in", PageNames.Layout, Model.LanguageId);
+    string resultsString = await LocaleManager.GetTranslation("Results", PageNames.Layout, Model.LanguageId);
+    string noResultsString = await LocaleManager.GetTranslation("No results found", PageNames.Layout, Model.LanguageId);
+    string loadingString = await LocaleManager.GetTranslation("Loading...", PageNames.Layout, Model.LanguageId);
+    
+    // Entity type translations
+    string calendarItemsString = await LocaleManager.GetTranslation("Calendar", PageNames.Calendar, Model.LanguageId);
+    string contactsString = await LocaleManager.GetTranslation("Contacts", PageNames.Contacts, Model.LanguageId);
+    string friendsString = await LocaleManager.GetTranslation("Friends", PageNames.Friends, Model.LanguageId);
+    string kanbanBoardsString = await LocaleManager.GetTranslation("Kanban boards", PageNames.Todos, Model.LanguageId);
+    string locationsString = await LocaleManager.GetTranslation("Locations", PageNames.Locations, Model.LanguageId);
+    string measurementsString = await LocaleManager.GetTranslation("Measurements", PageNames.Measurements, Model.LanguageId);
+    string notesString = await LocaleManager.GetTranslation("Notes", PageNames.Notes, Model.LanguageId);
+    string picturesString = await LocaleManager.GetTranslation("Pictures", PageNames.Pictures, Model.LanguageId);
+    string progeniesString = await LocaleManager.GetTranslation("Individuals", PageNames.Progeny, Model.LanguageId);
+    string skillsString = await LocaleManager.GetTranslation("Skills", PageNames.Skills, Model.LanguageId);
+    string sleepString = await LocaleManager.GetTranslation("Sleep", PageNames.Sleep, Model.LanguageId);
+    string todoItemsString = await LocaleManager.GetTranslation("Todo List", PageNames.Todos, Model.LanguageId);
+    string usersString = await LocaleManager.GetTranslation("Users", PageNames.Layout, Model.LanguageId);
+    string vaccinationsString = await LocaleManager.GetTranslation("Vaccinations", PageNames.Vaccinations, Model.LanguageId);
+    string videosString = await LocaleManager.GetTranslation("Videos", PageNames.Videos, Model.LanguageId);
+    string vocabularyString = await LocaleManager.GetTranslation("Vocabulary", PageNames.Vocabulary, Model.LanguageId);
+
+    // Create a dictionary for entity type display names
+    var entityTypeNames = new Dictionary<string, string>
+    {
+        { "CalendarItems", calendarItemsString },
+        { "Contacts", contactsString },
+        { "Friends", friendsString },
+        { "KanbanBoards", kanbanBoardsString },
+        { "Locations", locationsString },
+        { "Measurements", measurementsString },
+        { "Notes", notesString },
+        { "Pictures", picturesString },
+        { "Progenies", progeniesString },
+        { "ProgenyInfos", progeniesString + " Info" },
+        { "Skills", skillsString },
+        { "SleepRecords", sleepString },
+        { "TodoItems", todoItemsString },
+        { "UserInfos", usersString },
+        { "Vaccinations", vaccinationsString },
+        { "Videos", videosString },
+        { "VocabularyItems", vocabularyString }
+    };
+}
+
+<div id="search-page-data" class="d-none"
+     data-language-id="@Model.LanguageId"
+     data-loading-text="@loadingString"
+     data-no-results-text="@noResultsString"></div>
+
+<div class="row m-0">
+    <div class="col-12">
+        <div class="page-tab-container">
+            <div class="page-tab active" id="page-title-div">
+                <a class="btn-page-tab active leave-page" asp-controller="Search" asp-action="Index">
+                    <i class="material-icons sidebar-icon">search</i> @ViewData["Title"]
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row m-0">
+    <div class="ml-xl-auto mr-xl-auto col-12 col-xxl-11 col-xxxl-10 col-w1900-8 col-w2500-7 bg-page-content">
+        <div class="space-20"></div>
+
+        <form id="search-form" asp-action="Index" method="post">
+            @Html.AntiForgeryToken()
+
+            @* Search Input *@
+            <div class="row">
+                <div class="col-12 col-md-8 col-lg-6">
+                    <div class="input-group">
+                        <input asp-for="Query" class="form-control form-control-lg"
+                               placeholder="@searchPlaceholder"
+                               aria-label="@searchString" />
+                        <div class="input-group-append">
+                            <button type="submit" class="btn btn-primary m-0">
+                                <i class="material-icons icon-top-4">search</i> @searchString
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-20"></div>
+
+            @* Search Scope - Progenies and Families *@
+            <div class="row">
+                <div class="col-12">
+                    <a id="toggle-search-scope-button" class="btn-settings-panel" href="#" data-toggle="collapse" data-target="#search-scope-panel">
+                        <i class="material-icons sidebar-icon">tune</i> @searchInString
+                        <i class="material-icons sidebar-icon chevron-right">chevron_right</i>
+                    </a>
+                </div>
+            </div>
+
+            <div id="search-scope-panel" class="collapse @(string.IsNullOrWhiteSpace(Model.Query) ? "show" : "")">
+                <div class="space-10"></div>
+                <div class="row ml-2">
+                    @if (progenyList.Any())
+                    {
+                        <div class="col-12 col-md-6">
+                            <div class="card bg-dark mb-3">
+                                <div class="card-header">
+                                    <i class="material-icons sidebar-icon">person</i> @progeniesString
+                                </div>
+                                <div class="card-body">
+                                    @foreach (var progeny in progenyList)
+                                    {
+                                        bool isChecked = Model.ProgenyIds?.Contains(progeny.Id) ?? true;
+                                        <div class="form-check">
+                                            <input class="form-check-input search-progeny-checkbox" type="checkbox"
+                                                   name="ProgenyIds" value="@progeny.Id"
+                                                   id="progeny-@progeny.Id"
+                                                   checked="@isChecked" />
+                                            <label class="form-check-label" for="progeny-@progeny.Id">
+                                                @if (!string.IsNullOrWhiteSpace(progeny.PictureLink))
+                                                {
+                                                    <img src="@progeny.GetProfilePictureUrl()"
+                                                         style="max-height: 32px; width: 38px; border-radius: 6px; margin-right: 4px; object-fit: contain;"
+                                                         alt="@progeny.NickName" />
+                                                }
+                                                @progeny.NickName
+                                            </label>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (familyList.Any())
+                    {
+                        <div class="col-12 col-md-6">
+                            <div class="card bg-dark mb-3">
+                                <div class="card-header">
+                                    <i class="material-icons sidebar-icon">family_restroom</i> Families
+                                </div>
+                                <div class="card-body">
+                                    @foreach (var family in familyList)
+                                    {
+                                        bool isChecked = Model.FamilyIds?.Contains(family.FamilyId) ?? true;
+                                        <div class="form-check">
+                                            <input class="form-check-input search-family-checkbox" type="checkbox"
+                                                   name="FamilyIds" value="@family.FamilyId"
+                                                   id="family-@family.FamilyId"
+                                                   checked="@isChecked" />
+                                            <label class="form-check-label" for="family-@family.FamilyId">
+                                                @family.Name
+                                            </label>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="space-10"></div>
+
+            @* Entity Type Filters *@
+            <div class="row">
+                <div class="col-12">
+                    <a id="toggle-type-filters-button" class="btn-settings-panel" href="#" data-toggle="collapse" data-target="#type-filters-panel">
+                        <i class="material-icons sidebar-icon">filter_list</i> @filterByTypeString
+                        <i class="material-icons sidebar-icon chevron-right">chevron_right</i>
+                    </a>
+                </div>
+            </div>
+
+            <div id="type-filters-panel" class="collapse @(string.IsNullOrWhiteSpace(Model.Query) ? "show" : "")">
+                <div class="space-10"></div>
+                <div class="row ml-2 mb-2">
+                    <div class="col-auto">
+                        <button type="button" id="select-all-types-button" class="btn btn-outline-info btn-sm">
+                            <i class="material-icons icon-top-4" style="font-size: 16px;">check_box</i> @selectAllString
+                        </button>
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" id="clear-all-types-button" class="btn btn-outline-info btn-sm">
+                            <i class="material-icons icon-top-4" style="font-size: 16px;">check_box_outline_blank</i> @clearAllString
+                        </button>
+                    </div>
+                </div>
+                <div class="row ml-2">
+                    @foreach (var entityType in SearchViewModel.AvailableEntityTypes)
+                    {
+                        bool isChecked = Model.SelectedEntityTypes?.Contains(entityType) ?? true;
+                        string displayName = entityTypeNames.ContainsKey(entityType) ? entityTypeNames[entityType] : entityType;
+                        <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                            <div class="form-check">
+                                <input class="form-check-input search-type-checkbox" type="checkbox"
+                                       name="SelectedEntityTypes" value="@entityType"
+                                       id="type-@entityType"
+                                       checked="@isChecked" />
+                                <label class="form-check-label" for="type-@entityType">
+                                    @displayName
+                                </label>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <input type="hidden" asp-for="Skip" />
+            <input type="hidden" asp-for="NumberOfItems" />
+            <input type="hidden" asp-for="Sort" />
+        </form>
+
+        <div class="space-20"></div>
+
+        @* Search Results *@
+        @if (!string.IsNullOrWhiteSpace(Model.Query))
+        {
+            <div class="row">
+                <div class="col-12">
+                    <h4>
+                        <i class="material-icons sidebar-icon">search</i>
+                        @resultsString: "@Model.Query"
+                        <span class="badge badge-info">@Model.TotalResultsCount</span>
+                    </h4>
+                </div>
+            </div>
+
+            <div class="space-10"></div>
+
+            @if (Model.TotalResultsCount == 0)
+            {
+                <div class="row">
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <i class="material-icons icon-top-4">info</i> @noResultsString
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                @* Calendar Items Results *@
+                @if (Model.CalendarItemResults.TotalCount > 0)
+                {
+                    <div class="search-results-section">
+                        <h5 class="search-results-header">
+                            <i class="material-icons sidebar-icon">event</i> @calendarItemsString
+                            <span class="badge badge-secondary">@Model.CalendarItemResults.TotalCount</span>
+                        </h5>
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
+                            @foreach (var item in Model.CalendarItemResults.Results)
+                            {
+                                <div class="col mb-3">
+                                    <div class="card bg-dark h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <a asp-controller="Calendar" asp-action="ViewEvent" asp-route-eventId="@item.EventId" class="text-info">
+                                                    @item.Title
+                                                </a>
+                                            </h6>
+                                            @if (item.StartTime.HasValue)
+                                            {
+                                                <p class="card-text small text-muted">
+                                                    <i class="material-icons" style="font-size: 14px;">schedule</i> @item.StartTime.Value.ToString("g")
+                                                </p>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(item.Location))
+                                            {
+                                                <p class="card-text small text-muted">
+                                                    <i class="material-icons" style="font-size: 14px;">place</i> @item.Location
+                                                </p>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @* Contacts Results *@
+                @if (Model.ContactResults.TotalCount > 0)
+                {
+                    <div class="search-results-section">
+                        <h5 class="search-results-header">
+                            <i class="material-icons sidebar-icon">contacts</i> @contactsString
+                            <span class="badge badge-secondary">@Model.ContactResults.TotalCount</span>
+                        </h5>
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
+                            @foreach (var item in Model.ContactResults.Results)
+                            {
+                                <div class="col mb-3">
+                                    <div class="card bg-dark h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <a asp-controller="Contacts" asp-action="ViewContact" asp-route-contactId="@item.ContactId" class="text-info">
+                                                    @item.DisplayName
+                                                </a>
+                                            </h6>
+                                            @if (!string.IsNullOrWhiteSpace(item.Email1))
+                                            {
+                                                <p class="card-text small text-muted">
+                                                    <i class="material-icons" style="font-size: 14px;">email</i> @item.Email1
+                                                </p>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @* Friends Results *@
+                @if (Model.FriendResults.TotalCount > 0)
+                {
+                    <div class="search-results-section">
+                        <h5 class="search-results-header">
+                            <i class="material-icons sidebar-icon">people</i> @friendsString
+                            <span class="badge badge-secondary">@Model.FriendResults.TotalCount</span>
+                        </h5>
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
+                            @foreach (var item in Model.FriendResults.Results)
+                            {
+                                <div class="col mb-3">
+                                    <div class="card bg-dark h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <a asp-controller="Friends" asp-action="ViewFriend" asp-route-friendId="@item.FriendId" class="text-info">
+                                                    @item.Name
+                                                </a>
+                                            </h6>
+                                            @if (!string.IsNullOrWhiteSpace(item.Description))
+                                            {
+                                                <p class="card-text small text-muted">@item.Description[.. 100])</p>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @* Kanban Boards Results *@
+                @if (Model.KanbanBoardResults.TotalCount > 0)
+                {
+                    <div class="search-results-section">
+                        <h5 class="search-results-header">
+                            <i class="material-icons sidebar-icon">view_kanban</i> @kanbanBoardsString
+                            <span class="badge badge-secondary">@Model.KanbanBoardResults.TotalCount</span>
+                        </h5>
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
+                            @foreach (var item in Model.KanbanBoardResults.Results)
+                            {
+                                <div class="col mb-3">
+                                    <div class="card bg-dark h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <a asp-controller="Kanbans" asp-action="Index" asp-route-boardId="@item.KanbanBoardId" class="text-info">
+                                                    @item.Title
+                                                </a>
+                                            </h6>
+                                            @if (!string.IsNullOrWhiteSpace(item.Description))
+                                            {
+                                                <p class="card-text small text-muted">@item.Description[.. 100]</p>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @* Locations Results *@
+                @if (Model.LocationResults.TotalCount > 0)
+                {
+                    <div class="search-results-section">
+                        <h5 class="search-results-header">
+                            <i class="material-icons sidebar-icon">place</i> @locationsString
+                            <span class="badge badge-secondary">@Model.LocationResults.TotalCount</span>
+                        </h5>
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
+                            @foreach (var item in Model.LocationResults.Results)
+                            {
+                                <div class="col mb-3">
+                                    <div class="card bg-dark h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <a asp-controller="Locations" asp-action="ViewLocation" asp-route-locationId="@item.LocationId" class="text-info">
+                                                    @item.Name
+                                                </a>
+                                            </h6>
+                                            @if (!string.IsNullOrWhiteSpace(item.City))
+                                            {
+                                                <p class="card-text small text-muted">
+                                                    @item.City@(string.IsNullOrWhiteSpace(item.Country) ? "" : ", " + item.Country)
+                                                </p>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @* Measurements Results *@
+                @if (Model.MeasurementResults.TotalCount > 0)
+                {
+                    <div class="search-results-section">
+                        <h5 class="search-results-header">
+                            <i class="material-icons sidebar-icon">straighten</i> @measurementsString
+                            <span class="badge badge-secondary">@Model.MeasurementResults.TotalCount</span>
+                        </h5>
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
+                            @foreach (var item in Model.MeasurementResults.Results)
+                            {
+                                <div class="col mb-3">
+                                    <div class="card bg-dark h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <a asp-controller="Measurements" asp-action="ViewMeasurement" asp-route-measurementId="@item.MeasurementId" class="text-info">
+                                                    @item.Date.ToString("d")
+                                                </a>
+                                            </h6>
+                                            <p class="card-text small text-muted">
+                                                @if (!string.IsNullOrWhiteSpace(item.EyeColor))
+                                                {
+                                                    <span>Eyes: @item.EyeColor</span>
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(item.HairColor))
+                                                {
+                                                    <span>Hair: @item.HairColor</span>
+                                                }
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @* Notes Results *@
+                @if (Model.NoteResults.TotalCount > 0)
+                {
+                    <div class="search-results-section">
+                        <h5 class="search-results-header">
+                            <i class="material-icons sidebar-icon">note</i> @notesString
+                            <span class="badge badge-secondary">@Model.NoteResults.TotalCount</span>
+                        </h5>
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
+                            @foreach (var item in Model.NoteResults.Results)
+                            {
+                                <div class="col mb-3">
+                                    <div class="card bg-dark h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <a asp-controller="Notes" asp-action="ViewNote" asp-route-noteId="@item.NoteId" class="text-info">
+                                                    @(string.IsNullOrWhiteSpace(item.Title) ? "Note" : item.Title)
+                                                </a>
+                                            </h6>
+                                            @if (!string.IsNullOrWhiteSpace(item.Category))
+                                            {
+                                                <p class="card-text small text-muted">
+                                                    <i class="material-icons" style="font-size: 14px;">folder</i> @item.Category
+                                                </p>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @* Pictures Results *@
+                @if (Model.PictureResults.TotalCount > 0)
+                {
+                    <div class="search-results-section">
+                        <h5 class="search-results-header">
+                            <i class="material-icons sidebar-icon">photo_library</i> @picturesString
+                            <span class="badge badge-secondary">@Model.PictureResults.TotalCount</span>
+                        </h5>
+                        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6">
+                            @foreach (var item in Model.PictureResults.Results)
+                            {
+                                <div class="col mb-3">
+                                    <a asp-controller="Pictures" asp-action="Picture" asp-route-id="@item.PictureId" class="text-info">
+                                        <img src="@item.GetPictureUrl(600)" class="img-fluid rounded" alt="@item.Tags" style="max-height: 120px; object-fit: cover;" />
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @* Skills Results *@
+                @if (Model.SkillResults.TotalCount > 0)
+                {
+                    <div class="search-results-section">
+                        <h5 class="search-results-header">
+                            <i class="material-icons sidebar-icon">star</i> @skillsString
+                            <span class="badge badge-secondary">@Model.SkillResults.TotalCount</span>
+                        </h5>
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
+                            @foreach (var item in Model.SkillResults.Results)
+                            {
+                                <div class="col mb-3">
+                                    <div class="card bg-dark h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <a asp-controller="Skills" asp-action="ViewSkill" asp-route-skillId="@item.SkillId" class="text-info">
+                                                    @item.Name
+                                                </a>
+                                            </h6>
+                                            @if (!string.IsNullOrWhiteSpace(item.Category))
+                                            {
+                                                <p class="card-text small text-muted">
+                                                    <i class="material-icons" style="font-size: 14px;">folder</i> @item.Category
+                                                </p>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @* Sleep Results *@
+                @if (Model.SleepResults.TotalCount > 0)
+                {
+                    <div class="search-results-section">
+                        <h5 class="search-results-header">
+                            <i class="material-icons sidebar-icon">bedtime</i> @sleepString
+                            <span class="badge badge-secondary">@Model.SleepResults.TotalCount</span>
+                        </h5>
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
+                            @foreach (var item in Model.SleepResults.Results)
+                            {
+                                <div class="col mb-3">
+                                    <div class="card bg-dark h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <a asp-controller="Sleep" asp-action="ViewSleep" asp-route-sleepId="@item.SleepId" class="text-info">
+                                                    @item.SleepStart.ToString("g")
+                                                </a>
+                                            </h6>
+                                            @if (!string.IsNullOrWhiteSpace(item.SleepNotes))
+                                            {
+                                                <p class="card-text small text-muted">@item.SleepNotes[.. 100]</p>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @* Todo Items Results *@
+                @if (Model.TodoItemResults.TotalCount > 0)
+                {
+                    <div class="search-results-section">
+                        <h5 class="search-results-header">
+                            <i class="material-icons sidebar-icon">fact_check</i> @todoItemsString
+                            <span class="badge badge-secondary">@Model.TodoItemResults.TotalCount</span>
+                        </h5>
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
+                            @foreach (var item in Model.TodoItemResults.Results)
+                            {
+                                <div class="col mb-3">
+                                    <div class="card bg-dark h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <a asp-controller="Todos" asp-action="ViewTodo" asp-route-itemId="@item.TodoItemId" class="text-info">
+                                                    @item.Title
+                                                </a>
+                                            </h6>
+                                            @if (!string.IsNullOrWhiteSpace(item.Description))
+                                            {
+                                                <p class="card-text small text-muted">@item.Description[.. 100]</p>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @* Vaccinations Results *@
+                @if (Model.VaccinationResults.TotalCount > 0)
+                {
+                    <div class="search-results-section">
+                        <h5 class="search-results-header">
+                            <i class="material-icons sidebar-icon">vaccines</i> @vaccinationsString
+                            <span class="badge badge-secondary">@Model.VaccinationResults.TotalCount</span>
+                        </h5>
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
+                            @foreach (var item in Model.VaccinationResults.Results)
+                            {
+                                <div class="col mb-3">
+                                    <div class="card bg-dark h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <a asp-controller="Vaccinations" asp-action="ViewVaccination" asp-route-vaccinationId="@item.VaccinationId" class="text-info">
+                                                    @item.VaccinationName
+                                                </a>
+                                            </h6>
+                                            <p class="card-text small text-muted">
+                                                <i class="material-icons" style="font-size: 14px;">event</i> @item.VaccinationDate.ToString("d")
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @* Videos Results *@
+                @if (Model.VideoResults.TotalCount > 0)
+                {
+                    <div class="search-results-section">
+                        <h5 class="search-results-header">
+                            <i class="material-icons sidebar-icon">videocam</i> @videosString
+                            <span class="badge badge-secondary">@Model.VideoResults.TotalCount</span>
+                        </h5>
+                        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6">
+                            @foreach (var item in Model.VideoResults.Results)
+                            {
+                                <div class="col mb-3">
+                                    <a asp-controller="Videos" asp-action="Video" asp-route-id="@item.VideoId" class="text-info">
+                                        <img src="@item.ThumbLink" class="img-fluid rounded" alt="@item.Tags" style="max-height: 120px; object-fit: cover;" />
+                                    </a>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @* Vocabulary Items Results *@
+                @if (Model.VocabularyItemResults.TotalCount > 0)
+                {
+                    <div class="search-results-section">
+                        <h5 class="search-results-header">
+                            <i class="material-icons sidebar-icon">text_fields</i> @vocabularyString
+                            <span class="badge badge-secondary">@Model.VocabularyItemResults.TotalCount</span>
+                        </h5>
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
+                            @foreach (var item in Model.VocabularyItemResults.Results)
+                            {
+                                <div class="col mb-3">
+                                    <div class="card bg-dark h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <a asp-controller="Vocabulary" asp-action="ViewVocabularyItem" asp-route-wordId="@item.WordId" class="text-info">
+                                                    @item.Word
+                                                </a>
+                                            </h6>
+                                            @if (!string.IsNullOrWhiteSpace(item.Description))
+                                            {
+                                                <p class="card-text small text-muted">@item.Description[..100]</p>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(item.Language))
+                                            {
+                                                <p class="card-text small text-muted">
+                                                    <i class="material-icons" style="font-size: 14px;">language</i> @item.Language
+                                                </p>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @* User Infos Results *@
+                @if (Model.UserInfoResults.TotalCount > 0)
+                {
+                    <div class="search-results-section">
+                        <h5 class="search-results-header">
+                            <i class="material-icons sidebar-icon">person</i> @usersString
+                            <span class="badge badge-secondary">@Model.UserInfoResults.TotalCount</span>
+                        </h5>
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
+                            @foreach (var item in Model.UserInfoResults.Results)
+                            {
+                                <div class="col mb-3">
+                                    <div class="card bg-dark h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-info">
+                                                @if (!string.IsNullOrWhiteSpace(item.ProfilePicture))
+                                                {
+                                                    <img src="@item.ProfilePicture"
+                                                         style="max-height: 24px; width: 28px; border-radius: 6px; margin-right: 4px; object-fit: contain;"
+                                                         alt="@item.UserName" />
+                                                }
+                                                @item.FirstName @item.LastName
+                                            </h6>
+                                            @if (!string.IsNullOrWhiteSpace(item.UserName))
+                                            {
+                                                <p class="card-text small text-muted">@@@item.UserName</p>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @* Progenies Results *@
+                @if (Model.ProgenyResults.TotalCount > 0)
+                {
+                    <div class="search-results-section">
+                        <h5 class="search-results-header">
+                            <i class="material-icons sidebar-icon">child_care</i> @progeniesString
+                            <span class="badge badge-secondary">@Model.ProgenyResults.TotalCount</span>
+                        </h5>
+                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
+                            @foreach (var item in Model.ProgenyResults.Results)
+                            {
+                                <div class="col mb-3">
+                                    <div class="card bg-dark h-100">
+                                        <div class="card-body">
+                                            <h6 class="card-title">
+                                                <a asp-controller="Progeny" asp-action="Index" asp-route-childId="@item.Id" class="text-info">
+                                                    @if (!string.IsNullOrWhiteSpace(item.PictureLink))
+                                                    {
+                                                        <img src="@item.GetProfilePictureUrl()"
+                                                             style="max-height: 24px; width: 28px; border-radius: 6px; margin-right: 4px; object-fit: contain;"
+                                                             alt="@item.NickName" />
+                                                    }
+                                                    @item.NickName
+                                                </a>
+                                            </h6>
+                                            @if (!string.IsNullOrWhiteSpace(item.Name) && item.Name != item.NickName)
+                                            {
+                                                <p class="card-text small text-muted">@item.Name</p>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        }
+
+        <div class="space-50"></div>
+    </div>
+</div>
+
+<script src="/js/search/search-index.js" type="module" asp-append-version="true"></script>
