@@ -769,3 +769,22 @@ export class SleepDataModel {
     sliderStart: string = '';
     sliderEnd: string = '';
 }
+
+export class SearchViewModel {
+    query: string = '';
+    progenies: number[] = [];
+    families: number[] = [];
+    selectedEntityTypes: string[] = [];
+    skip: number = 0;
+    numberOfItems: number = 25;
+    sort: number = 0;
+    totalResultsCount: number = 0;
+    timelineItemsResults: SearchResponse<TimelineItem> = new SearchResponse<TimelineItem>();
+}
+
+export class SearchResponse<T> {
+    totalCount: number = 0;
+    results: T[] = [];
+    pageNumber: number = 1;
+    remainingItems: number = 0;
+}

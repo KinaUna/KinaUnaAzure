@@ -10,6 +10,7 @@ namespace KinaUnaProgenyApi.Services.Search
     /// </summary>
     public interface ISearchService
     {
+        Task<SearchResponse<TimeLineItem>> QuickSearch(SearchRequest request, UserInfo currentUserInfo);
         /// <summary>
         /// Searches calendar items by title, notes, location, and context.
         /// </summary>

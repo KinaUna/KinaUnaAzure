@@ -5,6 +5,7 @@ import { hideBodyScrollbars, showBodyScrollbars } from './item-details/items-dis
 import { startFullPageSpinner, stopFullPageSpinner, startFullPageSpinner2, setFullPageSpinnerEventListeners } from './navigation-tools-v12.js';
 import { SetProgenyRequest } from './page-models-v12.js';
 import { addProgenyItemEventListenersForAllProgenies } from './progeny/progeny-details-v12.js';
+import { addQuickSearchButtonEventListener } from './search/quick-search.js';
 import { getSelectedFamilies, getSelectedProgenies } from './settings-tools-v12.js';
 import { initSidebar } from './sidebar-v12.js';
 
@@ -314,4 +315,5 @@ document.addEventListener('DOMContentLoaded', function (): void {
     addFamilyItemEventListenersForAllFamilies();
 
     setAddItemButtonEventListeners();
+    addQuickSearchButtonEventListener();
 });

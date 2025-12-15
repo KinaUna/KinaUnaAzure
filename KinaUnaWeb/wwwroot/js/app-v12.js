@@ -4,6 +4,7 @@ import { addFamilyItemEventListenersForAllFamilies } from './families/family-det
 import { startFullPageSpinner, startFullPageSpinner2, setFullPageSpinnerEventListeners } from './navigation-tools-v12.js';
 import { SetProgenyRequest } from './page-models-v12.js';
 import { addProgenyItemEventListenersForAllProgenies } from './progeny/progeny-details-v12.js';
+import { addQuickSearchButtonEventListener } from './search/quick-search.js';
 import { getSelectedFamilies, getSelectedProgenies } from './settings-tools-v12.js';
 import { initSidebar } from './sidebar-v12.js';
 const serviceWorkerVersion = 'v11';
@@ -259,5 +260,6 @@ document.addEventListener('DOMContentLoaded', function () {
     addProgenyItemEventListenersForAllProgenies();
     addFamilyItemEventListenersForAllFamilies();
     setAddItemButtonEventListeners();
+    addQuickSearchButtonEventListener();
 });
 //# sourceMappingURL=app-v12.js.map

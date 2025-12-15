@@ -843,4 +843,25 @@ export class SleepDataModel {
         this.sliderEnd = '';
     }
 }
+export class SearchViewModel {
+    constructor() {
+        this.query = '';
+        this.progenies = [];
+        this.families = [];
+        this.selectedEntityTypes = [];
+        this.skip = 0;
+        this.numberOfItems = 25;
+        this.sort = 0;
+        this.totalResultsCount = 0;
+        this.timelineItemsResults = new SearchResponse();
+    }
+}
+export class SearchResponse {
+    constructor() {
+        this.totalCount = 0;
+        this.results = [];
+        this.pageNumber = 1;
+        this.remainingItems = 0;
+    }
+}
 //# sourceMappingURL=page-models-v12.js.map

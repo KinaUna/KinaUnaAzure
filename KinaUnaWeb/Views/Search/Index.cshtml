@@ -1,5 +1,6 @@
 ﻿@using KinaUna.Data
 @using KinaUna.Data.Extensions
+@using KinaUna.Data.Models.Family
 @using KinaUnaWeb.Models.Search
 @using KinaUnaWeb.Services
 @model KinaUnaWeb.Models.Search.SearchViewModel
@@ -9,7 +10,7 @@
     ViewData["Title"] = await LocaleManager.GetTranslation("Search", PageNames.Layout, Model.LanguageId);
     UserInfo userInfo = await ChildManager.GetInfo(User.GetEmail());
     List<Progeny> progenyList = userInfo.ProgenyList ?? [];
-    List<KinaUna.Data.Models.Family.Family> familyList = userInfo.FamilyList ?? [];
+    List<Family> familyList = userInfo.FamilyList ?? [];
 
     string searchString = await LocaleManager.GetTranslation("Search", PageNames.Layout, Model.LanguageId);
     string searchPlaceholder = await LocaleManager.GetTranslation("Enter search terms...", PageNames.Layout, Model.LanguageId);
@@ -20,7 +21,7 @@
     string resultsString = await LocaleManager.GetTranslation("Results", PageNames.Layout, Model.LanguageId);
     string noResultsString = await LocaleManager.GetTranslation("No results found", PageNames.Layout, Model.LanguageId);
     string loadingString = await LocaleManager.GetTranslation("Loading...", PageNames.Layout, Model.LanguageId);
-    
+    string progeniesString = await LocaleManager.GetTranslation("Individuals", PageNames.Layout, Model.LanguageId);
     // Entity type translations
     string calendarItemsString = await LocaleManager.GetTranslation("Calendar", PageNames.Calendar, Model.LanguageId);
     string contactsString = await LocaleManager.GetTranslation("Contacts", PageNames.Contacts, Model.LanguageId);
@@ -30,17 +31,15 @@
     string measurementsString = await LocaleManager.GetTranslation("Measurements", PageNames.Measurements, Model.LanguageId);
     string notesString = await LocaleManager.GetTranslation("Notes", PageNames.Notes, Model.LanguageId);
     string picturesString = await LocaleManager.GetTranslation("Pictures", PageNames.Pictures, Model.LanguageId);
-    string progeniesString = await LocaleManager.GetTranslation("Individuals", PageNames.Progeny, Model.LanguageId);
     string skillsString = await LocaleManager.GetTranslation("Skills", PageNames.Skills, Model.LanguageId);
     string sleepString = await LocaleManager.GetTranslation("Sleep", PageNames.Sleep, Model.LanguageId);
     string todoItemsString = await LocaleManager.GetTranslation("Todo List", PageNames.Todos, Model.LanguageId);
-    string usersString = await LocaleManager.GetTranslation("Users", PageNames.Layout, Model.LanguageId);
     string vaccinationsString = await LocaleManager.GetTranslation("Vaccinations", PageNames.Vaccinations, Model.LanguageId);
     string videosString = await LocaleManager.GetTranslation("Videos", PageNames.Videos, Model.LanguageId);
     string vocabularyString = await LocaleManager.GetTranslation("Vocabulary", PageNames.Vocabulary, Model.LanguageId);
 
     // Create a dictionary for entity type display names
-    var entityTypeNames = new Dictionary<string, string>
+    Dictionary<string, string> entityTypeNames = new()
     {
         { "CalendarItems", calendarItemsString },
         { "Contacts", contactsString },
@@ -50,12 +49,9 @@
         { "Measurements", measurementsString },
         { "Notes", notesString },
         { "Pictures", picturesString },
-        { "Progenies", progeniesString },
-        { "ProgenyInfos", progeniesString + " Info" },
         { "Skills", skillsString },
         { "SleepRecords", sleepString },
         { "TodoItems", todoItemsString },
-        { "UserInfos", usersString },
         { "Vaccinations", vaccinationsString },
         { "Videos", videosString },
         { "VocabularyItems", vocabularyString }
@@ -125,7 +121,7 @@
                                     <i class="material-icons sidebar-icon">person</i> @progeniesString
                                 </div>
                                 <div class="card-body">
-                                    @foreach (var progeny in progenyList)
+                                    @foreach (Progeny progeny in progenyList)
                                     {
                                         bool isChecked = Model.ProgenyIds?.Contains(progeny.Id) ?? true;
                                         <div class="form-check">
@@ -157,7 +153,7 @@
                                     <i class="material-icons sidebar-icon">family_restroom</i> Families
                                 </div>
                                 <div class="card-body">
-                                    @foreach (var family in familyList)
+                                    @foreach (Family family in familyList)
                                     {
                                         bool isChecked = Model.FamilyIds?.Contains(family.FamilyId) ?? true;
                                         <div class="form-check">
@@ -204,10 +200,10 @@
                     </div>
                 </div>
                 <div class="row ml-2">
-                    @foreach (var entityType in SearchViewModel.AvailableEntityTypes)
+                    @foreach (string entityType in SearchViewModel.AvailableEntityTypes)
                     {
                         bool isChecked = Model.SelectedEntityTypes?.Contains(entityType) ?? true;
-                        string displayName = entityTypeNames.ContainsKey(entityType) ? entityTypeNames[entityType] : entityType;
+                        string displayName = entityTypeNames.GetValueOrDefault(entityType, entityType);
                         <div class="col-6 col-sm-4 col-md-3 col-lg-2">
                             <div class="form-check">
                                 <input class="form-check-input search-type-checkbox" type="checkbox"
@@ -266,7 +262,7 @@
                             <span class="badge badge-secondary">@Model.CalendarItemResults.TotalCount</span>
                         </h5>
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
-                            @foreach (var item in Model.CalendarItemResults.Results)
+                            @foreach (CalendarItem item in Model.CalendarItemResults.Results)
                             {
                                 <div class="col mb-3">
                                     <div class="card bg-dark h-100">
@@ -305,7 +301,7 @@
                             <span class="badge badge-secondary">@Model.ContactResults.TotalCount</span>
                         </h5>
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
-                            @foreach (var item in Model.ContactResults.Results)
+                            @foreach (Contact item in Model.ContactResults.Results)
                             {
                                 <div class="col mb-3">
                                     <div class="card bg-dark h-100">
@@ -338,7 +334,7 @@
                             <span class="badge badge-secondary">@Model.FriendResults.TotalCount</span>
                         </h5>
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
-                            @foreach (var item in Model.FriendResults.Results)
+                            @foreach (Friend item in Model.FriendResults.Results)
                             {
                                 <div class="col mb-3">
                                     <div class="card bg-dark h-100">
@@ -369,7 +365,7 @@
                             <span class="badge badge-secondary">@Model.KanbanBoardResults.TotalCount</span>
                         </h5>
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
-                            @foreach (var item in Model.KanbanBoardResults.Results)
+                            @foreach (KanbanBoard item in Model.KanbanBoardResults.Results)
                             {
                                 <div class="col mb-3">
                                     <div class="card bg-dark h-100">
@@ -400,7 +396,7 @@
                             <span class="badge badge-secondary">@Model.LocationResults.TotalCount</span>
                         </h5>
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
-                            @foreach (var item in Model.LocationResults.Results)
+                            @foreach (Location item in Model.LocationResults.Results)
                             {
                                 <div class="col mb-3">
                                     <div class="card bg-dark h-100">
@@ -433,7 +429,7 @@
                             <span class="badge badge-secondary">@Model.MeasurementResults.TotalCount</span>
                         </h5>
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
-                            @foreach (var item in Model.MeasurementResults.Results)
+                            @foreach (Measurement item in Model.MeasurementResults.Results)
                             {
                                 <div class="col mb-3">
                                     <div class="card bg-dark h-100">
@@ -470,7 +466,7 @@
                             <span class="badge badge-secondary">@Model.NoteResults.TotalCount</span>
                         </h5>
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
-                            @foreach (var item in Model.NoteResults.Results)
+                            @foreach (Note item in Model.NoteResults.Results)
                             {
                                 <div class="col mb-3">
                                     <div class="card bg-dark h-100">
@@ -503,7 +499,7 @@
                             <span class="badge badge-secondary">@Model.PictureResults.TotalCount</span>
                         </h5>
                         <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6">
-                            @foreach (var item in Model.PictureResults.Results)
+                            @foreach (Picture item in Model.PictureResults.Results)
                             {
                                 <div class="col mb-3">
                                     <a asp-controller="Pictures" asp-action="Picture" asp-route-id="@item.PictureId" class="text-info">
@@ -524,7 +520,7 @@
                             <span class="badge badge-secondary">@Model.SkillResults.TotalCount</span>
                         </h5>
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
-                            @foreach (var item in Model.SkillResults.Results)
+                            @foreach (Skill item in Model.SkillResults.Results)
                             {
                                 <div class="col mb-3">
                                     <div class="card bg-dark h-100">
@@ -557,7 +553,7 @@
                             <span class="badge badge-secondary">@Model.SleepResults.TotalCount</span>
                         </h5>
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
-                            @foreach (var item in Model.SleepResults.Results)
+                            @foreach (Sleep item in Model.SleepResults.Results)
                             {
                                 <div class="col mb-3">
                                     <div class="card bg-dark h-100">
@@ -588,7 +584,7 @@
                             <span class="badge badge-secondary">@Model.TodoItemResults.TotalCount</span>
                         </h5>
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
-                            @foreach (var item in Model.TodoItemResults.Results)
+                            @foreach (TodoItem item in Model.TodoItemResults.Results)
                             {
                                 <div class="col mb-3">
                                     <div class="card bg-dark h-100">
@@ -619,7 +615,7 @@
                             <span class="badge badge-secondary">@Model.VaccinationResults.TotalCount</span>
                         </h5>
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
-                            @foreach (var item in Model.VaccinationResults.Results)
+                            @foreach (Vaccination item in Model.VaccinationResults.Results)
                             {
                                 <div class="col mb-3">
                                     <div class="card bg-dark h-100">
@@ -649,7 +645,7 @@
                             <span class="badge badge-secondary">@Model.VideoResults.TotalCount</span>
                         </h5>
                         <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6">
-                            @foreach (var item in Model.VideoResults.Results)
+                            @foreach (Video item in Model.VideoResults.Results)
                             {
                                 <div class="col mb-3">
                                     <a asp-controller="Videos" asp-action="Video" asp-route-id="@item.VideoId" class="text-info">
@@ -670,7 +666,7 @@
                             <span class="badge badge-secondary">@Model.VocabularyItemResults.TotalCount</span>
                         </h5>
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
-                            @foreach (var item in Model.VocabularyItemResults.Results)
+                            @foreach (VocabularyItem item in Model.VocabularyItemResults.Results)
                             {
                                 <div class="col mb-3">
                                     <div class="card bg-dark h-100">
@@ -689,78 +685,6 @@
                                                 <p class="card-text small text-muted">
                                                     <i class="material-icons" style="font-size: 14px;">language</i> @item.Language
                                                 </p>
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                }
-
-                @* User Infos Results *@
-                @if (Model.UserInfoResults.TotalCount > 0)
-                {
-                    <div class="search-results-section">
-                        <h5 class="search-results-header">
-                            <i class="material-icons sidebar-icon">person</i> @usersString
-                            <span class="badge badge-secondary">@Model.UserInfoResults.TotalCount</span>
-                        </h5>
-                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
-                            @foreach (var item in Model.UserInfoResults.Results)
-                            {
-                                <div class="col mb-3">
-                                    <div class="card bg-dark h-100">
-                                        <div class="card-body">
-                                            <h6 class="card-title text-info">
-                                                @if (!string.IsNullOrWhiteSpace(item.ProfilePicture))
-                                                {
-                                                    <img src="@item.ProfilePicture"
-                                                         style="max-height: 24px; width: 28px; border-radius: 6px; margin-right: 4px; object-fit: contain;"
-                                                         alt="@item.UserName" />
-                                                }
-                                                @item.FirstName @item.LastName
-                                            </h6>
-                                            @if (!string.IsNullOrWhiteSpace(item.UserName))
-                                            {
-                                                <p class="card-text small text-muted">@@@item.UserName</p>
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                        </div>
-                    </div>
-                }
-
-                @* Progenies Results *@
-                @if (Model.ProgenyResults.TotalCount > 0)
-                {
-                    <div class="search-results-section">
-                        <h5 class="search-results-header">
-                            <i class="material-icons sidebar-icon">child_care</i> @progeniesString
-                            <span class="badge badge-secondary">@Model.ProgenyResults.TotalCount</span>
-                        </h5>
-                        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
-                            @foreach (var item in Model.ProgenyResults.Results)
-                            {
-                                <div class="col mb-3">
-                                    <div class="card bg-dark h-100">
-                                        <div class="card-body">
-                                            <h6 class="card-title">
-                                                <a asp-controller="Progeny" asp-action="Index" asp-route-childId="@item.Id" class="text-info">
-                                                    @if (!string.IsNullOrWhiteSpace(item.PictureLink))
-                                                    {
-                                                        <img src="@item.GetProfilePictureUrl()"
-                                                             style="max-height: 24px; width: 28px; border-radius: 6px; margin-right: 4px; object-fit: contain;"
-                                                             alt="@item.NickName" />
-                                                    }
-                                                    @item.NickName
-                                                </a>
-                                            </h6>
-                                            @if (!string.IsNullOrWhiteSpace(item.Name) && item.Name != item.NickName)
-                                            {
-                                                <p class="card-text small text-muted">@item.Name</p>
                                             }
                                         </div>
                                     </div>

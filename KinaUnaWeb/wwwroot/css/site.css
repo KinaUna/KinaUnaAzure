@@ -3775,6 +3775,26 @@ noUi-handle:after, .noUi-handle:before {
     background-color: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(2px) !important;
 }
+.quick-search-popup {
+    position: fixed;
+    top: 0;
+    left: 0px;
+    right: 0px;
+    z-index: 1050;
+    max-height: 100vh;
+}
+
+@media (min-width: 576px) {
+    .quick-search-popup {
+        top: 160px
+    }
+}
+
+@media (max-height: 900px) {
+    .quick-search-popup {
+        top: 0;
+    }
+}
 
 .item-details-popup {
     position: fixed;
@@ -3854,6 +3874,16 @@ noUi-handle:after, .noUi-handle:before {
 }
 
 .kanban-item-details-close-button {
+    position: absolute;
+    top: -0.3rem;
+    right: 0;
+    z-index: 1051;
+    padding: 0 1rem;
+    font-size: 2.5rem;
+    background-color: #aabbcc55 !important;
+}
+
+.quick-search-close-button {
     position: absolute;
     top: -0.3rem;
     right: 0;

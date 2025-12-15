@@ -153,6 +153,63 @@ namespace KinaUnaWeb.Controllers
             return View(model);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> QuickSearch()
+        {
+
+            BaseItemsViewModel baseModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0, false);
+            SearchViewModel model = new(baseModel);
+
+            // Default to searching all progenies and families the user has access to
+            if (model.CurrentUser != null)
+            {
+                model.ProgenyIds = model.CurrentUser.ProgenyList?.Select(p => p.Id).ToList() ?? [];
+                model.FamilyIds = model.CurrentUser.FamilyList?.Select(f => f.FamilyId).ToList() ?? [];
+            }
+
+            // Default to all entity types selected
+            model.SelectedEntityTypes = SearchViewModel.AvailableEntityTypes;
+
+            return PartialView("_QuickSearchPartial", model);
+        }
+
+        /// <summary>
+        /// Performs a search across selected entity types.
+        /// </summary>
+        /// <param name="model">The search view model containing query and filters.</param>
+        /// <returns>The search results view.</returns>
+        [HttpPost]
+        public async Task<IActionResult> QuickSearch([FromBody] SearchViewModel model)
+        {
+            BaseItemsViewModel baseItemsViewModel = await viewModelSetupService.SetupViewModel(Request.GetLanguageIdFromCookie(), User.GetEmail(), 0, 0, false);
+            model.SetBaseProperties(baseItemsViewModel);
+
+            if (string.IsNullOrWhiteSpace(model.Query))
+            {
+                return Json(model.TimelineItemsResults);
+            }
+            // Default to searching all progenies and families the user has access to
+            if (model.CurrentUser != null)
+            {
+                model.ProgenyIds = model.CurrentUser.ProgenyList?.Select(p => p.Id).ToList() ?? [];
+                model.FamilyIds = model.CurrentUser.FamilyList?.Select(f => f.FamilyId).ToList() ?? [];
+            }
+            
+            SearchRequest request = new()
+            {
+                Query = model.Query,
+                ProgenyIds = model.ProgenyIds ?? [],
+                FamilyIds = model.FamilyIds ?? [],
+                Skip = model.Skip,
+                NumberOfItems = model.NumberOfItems,
+                Sort = model.Sort
+            };
+            
+            model.TimelineItemsResults = await searchHttpClient.QuickSearch(request);
+
+            return Json(model.TimelineItemsResults);
+        }
+
         #region Individual Search Actions (for AJAX calls)
 
         /// <summary>
@@ -161,7 +218,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> SearchCalendarItems([FromBody] SearchRequest request)
         {
-            var result = await searchHttpClient.SearchCalendarItems(request);
+            SearchResponse<CalendarItem> result = await searchHttpClient.SearchCalendarItems(request);
             return Json(result);
         }
 
@@ -171,7 +228,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> SearchContacts([FromBody] SearchRequest request)
         {
-            var result = await searchHttpClient.SearchContacts(request);
+            SearchResponse<Contact> result = await searchHttpClient.SearchContacts(request);
             return Json(result);
         }
 
@@ -181,7 +238,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> SearchFriends([FromBody] SearchRequest request)
         {
-            var result = await searchHttpClient.SearchFriends(request);
+            SearchResponse<Friend> result = await searchHttpClient.SearchFriends(request);
             return Json(result);
         }
 
@@ -191,7 +248,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> SearchKanbanBoards([FromBody] SearchRequest request)
         {
-            var result = await searchHttpClient.SearchKanbanBoards(request);
+            SearchResponse<KanbanBoard> result = await searchHttpClient.SearchKanbanBoards(request);
             return Json(result);
         }
 
@@ -201,7 +258,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> SearchLocations([FromBody] SearchRequest request)
         {
-            var result = await searchHttpClient.SearchLocations(request);
+            SearchResponse<Location> result = await searchHttpClient.SearchLocations(request);
             return Json(result);
         }
 
@@ -211,7 +268,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> SearchMeasurements([FromBody] SearchRequest request)
         {
-            var result = await searchHttpClient.SearchMeasurements(request);
+            SearchResponse<Measurement> result = await searchHttpClient.SearchMeasurements(request);
             return Json(result);
         }
 
@@ -221,7 +278,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> SearchNotes([FromBody] SearchRequest request)
         {
-            var result = await searchHttpClient.SearchNotes(request);
+            SearchResponse<Note> result = await searchHttpClient.SearchNotes(request);
             return Json(result);
         }
 
@@ -231,7 +288,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> SearchPictures([FromBody] SearchRequest request)
         {
-            var result = await searchHttpClient.SearchPictures(request);
+            SearchResponse<Picture> result = await searchHttpClient.SearchPictures(request);
             return Json(result);
         }
         
@@ -241,7 +298,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> SearchSkills([FromBody] SearchRequest request)
         {
-            var result = await searchHttpClient.SearchSkills(request);
+            SearchResponse<Skill> result = await searchHttpClient.SearchSkills(request);
             return Json(result);
         }
 
@@ -251,17 +308,17 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> SearchSleepRecords([FromBody] SearchRequest request)
         {
-            var result = await searchHttpClient.SearchSleepRecords(request);
+            SearchResponse<Sleep> result = await searchHttpClient.SearchSleepRecords(request);
             return Json(result);
         }
 
         /// <summary>
-        /// Searches todo items and returns JSON results.
+        /// Searches TodoItems and returns JSON results.
         /// </summary>
         [HttpPost]
         public async Task<IActionResult> SearchTodoItems([FromBody] SearchRequest request)
         {
-            var result = await searchHttpClient.SearchTodoItems(request);
+            SearchResponse<TodoItem> result = await searchHttpClient.SearchTodoItems(request);
             return Json(result);
         }
 
@@ -271,7 +328,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> SearchVaccinations([FromBody] SearchRequest request)
         {
-            var result = await searchHttpClient.SearchVaccinations(request);
+            SearchResponse<Vaccination> result = await searchHttpClient.SearchVaccinations(request);
             return Json(result);
         }
 
@@ -281,7 +338,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> SearchVideos([FromBody] SearchRequest request)
         {
-            var result = await searchHttpClient.SearchVideos(request);
+            SearchResponse<Video> result = await searchHttpClient.SearchVideos(request);
             return Json(result);
         }
 
@@ -291,7 +348,7 @@ namespace KinaUnaWeb.Controllers
         [HttpPost]
         public async Task<IActionResult> SearchVocabularyItems([FromBody] SearchRequest request)
         {
-            var result = await searchHttpClient.SearchVocabularyItems(request);
+            SearchResponse<VocabularyItem> result = await searchHttpClient.SearchVocabularyItems(request);
             return Json(result);
         }
 

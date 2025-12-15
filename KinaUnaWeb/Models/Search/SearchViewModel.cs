@@ -113,7 +113,7 @@ namespace KinaUnaWeb.Models.Search
         public SearchResponse<Sleep> SleepResults { get; set; } = new();
 
         /// <summary>
-        /// Search results for todo items.
+        /// Search results for TodoItems.
         /// </summary>
         public SearchResponse<TodoItem> TodoItemResults { get; set; } = new();
 
@@ -136,6 +136,8 @@ namespace KinaUnaWeb.Models.Search
         /// Search results for vocabulary items.
         /// </summary>
         public SearchResponse<VocabularyItem> VocabularyItemResults { get; set; } = new();
+
+        public SearchResponse<TimeLineItem> TimelineItemsResults { get; set; } = new();
 
         /// <summary>
         /// Total number of results across all entity types.
@@ -172,12 +174,9 @@ namespace KinaUnaWeb.Models.Search
             "Measurements",
             "Notes",
             "Pictures",
-            "Progenies",
-            "ProgenyInfos",
             "Skills",
             "SleepRecords",
             "TodoItems",
-            "UserInfos",
             "Vaccinations",
             "Videos",
             "VocabularyItems"

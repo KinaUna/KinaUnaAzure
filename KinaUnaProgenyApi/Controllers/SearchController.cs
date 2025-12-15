@@ -21,6 +21,17 @@ namespace KinaUnaProgenyApi.Controllers
         ISearchService searchService,
         IUserInfoService userInfoService) : ControllerBase
     {
+        [HttpPost]
+        [Route("[action]")]
+        public async Task<IActionResult> QuickSearch([FromBody] SearchRequest request)
+        {
+            UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
+            if (currentUserInfo == null) return Unauthorized();
+
+            SearchResponse<TimeLineItem> result = await searchService.QuickSearch(request, currentUserInfo);
+            return Ok(result);
+        }
+
         /// <summary>
         /// Searches calendar items by title, notes, location, and context.
         /// </summary>

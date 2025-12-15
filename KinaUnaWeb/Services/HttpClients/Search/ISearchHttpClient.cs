@@ -8,6 +8,8 @@ namespace KinaUnaWeb.Services.HttpClients.Search
     /// </summary>
     public interface ISearchHttpClient
     {
+        Task<SearchResponse<TimeLineItem>> QuickSearch(SearchRequest request);
+
         /// <summary>
         /// Searches calendar items by title, notes, location, and context.
         /// </summary>

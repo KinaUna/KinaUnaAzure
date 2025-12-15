@@ -24,6 +24,10 @@ namespace KinaUna.Data.Models.Search
         public int PageNumber { get; set; }
 
         /// <summary>
+        /// Number of items remaining available to be fetched.
+        /// </summary>
+        public int RemainingItems { get; set; }
+        /// <summary>
         /// The original search request parameters.
         /// </summary>
         public SearchRequest SearchRequest { get; set; }

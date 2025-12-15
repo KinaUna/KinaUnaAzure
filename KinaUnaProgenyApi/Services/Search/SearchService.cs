@@ -17,8 +17,226 @@ namespace KinaUnaProgenyApi.Services.Search
     public class SearchService(
         ProgenyDbContext progenyDbContext,
         MediaDbContext mediaDbContext,
-        IAccessManagementService accessManagementService) : ISearchService
+        IAccessManagementService accessManagementService,
+        ITimelineService timelineService) : ISearchService
     {
+        public async Task<SearchResponse<TimeLineItem>> QuickSearch(SearchRequest request, UserInfo currentUserInfo)
+        {
+            SearchResponse<TimeLineItem> response = new SearchResponse<TimeLineItem> { SearchRequest = request };
+            if (currentUserInfo == null || string.IsNullOrWhiteSpace(request.Query))
+            {
+                return response;
+            }
+
+            string query = request.Query.Trim().ToLower();
+            List<TimeLineItem> accessibleItems = [];
+            
+            // Search in progenies
+            foreach (int progenyId in request.ProgenyIds)
+            {
+                if (!await accessManagementService.HasProgenyPermission(progenyId, currentUserInfo, PermissionLevel.View))
+                    continue;
+                List<TimeLineItem> progenyTimelineList = await timelineService.GetTimeLineList(progenyId, 0, currentUserInfo);
+                accessibleItems.AddRange(progenyTimelineList);
+            }
+
+            // Search in families
+            foreach (int familyId in request.FamilyIds)
+            {
+                if (!await accessManagementService.HasFamilyPermission(familyId, currentUserInfo, PermissionLevel.View))
+                    continue;
+
+                List<TimeLineItem> familyTimelineList = await timelineService.GetTimeLineList(0, familyId, currentUserInfo);
+                accessibleItems.AddRange(familyTimelineList);
+            }
+
+            
+            if (request.Sort == 0)
+            {
+                accessibleItems = accessibleItems.OrderByDescending(i => i.ProgenyTime).ToList();
+            }
+            else
+            {
+                accessibleItems = accessibleItems.OrderBy(i => i.ProgenyTime).ToList();
+            }
+
+            List<TimeLineItem> finalItems = [];
+            int itemsFoundCount = 0;
+            for (int i = 0; itemsFoundCount <= request.NumberOfItems + request.Skip && i < accessibleItems.Count; i++)
+            {
+                TimeLineItem item = accessibleItems[i];
+                
+                switch (item.ItemType)
+                {
+                    case (int)KinaUnaTypes.TimeLineType.Calendar:
+                        CalendarItem calendarItem = await progenyDbContext.CalendarDb.FindAsync(int.Parse(item.ItemId));
+                        if (calendarItem != null &&
+                            ((calendarItem.Title ?? string.Empty).ToLower().Contains(query)
+                            || (calendarItem.Notes ?? string.Empty).ToLower().Contains(query)
+                            || (calendarItem.Location ?? string.Empty).ToLower().Contains(query)
+                            || (calendarItem.Context ?? string.Empty).ToLower().Contains(query)))
+                        {
+                            finalItems.Add(item);
+                            itemsFoundCount++;
+                        }
+                        break;
+                    case (int)KinaUnaTypes.TimeLineType.Contact:
+                                                Contact contactItem = await progenyDbContext.ContactsDb.FindAsync(int.Parse(item.ItemId));
+                        if (contactItem != null &&
+                            ((contactItem.FirstName ?? string.Empty).ToLower().Contains(query)
+                            || (contactItem.MiddleName ?? string.Empty).ToLower().Contains(query)
+                            || (contactItem.LastName ?? string.Empty).ToLower().Contains(query)
+                            || (contactItem.DisplayName ?? string.Empty).ToLower().Contains(query)
+                            || (contactItem.Email1 ?? string.Empty).ToLower().Contains(query)
+                            || (contactItem.Email2 ?? string.Empty).ToLower().Contains(query)
+                            || (contactItem.Context ?? string.Empty).ToLower().Contains(query)
+                            || (contactItem.Notes ?? string.Empty).ToLower().Contains(query)
+                            || (contactItem.Website ?? string.Empty).ToLower().Contains(query)
+                            || (contactItem.Tags ?? string.Empty).ToLower().Contains(query)))
+                        {
+                            finalItems.Add(item);
+                            itemsFoundCount++;
+                        }
+                        break;
+                    case (int)KinaUnaTypes.TimeLineType.Friend:
+                        Friend friendItem = await progenyDbContext.FriendsDb.FindAsync(int.Parse(item.ItemId));
+                        if (friendItem != null &&
+                            ((friendItem.Name ?? string.Empty).ToLower().Contains(query)
+                            || (friendItem.Description ?? string.Empty).ToLower().Contains(query)
+                            || (friendItem.Context ?? string.Empty).ToLower().Contains(query)
+                            || (friendItem.Notes ?? string.Empty).ToLower().Contains(query)
+                            || (friendItem.Tags ?? string.Empty).ToLower().Contains(query)))
+                        {
+                            finalItems.Add(item);
+                            itemsFoundCount++;
+                        }
+                        break;
+                    case (int)KinaUnaTypes.TimeLineType.KanbanBoard:
+                        KanbanBoard kanbanBoardItem = await progenyDbContext.KanbanBoardsDb.FindAsync(int.Parse(item.ItemId));
+                        if (kanbanBoardItem != null &&
+                            ((kanbanBoardItem.Title ?? string.Empty).ToLower().Contains(query)
+                            || (kanbanBoardItem.Description ?? string.Empty).ToLower().Contains(query)
+                            || (kanbanBoardItem.Tags ?? string.Empty).ToLower().Contains(query)
+                            || (kanbanBoardItem.Context ?? string.Empty).ToLower().Contains(query)))
+                        {
+                            finalItems.Add(item);
+                            itemsFoundCount++;
+                        }
+                        break;
+                    case (int)KinaUnaTypes.TimeLineType.Location:
+                        Location locationItem = await progenyDbContext.LocationsDb.FindAsync(int.Parse(item.ItemId));
+                        if (locationItem != null &&
+                            ((locationItem.Name ?? string.Empty).ToLower().Contains(query)
+                            || (locationItem.StreetName ?? string.Empty).ToLower().Contains(query)
+                            || (locationItem.City ?? string.Empty).ToLower().Contains(query)
+                            || (locationItem.District ?? string.Empty).ToLower().Contains(query)
+                            || (locationItem.County ?? string.Empty).ToLower().Contains(query)
+                            || (locationItem.State ?? string.Empty).ToLower().Contains(query)
+                            || (locationItem.Country ?? string.Empty).ToLower().Contains(query)
+                            || (locationItem.PostalCode ?? string.Empty).ToLower().Contains(query)
+                            || (locationItem.Notes ?? string.Empty).ToLower().Contains(query)
+                            || (locationItem.Tags ?? string.Empty).ToLower().Contains(query)))
+                        {
+                            finalItems.Add(item);
+                            itemsFoundCount++;
+                        }
+                        break;
+                    case (int)KinaUnaTypes.TimeLineType.Measurement:
+                        // Measurement items are not included in quick search.
+                        break;
+                    case (int)KinaUnaTypes.TimeLineType.Note:
+                        Note noteItem = await progenyDbContext.NotesDb.FindAsync(int.Parse(item.ItemId));
+                        if (noteItem != null &&
+                            ((noteItem.Title ?? string.Empty).ToLower().Contains(query)
+                            || (noteItem.Content ?? string.Empty).ToLower().Contains(query)
+                            || (noteItem.Category ?? string.Empty).ToLower().Contains(query)))
+                        {
+                            finalItems.Add(item);
+                            itemsFoundCount++;
+                        }
+                        break;
+                    case (int)KinaUnaTypes.TimeLineType.Photo:
+                        Picture pictureItem = await mediaDbContext.PicturesDb.FindAsync(int.Parse(item.ItemId));
+                        if (pictureItem != null &&
+                            ((pictureItem.Tags ?? string.Empty).ToLower().Contains(query)
+                            || (pictureItem.Location ?? string.Empty).ToLower().Contains(query)))
+                        {
+                            finalItems.Add(item);
+                            itemsFoundCount++;
+                        }
+                        break;
+                    case (int)KinaUnaTypes.TimeLineType.Skill:
+                        Skill skillItem = await progenyDbContext.SkillsDb.FindAsync(int.Parse(item.ItemId));
+                        if (skillItem != null &&
+                            ((skillItem.Name ?? string.Empty).ToLower().Contains(query)
+                            || (skillItem.Description ?? string.Empty).ToLower().Contains(query)
+                            || (skillItem.Category ?? string.Empty).ToLower().Contains(query)))
+                        {
+                            finalItems.Add(item);
+                            itemsFoundCount++;
+                        }
+                        break;
+                    case (int)KinaUnaTypes.TimeLineType.Sleep:
+                        // Sleep items are not included in quick search.
+                        break;
+                    case (int)KinaUnaTypes.TimeLineType.TodoItem:
+                        TodoItem todoItem = await progenyDbContext.TodoItemsDb.FindAsync(int.Parse(item.ItemId));
+                        if (todoItem != null &&
+                            ((todoItem.Title ?? string.Empty).ToLower().Contains(query)
+                            || (todoItem.Description ?? string.Empty).ToLower().Contains(query)
+                            || (todoItem.Context ?? string.Empty).ToLower().Contains(query)))
+                        {
+                            finalItems.Add(item);
+                            itemsFoundCount++;
+                        }
+                        break;
+                    case (int)KinaUnaTypes.TimeLineType.Vaccination:
+                        Vaccination vaccinationItem = await progenyDbContext.VaccinationsDb.FindAsync(int.Parse(item.ItemId));
+                        if (vaccinationItem != null &&
+                            ((vaccinationItem.VaccinationName ?? string.Empty).ToLower().Contains(query)
+                            || (vaccinationItem.VaccinationDescription ?? string.Empty).ToLower().Contains(query)
+                            || (vaccinationItem.Notes ?? string.Empty).ToLower().Contains(query)))
+                        {
+                            finalItems.Add(item);
+                            itemsFoundCount++;
+                        }
+                        break;
+                    case (int)KinaUnaTypes.TimeLineType.Video:
+                        Video videoItem = await mediaDbContext.VideoDb.FindAsync(int.Parse(item.ItemId));
+                        if (videoItem != null &&
+                            ((videoItem.Tags ?? string.Empty).ToLower().Contains(query)
+                            || (videoItem.Location ?? string.Empty).ToLower().Contains(query)))
+                        {
+                            finalItems.Add(item);
+                            itemsFoundCount++;
+                        }
+                        break;
+                    case (int)KinaUnaTypes.TimeLineType.Vocabulary:
+                        VocabularyItem vocabularyItem = await progenyDbContext.VocabularyDb.FindAsync(int.Parse(item.ItemId));
+                        if (vocabularyItem != null &&
+                            ((vocabularyItem.Word ?? string.Empty).ToLower().Contains(query)
+                            || (vocabularyItem.Word ?? string.Empty).ToLower().Contains(query)
+                            || (vocabularyItem.Description ?? string.Empty).ToLower().Contains(query)
+                            || (vocabularyItem.SoundsLike ?? string.Empty).ToLower().Contains(query)))
+                        {
+                            finalItems.Add(item);
+                            itemsFoundCount++;
+                        }
+                        break;
+                }
+            }
+
+
+            if (finalItems.Count > request.Skip + request.NumberOfItems)
+            {
+                response.RemainingItems = 1;
+            }
+            finalItems = finalItems.Skip(request.Skip).Take(request.NumberOfItems).ToList();
+            response.Results = finalItems;
+
+            return response ;
+        }
+
         #region Calendar Items
 
         public async Task<SearchResponse<CalendarItem>> SearchCalendarItems(SearchRequest request, UserInfo currentUserInfo)
@@ -773,6 +991,7 @@ namespace KinaUnaProgenyApi.Services.Search
                 PageNumber = request.NumberOfItems > 0 && request.Skip > 0
                     ? request.Skip / request.NumberOfItems + 1
                     : 1,
+                RemainingItems = items.Count - paginated.Count,
                 SearchRequest = request
             };
         }

@@ -43,6 +43,27 @@ namespace KinaUnaWeb.Services.HttpClients.Search
             httpClient.DefaultRequestVersion = new Version(2, 0);
         }
 
+
+        public async Task<SearchResponse<TimeLineItem>> QuickSearch(SearchRequest request)
+        {
+            SearchResponse<TimeLineItem> response = new() { SearchRequest = request };
+
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+
+            const string searchApiPath = "/api/Search/QuickSearch";
+            HttpResponseMessage searchResponse = await _httpClient.PostAsync(searchApiPath,
+                new StringContent(JsonSerializer.Serialize(request, JsonSerializerOptions.Web), System.Text.Encoding.UTF8, "application/json"));
+
+            if (!searchResponse.IsSuccessStatusCode) return response;
+
+            string responseAsString = await searchResponse.Content.ReadAsStringAsync();
+            response = JsonSerializer.Deserialize<SearchResponse<TimeLineItem>>(responseAsString, JsonSerializerOptions.Web);
+
+            return response ?? new SearchResponse<TimeLineItem> { SearchRequest = request };
+        }
+
         /// <summary>
         /// Searches calendar items by title, notes, location, and context.
         /// </summary>

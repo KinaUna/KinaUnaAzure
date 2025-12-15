@@ -135,7 +135,7 @@
             </div>
         }
         <div class="navbar-nav nav-item ml-1 ml-md-3 ml-lg-4">
-            <a class="btn btn-link kinauna-yellow-text mr-0 mr-md-1 mr-lg-2 pr-2 pr-md-3 pr-lg-4" id="main-page-search-button" aria-label="Search" asp-controller="Search" asp-action="Index">
+            <a class="btn btn-link kinauna-yellow-text mr-0 mr-md-1 mr-lg-2 pr-2 pr-md-3 pr-lg-4" id="quick-search-button" aria-label="Search" href="#">
                 <i class="material-icons kinauna-icon-medium kinauna-yellow-text" aria-hidden="true">search</i>
             </a>
         </div>
@@ -259,9 +259,9 @@
         </div>
     </div>
 }
+<div id="quick-search-modal-div" class="quick-search-popup d-none"></div>
 @await Html.PartialAsync("_LayoutModalPartial")
 <div id="item-details-div" class="item-details-popup d-none"></div>
-
 <div id="language-id-div" class="d-none" data-language-id="@languageId"></div>
 <div id="progeny-id-div" class="d-none" data-progeny-id="@child.Id"></div>
     <script src="~/js/app-v12.js" type="module" asp-append-version="true"></script>
