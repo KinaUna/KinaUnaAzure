@@ -172,7 +172,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
             cacheOptionsSlidingView.SetSlidingExpiration(new TimeSpan(0, 1, 0, 0));
             
             PermissionLevel highestPermission = PermissionLevel.None;
-
+            
             List<TimelineItemPermission> usersItemPermissions = await AllUsersTimelineItemPermissions(userInfo, itemType);
             // Check for inherited permissions.
             TimelineItemPermission inheritedPermission = usersItemPermissions.Find(tp => tp.InheritPermissions && tp.ItemId == itemId);
@@ -297,6 +297,75 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 {
                     resultPermission.PermissionLevel = PermissionLevel.Add;
                 }
+            }
+
+            if (progenyId > 0)
+            {
+                Progeny progeny = await progenyDbContext.ProgenyDb.AsNoTracking().SingleOrDefaultAsync(p => p.Id == progenyId);
+                if (progeny != null && progeny.IsInAdminList(userInfo.UserEmail) && highestPermission < PermissionLevel.Admin)
+                {
+                    // User is an admin for the progeny, elevate permission to Admin, unless a CreatorOnly or Private permission exists.
+                    // Check if any CreatorOnly or Private permission exists for this Item.
+                    if(!await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().AnyAsync(tp => tp.ItemId == itemId
+                                                                                                      && tp.TimelineType == itemType
+                                                                                                      && (tp.PermissionLevel == PermissionLevel.CreatorOnly || tp.PermissionLevel == PermissionLevel.Private)))
+                    {
+                        // Find the admin group, add the permission
+                        List<ProgenyPermission> progenyPermissions = await progenyDbContext.ProgenyPermissionsDb.AsNoTracking().Where(pp => pp.ProgenyId == progenyId).ToListAsync();
+                        foreach (ProgenyPermission progenyPermission in progenyPermissions)
+                        {
+                            if (progenyPermission.PermissionLevel == PermissionLevel.Admin)
+                            {
+                                TimelineItemPermission adminPermission = new()
+                                {
+                                    ItemId = itemId,
+                                    TimelineType = itemType,
+                                    ProgenyId = progenyId,
+                                    GroupId = progenyPermission.GroupId,
+                                    PermissionLevel = PermissionLevel.Admin,
+                                    InheritPermissions = false
+                                };
+
+                                resultPermission = await GrantItemPermission(adminPermission, userInfo);
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (familyId > 0)
+            {
+                Family family = await progenyDbContext.FamiliesDb.AsNoTracking().SingleOrDefaultAsync(f => f.FamilyId == familyId);
+                if (family != null && family.IsInAdminList(userInfo.UserEmail) && highestPermission < PermissionLevel.Admin)
+                {
+                    // User is an admin for the family, elevate permission to Admin, unless a CreatorOnly or Private permission exists.
+                    // Check if any CreatorOnly or Private permission exists for this Item.
+                    if (!await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().AnyAsync(tp => tp.ItemId == itemId
+                                                                                                        && tp.TimelineType == itemType
+                                                                                                        && (tp.PermissionLevel == PermissionLevel.CreatorOnly || tp.PermissionLevel == PermissionLevel.Private)))
+                    {
+                        // Find the admin group, add the permission
+                        List<FamilyPermission> familyPermissions = await progenyDbContext.FamilyPermissionsDb.AsNoTracking().Where(fp => fp.FamilyId == familyId).ToListAsync();
+                        foreach (FamilyPermission familyPermission in familyPermissions)
+                        {
+                            if (familyPermission.PermissionLevel == PermissionLevel.Admin)
+                            {
+                                TimelineItemPermission adminPermission = new()
+                                {
+                                    ItemId = itemId,
+                                    TimelineType = itemType,
+                                    FamilyId = familyId,
+                                    GroupId = familyPermission.GroupId,
+                                    PermissionLevel = PermissionLevel.Admin,
+                                    InheritPermissions = false
+                                };
+
+                                resultPermission = await GrantItemPermission(adminPermission, userInfo);
+                            }
+                        }
+                    }
+                }
+
             }
 
             newCacheEntry.ItemPermission = resultPermission;
@@ -2090,7 +2159,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                         ProgenyPermission highestPermission = groupPermissions.LastOrDefault();
                         if (highestPermission != null)
                         {
-                            UserGroupMember newUserGroupMember = new UserGroupMember()
+                            UserGroupMember newUserGroupMember = new()
                             {
                                 UserId = member.UserId,
                                 Email = member.Email,
@@ -2118,7 +2187,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
                 {
                     
                     UserInfo adminsUserInfo = await progenyDbContext.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == email.ToUpper());
-                    UserGroupMember newAdminMember = new UserGroupMember()
+                    UserGroupMember newAdminMember = new()
                     {
                         UserId = adminsUserInfo != null ? adminsUserInfo.UserId : "",
                         Email = email,
