@@ -116,5 +116,23 @@ namespace KinaUna.Data.Extensions
 
             kanbanBoard.SetColumnsFromColumnsList();
         }
+
+        /// <summary>
+        /// Converts the HTML content of the Kanban board description to plain text.
+        /// </summary>
+        /// <param name="kanbanBoard">The KanbanBoard object.</param>
+        /// <returns>A plain text representation of the description's content.</returns>
+        public static string DescriptionAsPlainText(this KanbanBoard kanbanBoard)
+        {
+            if (string.IsNullOrEmpty(kanbanBoard.Description))
+            {
+                return string.Empty;
+            }
+
+            // Simple HTML to plain text conversion.
+            string plainText = System.Text.RegularExpressions.Regex.Replace(kanbanBoard.Description, "<.*?>", string.Empty);
+            plainText = System.Net.WebUtility.HtmlDecode(plainText);
+            return plainText;
+        }
     }
 }

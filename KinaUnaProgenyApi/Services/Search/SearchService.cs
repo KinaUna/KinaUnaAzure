@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using KinaUna.Data.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaProgenyApi.Services.Search
@@ -115,7 +116,7 @@ namespace KinaUnaProgenyApi.Services.Search
                         KanbanBoard kanbanBoardItem = await progenyDbContext.KanbanBoardsDb.FindAsync(int.Parse(item.ItemId));
                         if (kanbanBoardItem != null &&
                             ((kanbanBoardItem.Title ?? string.Empty).ToLower().Contains(query)
-                            || (kanbanBoardItem.Description ?? string.Empty).ToLower().Contains(query)
+                            || (kanbanBoardItem.DescriptionAsPlainText() ?? string.Empty).ToLower().Contains(query)
                             || (kanbanBoardItem.Tags ?? string.Empty).ToLower().Contains(query)
                             || (kanbanBoardItem.Context ?? string.Empty).ToLower().Contains(query)))
                         {
@@ -148,7 +149,7 @@ namespace KinaUnaProgenyApi.Services.Search
                         Note noteItem = await progenyDbContext.NotesDb.FindAsync(int.Parse(item.ItemId));
                         if (noteItem != null &&
                             ((noteItem.Title ?? string.Empty).ToLower().Contains(query)
-                            || (noteItem.Content ?? string.Empty).ToLower().Contains(query)
+                            || (noteItem.ContentAsPlainText() ?? string.Empty).ToLower().Contains(query)
                             || (noteItem.Category ?? string.Empty).ToLower().Contains(query)))
                         {
                             finalItems.Add(item);
@@ -183,7 +184,7 @@ namespace KinaUnaProgenyApi.Services.Search
                         TodoItem todoItem = await progenyDbContext.TodoItemsDb.FindAsync(int.Parse(item.ItemId));
                         if (todoItem != null &&
                             ((todoItem.Title ?? string.Empty).ToLower().Contains(query)
-                            || (todoItem.Description ?? string.Empty).ToLower().Contains(query)
+                            || (todoItem.DescriptionAsPlainText() ?? string.Empty).ToLower().Contains(query)
                             || (todoItem.Context ?? string.Empty).ToLower().Contains(query)))
                         {
                             finalItems.Add(item);
@@ -456,11 +457,19 @@ namespace KinaUnaProgenyApi.Services.Search
 
                 foreach (KanbanBoard item in items)
                 {
+                    
                     if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, item.KanbanBoardId, currentUserInfo, PermissionLevel.View))
                     {
-                        item.ItemPerMission = await accessManagementService.GetItemPermissionForUser(
-                            KinaUnaTypes.TimeLineType.KanbanBoard, item.KanbanBoardId, item.ProgenyId, item.FamilyId, currentUserInfo);
-                        accessibleItems.Add(item);
+                        // Check also description as plain text, as some HTML tags may match the query.
+                        if (item.Title.ToLower().Contains(query)
+                            || item.DescriptionAsPlainText().Contains(query)
+                            || item.Tags.ToLower().Contains(query)
+                            || item.Context.ToLower().Contains(query))
+                        {
+                            item.ItemPerMission = await accessManagementService.GetItemPermissionForUser(
+                                KinaUnaTypes.TimeLineType.KanbanBoard, item.KanbanBoardId, item.ProgenyId, item.FamilyId, currentUserInfo);
+                            accessibleItems.Add(item);
+                        }
                     }
                 }
             }
@@ -483,9 +492,16 @@ namespace KinaUnaProgenyApi.Services.Search
                 {
                     if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, item.KanbanBoardId, currentUserInfo, PermissionLevel.View))
                     {
-                        item.ItemPerMission = await accessManagementService.GetItemPermissionForUser(
-                            KinaUnaTypes.TimeLineType.KanbanBoard, item.KanbanBoardId, item.ProgenyId, item.FamilyId, currentUserInfo);
-                        accessibleItems.Add(item);
+                        // Check also description as plain text, as some HTML tags may match the query.
+                        if (item.Title.ToLower().Contains(query)
+                            || item.DescriptionAsPlainText().Contains(query)
+                            || item.Tags.ToLower().Contains(query)
+                            || item.Context.ToLower().Contains(query))
+                        {
+                            item.ItemPerMission = await accessManagementService.GetItemPermissionForUser(
+                                KinaUnaTypes.TimeLineType.KanbanBoard, item.KanbanBoardId, item.ProgenyId, item.FamilyId, currentUserInfo);
+                            accessibleItems.Add(item);
+                        }
                     }
                 }
             }
@@ -643,9 +659,16 @@ namespace KinaUnaProgenyApi.Services.Search
                 {
                     if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.Note, item.NoteId, currentUserInfo, PermissionLevel.View))
                     {
-                        item.ItemPerMission = await accessManagementService.GetItemPermissionForUser(
-                            KinaUnaTypes.TimeLineType.Note, item.NoteId, item.ProgenyId, 0, currentUserInfo);
-                        accessibleItems.Add(item);
+                        // Check also content as plain text, as some HTML tags may match the query.
+                        if (item.Title.ToLower().Contains(query)
+                            || item.ContentAsPlainText().Contains(query)
+                            || item.Category.ToLower().Contains(query))
+                        {
+                            item.ItemPerMission = await accessManagementService.GetItemPermissionForUser(
+                                KinaUnaTypes.TimeLineType.Note, item.NoteId, item.ProgenyId, 0, currentUserInfo);
+                            accessibleItems.Add(item);
+                        }
+                        
                     }
                 }
             }
@@ -807,9 +830,18 @@ namespace KinaUnaProgenyApi.Services.Search
                 {
                     if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, item.TodoItemId, currentUserInfo, PermissionLevel.View))
                     {
-                        item.ItemPerMission = await accessManagementService.GetItemPermissionForUser(
-                            KinaUnaTypes.TimeLineType.TodoItem, item.TodoItemId, item.ProgenyId, item.FamilyId, currentUserInfo);
-                        accessibleItems.Add(item);
+                        // Check also description as plain text, as some HTML tags may match the query.
+                        if (item.Title.ToLower().Contains(query)
+                            || item.DescriptionAsPlainText().Contains(query)
+                            || item.Notes.ToLower().Contains(query)
+                            || item.Tags.ToLower().Contains(query)
+                            || item.Context.ToLower().Contains(query)
+                            || item.Location.ToLower().Contains(query))
+                        {
+                            item.ItemPerMission = await accessManagementService.GetItemPermissionForUser(
+                                KinaUnaTypes.TimeLineType.TodoItem, item.TodoItemId, item.ProgenyId, item.FamilyId, currentUserInfo);
+                            accessibleItems.Add(item);
+                        }
                     }
                 }
             }
@@ -834,9 +866,18 @@ namespace KinaUnaProgenyApi.Services.Search
                 {
                     if (await accessManagementService.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, item.TodoItemId, currentUserInfo, PermissionLevel.View))
                     {
-                        item.ItemPerMission = await accessManagementService.GetItemPermissionForUser(
-                            KinaUnaTypes.TimeLineType.TodoItem, item.TodoItemId, item.ProgenyId, item.FamilyId, currentUserInfo);
-                        accessibleItems.Add(item);
+                        // Check also description as plain text, as some HTML tags may match the query.
+                        if (item.Title.ToLower().Contains(query)
+                            || item.DescriptionAsPlainText().Contains(query)
+                            || item.Notes.ToLower().Contains(query)
+                            || item.Tags.ToLower().Contains(query)
+                            || item.Context.ToLower().Contains(query)
+                            || item.Location.ToLower().Contains(query))
+                        {
+                            item.ItemPerMission = await accessManagementService.GetItemPermissionForUser(
+                                KinaUnaTypes.TimeLineType.TodoItem, item.TodoItemId, item.ProgenyId, item.FamilyId, currentUserInfo);
+                            accessibleItems.Add(item);
+                        }
                     }
                 }
             }

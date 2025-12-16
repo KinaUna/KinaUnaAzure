@@ -13,7 +13,7 @@ namespace KinaUna.Data.Extensions
         /// </summary>
         /// <param name="currentNote"></param>
         /// <param name="otherNote"></param>
-        public static void CopyPropertiesForUpdate(this Note currentNote, Note otherNote )
+        public static void CopyPropertiesForUpdate(this Note currentNote, Note otherNote)
         {
             currentNote.ProgenyId = otherNote.ProgenyId;
             currentNote.Category = otherNote.Category;
@@ -46,6 +46,24 @@ namespace KinaUna.Data.Extensions
             currentNote.Title = otherNote.Title;
             currentNote.CreatedDate = otherNote.CreatedDate;
             currentNote.ItemPermissionsDtoList = otherNote.ItemPermissionsDtoList;
+        }
+
+        /// <summary>
+        /// Converts the HTML content of the Note to plain text.
+        /// </summary>
+        /// <param name="note">The Note object.</param>
+        /// <returns>A plain text representation of the Note's content.</returns>
+        public static string ContentAsPlainText(this Note note)
+        {
+            if (string.IsNullOrEmpty(note.Content))
+            {
+                return string.Empty;
+            }
+
+            // Simple HTML to plain text conversion.
+            string plainText = System.Text.RegularExpressions.Regex.Replace(note.Content, "<.*?>", string.Empty);
+            plainText = System.Net.WebUtility.HtmlDecode(plainText);
+            return plainText;
         }
     }
 }

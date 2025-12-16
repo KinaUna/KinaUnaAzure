@@ -124,7 +124,7 @@
                                     @foreach (Progeny progeny in progenyList)
                                     {
                                         bool isChecked = Model.ProgenyIds?.Contains(progeny.Id) ?? true;
-                                        <div class="form-check">
+                                        <div class="form-check mb-1">
                                             <input class="form-check-input search-progeny-checkbox" type="checkbox"
                                                    name="ProgenyIds" value="@progeny.Id"
                                                    id="progeny-@progeny.Id"
@@ -156,7 +156,7 @@
                                     @foreach (Family family in familyList)
                                     {
                                         bool isChecked = Model.FamilyIds?.Contains(family.FamilyId) ?? true;
-                                        <div class="form-check">
+                                        <div class="form-check mb-1">
                                             <input class="form-check-input search-family-checkbox" type="checkbox"
                                                    name="FamilyIds" value="@family.FamilyId"
                                                    id="family-@family.FamilyId"
@@ -190,12 +190,12 @@
                 <div class="row ml-2 mb-2">
                     <div class="col-auto">
                         <button type="button" id="select-all-types-button" class="btn btn-outline-info btn-sm">
-                            <i class="material-icons icon-top-4" style="font-size: 16px;">check_box</i> @selectAllString
+                            <i class="material-icons icon-top-4" style="font-size: 26px;">check_box</i> @selectAllString
                         </button>
                     </div>
                     <div class="col-auto">
                         <button type="button" id="clear-all-types-button" class="btn btn-outline-info btn-sm">
-                            <i class="material-icons icon-top-4" style="font-size: 16px;">check_box_outline_blank</i> @clearAllString
+                            <i class="material-icons icon-top-4" style="font-size: 26px;">check_box_outline_blank</i> @clearAllString
                         </button>
                     </div>
                 </div>
@@ -205,7 +205,7 @@
                         bool isChecked = Model.SelectedEntityTypes?.Contains(entityType) ?? true;
                         string displayName = entityTypeNames.GetValueOrDefault(entityType, entityType);
                         <div class="col-6 col-sm-4 col-md-3 col-lg-2">
-                            <div class="form-check">
+                            <div class="form-check mb-1">
                                 <input class="form-check-input search-type-checkbox" type="checkbox"
                                        name="SelectedEntityTypes" value="@entityType"
                                        id="type-@entityType"
@@ -656,13 +656,11 @@
                             @foreach (VocabularyItem item in Model.VocabularyItemResults.Results)
                             {
                                 const int itemType = (int)KinaUnaTypes.TimeLineType.Vocabulary;
-                                <div class="col mb-3" data-search-result-item-type="@itemType" data-search-result-item-id="@item.WordId" data-vocabulary-id="@item.Word">
+                                <div class="col mb-3" data-search-result-item-type="@itemType" data-search-result-item-id="@item.WordId" data-vocabulary-id="@item.WordId">
                                     <div class="card bg-dark h-100">
                                         <div class="card-body">
                                             <h6 class="card-title">
-                                                <a asp-controller="Vocabulary" asp-action="ViewVocabularyItem" asp-route-wordId="@item.WordId" class="text-info">
-                                                    @item.Word
-                                                </a>
+                                                @item.Word
                                             </h6>
                                             @if (!string.IsNullOrWhiteSpace(item.Description))
                                             {

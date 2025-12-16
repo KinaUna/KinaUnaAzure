@@ -216,5 +216,23 @@ namespace KinaUna.Data.Extensions
 
             return timeLineItem;
         }
+
+        /// <summary>
+        /// Converts the HTML content of the TodoItem description to plain text.
+        /// </summary>
+        /// <param name="todoItem">The TodoItem object.</param>
+        /// <returns>A plain text representation of the description's content.</returns>
+        public static string DescriptionAsPlainText(this TodoItem todoItem)
+        {
+            if (string.IsNullOrEmpty(todoItem.Description))
+            {
+                return string.Empty;
+            }
+
+            // Simple HTML to plain text conversion.
+            string plainText = System.Text.RegularExpressions.Regex.Replace(todoItem.Description, "<.*?>", string.Empty);
+            plainText = System.Net.WebUtility.HtmlDecode(plainText);
+            return plainText;
+        }
     }
 }
