@@ -264,13 +264,12 @@
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
                             @foreach (CalendarItem item in Model.CalendarItemResults.Results)
                             {
-                                <div class="col mb-3">
+                                const int itemType = (int)KinaUnaTypes.TimeLineType.Calendar;
+                                <div class="col mb-3" data-search-result-item-type="@itemType" data-search-result-item-id="@item.EventId" data-calendar-event-id="@item.EventId">
                                     <div class="card bg-dark h-100">
                                         <div class="card-body">
                                             <h6 class="card-title">
-                                                <a asp-controller="Calendar" asp-action="ViewEvent" asp-route-eventId="@item.EventId" class="text-info">
-                                                    @item.Title
-                                                </a>
+                                                @item.Title
                                             </h6>
                                             @if (item.StartTime.HasValue)
                                             {
@@ -303,13 +302,12 @@
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
                             @foreach (Contact item in Model.ContactResults.Results)
                             {
-                                <div class="col mb-3">
+                                const int itemType = (int)KinaUnaTypes.TimeLineType.Contact;
+                                <div class="col mb-3" data-search-result-item-type="@itemType" data-search-result-item-id="@item.ContactId" data-contact-id="@item.ContactId">
                                     <div class="card bg-dark h-100">
                                         <div class="card-body">
                                             <h6 class="card-title">
-                                                <a asp-controller="Contacts" asp-action="ViewContact" asp-route-contactId="@item.ContactId" class="text-info">
-                                                    @item.DisplayName
-                                                </a>
+                                                @item.DisplayName
                                             </h6>
                                             @if (!string.IsNullOrWhiteSpace(item.Email1))
                                             {
@@ -336,13 +334,12 @@
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
                             @foreach (Friend item in Model.FriendResults.Results)
                             {
-                                <div class="col mb-3">
+                                const int itemType = (int)KinaUnaTypes.TimeLineType.Friend;
+                                <div class="col mb-3" data-search-result-item-type="@itemType" data-search-result-item-id="@item.FriendId" data-friend-id="@item.FriendId">
                                     <div class="card bg-dark h-100">
                                         <div class="card-body">
                                             <h6 class="card-title">
-                                                <a asp-controller="Friends" asp-action="ViewFriend" asp-route-friendId="@item.FriendId" class="text-info">
-                                                    @item.Name
-                                                </a>
+                                                @item.Name
                                             </h6>
                                             @if (!string.IsNullOrWhiteSpace(item.Description))
                                             {
@@ -367,13 +364,12 @@
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
                             @foreach (KanbanBoard item in Model.KanbanBoardResults.Results)
                             {
-                                <div class="col mb-3">
+                                const int itemType = (int)KinaUnaTypes.TimeLineType.KanbanBoard;
+                                <div class="col mb-3" data-search-result-item-type="@itemType" data-search-result-item-id="@item.KanbanBoardId" data-kanban-board-id="@item.KanbanBoardId">
                                     <div class="card bg-dark h-100">
                                         <div class="card-body">
                                             <h6 class="card-title">
-                                                <a asp-controller="Kanbans" asp-action="Index" asp-route-boardId="@item.KanbanBoardId" class="text-info">
-                                                    @item.Title
-                                                </a>
+                                                @item.Title
                                             </h6>
                                             @if (!string.IsNullOrWhiteSpace(item.Description))
                                             {
@@ -398,13 +394,12 @@
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
                             @foreach (Location item in Model.LocationResults.Results)
                             {
-                                <div class="col mb-3">
+                                const int itemType = (int)KinaUnaTypes.TimeLineType.Location;
+                                <div class="col mb-3" data-search-result-item-type="@itemType" data-search-result-item-id="@item.LocationId" data-location-id="@item.LocationId">
                                     <div class="card bg-dark h-100">
                                         <div class="card-body">
                                             <h6 class="card-title">
-                                                <a asp-controller="Locations" asp-action="ViewLocation" asp-route-locationId="@item.LocationId" class="text-info">
-                                                    @item.Name
-                                                </a>
+                                                @item.Name
                                             </h6>
                                             @if (!string.IsNullOrWhiteSpace(item.City))
                                             {
@@ -431,13 +426,12 @@
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
                             @foreach (Measurement item in Model.MeasurementResults.Results)
                             {
-                                <div class="col mb-3">
+                                const int itemType = (int)KinaUnaTypes.TimeLineType.Measurement;
+                                <div class="col mb-3" data-search-result-item-type="@itemType" data-search-result-item-id="@item.MeasurementId" data-measurement-id="@item.MeasurementId">
                                     <div class="card bg-dark h-100">
                                         <div class="card-body">
                                             <h6 class="card-title">
-                                                <a asp-controller="Measurements" asp-action="ViewMeasurement" asp-route-measurementId="@item.MeasurementId" class="text-info">
-                                                    @item.Date.ToString("d")
-                                                </a>
+                                                @item.Date.ToString("d")
                                             </h6>
                                             <p class="card-text small text-muted">
                                                 @if (!string.IsNullOrWhiteSpace(item.EyeColor))
@@ -468,13 +462,12 @@
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
                             @foreach (Note item in Model.NoteResults.Results)
                             {
-                                <div class="col mb-3">
+                                const int itemType = (int)KinaUnaTypes.TimeLineType.Note;
+                                <div class="col mb-3" data-search-result-item-type="@itemType" data-search-result-item-id="@item.NoteId" data-note-id="@item.NoteId">
                                     <div class="card bg-dark h-100">
                                         <div class="card-body">
                                             <h6 class="card-title">
-                                                <a asp-controller="Notes" asp-action="ViewNote" asp-route-noteId="@item.NoteId" class="text-info">
-                                                    @(string.IsNullOrWhiteSpace(item.Title) ? "Note" : item.Title)
-                                                </a>
+                                                @(string.IsNullOrWhiteSpace(item.Title) ? "Note" : item.Title)
                                             </h6>
                                             @if (!string.IsNullOrWhiteSpace(item.Category))
                                             {
@@ -501,10 +494,9 @@
                         <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6">
                             @foreach (Picture item in Model.PictureResults.Results)
                             {
-                                <div class="col mb-3">
-                                    <a asp-controller="Pictures" asp-action="Picture" asp-route-id="@item.PictureId" class="text-info">
-                                        <img src="@item.GetPictureUrl(600)" class="img-fluid rounded" alt="@item.Tags" style="max-height: 120px; object-fit: cover;" />
-                                    </a>
+                                const int itemType = (int)KinaUnaTypes.TimeLineType.Photo;
+                                <div class="col mb-3" data-search-result-item-type="@itemType" data-search-result-item-id="@item.PictureId" data-picture-id="@item.PictureId">
+                                    <img src="@item.GetPictureUrl(600)" class="img-fluid rounded" alt="@item.Tags" style="max-height: 120px; object-fit: cover;" />
                                 </div>
                             }
                         </div>
@@ -522,13 +514,12 @@
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
                             @foreach (Skill item in Model.SkillResults.Results)
                             {
-                                <div class="col mb-3">
+                                const int itemType = (int)KinaUnaTypes.TimeLineType.Skill;
+                                <div class="col mb-3" data-search-result-item-type="@itemType" data-search-result-item-id="@item.SkillId" data-skill-id="@item.SkillId">
                                     <div class="card bg-dark h-100">
                                         <div class="card-body">
                                             <h6 class="card-title">
-                                                <a asp-controller="Skills" asp-action="ViewSkill" asp-route-skillId="@item.SkillId" class="text-info">
-                                                    @item.Name
-                                                </a>
+                                                @item.Name
                                             </h6>
                                             @if (!string.IsNullOrWhiteSpace(item.Category))
                                             {
@@ -555,13 +546,12 @@
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
                             @foreach (Sleep item in Model.SleepResults.Results)
                             {
-                                <div class="col mb-3">
+                                const int itemType = (int)KinaUnaTypes.TimeLineType.Sleep;
+                                <div class="col mb-3" data-search-result-item-type="@itemType" data-search-result-item-id="@item.SleepId" data-sleep-id="@item.SleepId">
                                     <div class="card bg-dark h-100">
                                         <div class="card-body">
                                             <h6 class="card-title">
-                                                <a asp-controller="Sleep" asp-action="ViewSleep" asp-route-sleepId="@item.SleepId" class="text-info">
-                                                    @item.SleepStart.ToString("g")
-                                                </a>
+                                                @item.SleepStart.ToString("g")
                                             </h6>
                                             @if (!string.IsNullOrWhiteSpace(item.SleepNotes))
                                             {
@@ -586,13 +576,12 @@
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
                             @foreach (TodoItem item in Model.TodoItemResults.Results)
                             {
-                                <div class="col mb-3">
+                                const int itemType = (int)KinaUnaTypes.TimeLineType.TodoItem;
+                                <div class="col mb-3" data-search-result-item-type="@itemType" data-search-result-item-id="@item.TodoItemId" data-todo-id="@item.TodoItemId">
                                     <div class="card bg-dark h-100">
                                         <div class="card-body">
                                             <h6 class="card-title">
-                                                <a asp-controller="Todos" asp-action="ViewTodo" asp-route-itemId="@item.TodoItemId" class="text-info">
-                                                    @item.Title
-                                                </a>
+                                                @item.Title
                                             </h6>
                                             @if (!string.IsNullOrWhiteSpace(item.Description))
                                             {
@@ -617,13 +606,12 @@
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
                             @foreach (Vaccination item in Model.VaccinationResults.Results)
                             {
-                                <div class="col mb-3">
+                                const int itemType = (int)KinaUnaTypes.TimeLineType.Vaccination;
+                                <div class="col mb-3" data-search-result-item-type="@itemType" data-search-result-item-id="@item.VaccinationId" data-vaccination-id="@item.VaccinationId">
                                     <div class="card bg-dark h-100">
                                         <div class="card-body">
                                             <h6 class="card-title">
-                                                <a asp-controller="Vaccinations" asp-action="ViewVaccination" asp-route-vaccinationId="@item.VaccinationId" class="text-info">
-                                                    @item.VaccinationName
-                                                </a>
+                                                @item.VaccinationName
                                             </h6>
                                             <p class="card-text small text-muted">
                                                 <i class="material-icons" style="font-size: 14px;">event</i> @item.VaccinationDate.ToString("d")
@@ -647,10 +635,9 @@
                         <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6">
                             @foreach (Video item in Model.VideoResults.Results)
                             {
-                                <div class="col mb-3">
-                                    <a asp-controller="Videos" asp-action="Video" asp-route-id="@item.VideoId" class="text-info">
-                                        <img src="@item.ThumbLink" class="img-fluid rounded" alt="@item.Tags" style="max-height: 120px; object-fit: cover;" />
-                                    </a>
+                                const int itemType = (int)KinaUnaTypes.TimeLineType.Video;
+                                <div class="col mb-3" data-search-result-item-type="@itemType" data-search-result-item-id="@item.VideoId" data-video-id="@item.VideoId">
+                                    <img src="@item.ThumbLink" class="img-fluid rounded" alt="@item.Tags" style="max-height: 120px; object-fit: cover;" />
                                 </div>
                             }
                         </div>
@@ -668,7 +655,8 @@
                         <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3">
                             @foreach (VocabularyItem item in Model.VocabularyItemResults.Results)
                             {
-                                <div class="col mb-3">
+                                const int itemType = (int)KinaUnaTypes.TimeLineType.Vocabulary;
+                                <div class="col mb-3" data-search-result-item-type="@itemType" data-search-result-item-id="@item.WordId" data-vocabulary-id="@item.Word">
                                     <div class="card bg-dark h-100">
                                         <div class="card-body">
                                             <h6 class="card-title">

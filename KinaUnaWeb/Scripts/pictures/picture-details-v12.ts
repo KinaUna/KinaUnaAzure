@@ -21,6 +21,7 @@ export async function addPictureItemEventListeners(pictureId: string): Promise<v
     const pictureElementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-picture-id="' + pictureId + '"]');
     if (pictureElementsWithDataId) {
         pictureElementsWithDataId.forEach((element) => {
+            element.removeEventListener('click', onPictureItemDivClicked);
             element.addEventListener('click', onPictureItemDivClicked);
         });
     }

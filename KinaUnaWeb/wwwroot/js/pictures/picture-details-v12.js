@@ -18,6 +18,7 @@ export async function addPictureItemEventListeners(pictureId) {
     const pictureElementsWithDataId = document.querySelectorAll('[data-picture-id="' + pictureId + '"]');
     if (pictureElementsWithDataId) {
         pictureElementsWithDataId.forEach((element) => {
+            element.removeEventListener('click', onPictureItemDivClicked);
             element.addEventListener('click', onPictureItemDivClicked);
         });
     }

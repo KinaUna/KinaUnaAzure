@@ -1,8 +1,9 @@
-"use strict";
 /**
  * Search Index Page TypeScript
  * Handles search form interactions and filter toggles
  */
+import { addTimelineItemEventListener } from "../item-details/items-display-v12.js";
+import { TimelineItem } from "../page-models-v12.js";
 /**
  * Initializes the search page functionality
  */
@@ -10,6 +11,7 @@ function initializeSearchPage() {
     initializeTypeFilterButtons();
     initializeCollapsePanels();
     initializeSearchInput();
+    initializeItemDetailPopups();
 }
 /**
  * Sets up Select All / Clear All functionality for entity type filters
@@ -79,6 +81,23 @@ function initializeSearchInput() {
             searchInput.focus();
         }
     }
+}
+/**
+ * Sets up event listeners for item detail popups.
+ */
+function initializeItemDetailPopups() {
+    // Get all elements with a data-search-result-item-type attribute
+    const itemElements = document.querySelectorAll('[data-search-result-item-type]');
+    itemElements.forEach(async (element) => {
+        const elementType = element.getAttribute('data-search-result-item-type');
+        const elementId = element.getAttribute('data-search-result-item-id');
+        if (elementType && elementId) {
+            let timelineItem = new TimelineItem();
+            timelineItem.itemId = elementId;
+            timelineItem.itemType = parseInt(elementType);
+            await addTimelineItemEventListener(timelineItem);
+        }
+    });
 }
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', initializeSearchPage);

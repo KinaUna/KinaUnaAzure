@@ -3,6 +3,9 @@
  * Handles search form interactions and filter toggles
  */
 
+import { addTimelineItemEventListener } from "../item-details/items-display-v12.js";
+import { TimelineItem } from "../page-models-v12.js";
+
 /**
  * Initializes the search page functionality
  */
@@ -10,6 +13,7 @@ function initializeSearchPage(): void {
     initializeTypeFilterButtons();
     initializeCollapsePanels();
     initializeSearchInput();
+    initializeItemDetailPopups();
 }
 
 /**
@@ -88,6 +92,24 @@ function initializeSearchInput(): void {
             searchInput.focus();
         }
     }
+}
+
+/**
+ * Sets up event listeners for item detail popups.
+ */
+function initializeItemDetailPopups(): void {
+    // Get all elements with a data-search-result-item-type attribute
+    const itemElements = document.querySelectorAll<HTMLDivElement>('[data-search-result-item-type]');
+    itemElements.forEach(async (element: HTMLDivElement): Promise<void> => {
+        const elementType = element.getAttribute('data-search-result-item-type');
+        const elementId = element.getAttribute('data-search-result-item-id');
+        if (elementType && elementId) {
+            let timelineItem: TimelineItem = new TimelineItem();
+            timelineItem.itemId = elementId;
+            timelineItem.itemType = parseInt(elementType);
+            await addTimelineItemEventListener(timelineItem);
+        }
+    });
 }
 
 // Initialize when DOM is ready
