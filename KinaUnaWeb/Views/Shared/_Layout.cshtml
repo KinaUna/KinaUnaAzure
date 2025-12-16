@@ -129,13 +129,13 @@
         @if (userInfo.CanUserAddItems)
         {
             <div class="navbar-nav nav-item ml-0 ml-lg-1 ml-md-3 ml-lg-4">
-                <button class="btn btn-link kinauna-yellow-text mr-0 mr-md-1 mr-lg-2 pr-2 pr-md-3 pr-lg-4" id="main-page-add-item-button" data-toggle="modal" data-target="#main-modal" aria-label="Add item">
+                <button class="btn btn-link kinauna-yellow-text pl-3 mr-0 mr-md-1 mr-lg-2 pr-2 pr-md-3 pr-lg-4" id="main-page-add-item-button" data-toggle="modal" data-target="#main-modal" aria-label="Add item">
                     <i class="material-icons kinauna-icon-medium kinauna-yellow-text" aria-hidden="true">add</i>
                 </button>
             </div>
         }
         <div class="navbar-nav nav-item ml-0 ml-md-3 ml-lg-4">
-            <a class="btn btn-link kinauna-yellow-text ml-0 ml-lg-1 mr-0 mr-md-1 mr-lg-2 pr-2 pr-md-3 pr-lg-4" id="quick-search-button" aria-label="Search" href="#">
+            <a class="btn btn-link kinauna-yellow-text pl-2 pl-md-3 ml-0 ml-lg-1 mr-0 mr-md-1 mr-lg-2 pr-2 pr-md-3 pr-lg-4" id="quick-search-button" aria-label="Search" href="#">
                 <i class="material-icons kinauna-icon-medium kinauna-yellow-text" aria-hidden="true">search</i>
             </a>
         </div>
@@ -148,7 +148,7 @@
                 childProfilePic = "<img src=\"" + picLink + "\" style=\"max-height: 48px; margin-right: 0px; background: #8bda8b; border-radius: 12px; padding: 1px; width: 48px; object-fit: contain;\" /img> ";
             }
 
-            <span class="d-lg-none selected-child-profile-picture">@Html.Raw(childProfilePic)</span>
+            <span class="d-none d-sm-block d-lg-none selected-child-profile-picture">@Html.Raw(childProfilePic)</span>
         }
         <span id="toggler-notifications-counter" class="badge badge-danger ml-1 mr-2 d-block d-lg-none" style="position: relative; display: none; font-size: 12px;">0</span>
         <button id="nav-main-menu-button" class="navbar-toggler d-block d-lg-none" style="height: 52px; border-color: transparent; outline: none" type="button" data-toggle="collapse" data-target="#navbar-main-content" aria-controls="navbarMainContent" aria-expanded="false" aria-label="Toggle navigation">
