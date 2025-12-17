@@ -19,6 +19,7 @@ export function addQuickSearchButtonEventListener() {
                 quickSearchModal.classList.remove('d-none');
                 addQuickSearchFormEventListener();
                 addQuickSearchCloseButtonEventListener();
+                history.pushState(null, document.title, window.location.href);
             }
         }
         quickSearchButton.removeEventListener('click', handleQuickSearchClick);
@@ -145,6 +146,7 @@ function addQuickSearchCloseButtonEventListener() {
             if (quickSearchModal) {
                 quickSearchModal.classList.add('d-none');
                 quickSearchModal.innerHTML = '';
+                history.back();
             }
         }
         quickSearchCloseButton.removeEventListener('click', handleQuickSearchCloseButtonClick);

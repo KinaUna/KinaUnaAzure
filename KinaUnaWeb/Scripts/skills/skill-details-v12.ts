@@ -66,6 +66,7 @@ async function displaySkillItem(skillId: string): Promise<void> {
                 fullScreenOverlay.innerHTML = skillElementHtml;
                 skillDetailsPopupDiv.appendChild(fullScreenOverlay);
                 hideBodyScrollbars();
+                history.pushState(null, document.title, window.location.href);
                 skillDetailsPopupDiv.classList.remove('d-none');
                 let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
                 if (closeButtonsList) {
@@ -74,6 +75,7 @@ async function displaySkillItem(skillId: string): Promise<void> {
                             skillDetailsPopupDiv.innerHTML = '';
                             skillDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
+                            history.back();
                         }
                         button.removeEventListener('click', closeButtonAction);
                         button.addEventListener('click', closeButtonAction);

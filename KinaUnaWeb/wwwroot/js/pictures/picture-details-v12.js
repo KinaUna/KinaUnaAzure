@@ -225,6 +225,7 @@ function addCloseButtonEventListener() {
                     itemDetailsPopupDiv.innerHTML = '';
                     itemDetailsPopupDiv.classList.add('d-none');
                     showBodyScrollbars();
+                    history.back();
                 }
             };
             button.removeEventListener('click', closeButtonAction);
@@ -298,6 +299,7 @@ async function displayPictureDetails(pictureId, isPopupVisible = false) {
                 itemDetailsPopupDiv.classList.remove('d-none');
                 itemDetailsPopupDiv.innerHTML = itemElementHtml;
                 hideBodyScrollbars();
+                history.pushState(null, document.title, window.location.href);
                 addCloseButtonEventListener();
                 addNavigationEventListeners();
                 await addCommentEventListeners();

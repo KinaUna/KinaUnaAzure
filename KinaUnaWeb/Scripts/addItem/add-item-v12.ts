@@ -84,6 +84,7 @@ async function popupAddItemModal(addItemType: string, addItemProgenyId: string):
                 fullScreenOverlay.id = 'full-screen-overlay-div';
                 fullScreenOverlay.innerHTML = modalContent;
                 popup.appendChild(fullScreenOverlay);
+                history.pushState(null, document.title, window.location.href);
             }
         }).catch(function (error) {
             console.error('Error getting add item popup content:', error);
@@ -265,6 +266,7 @@ async function popupEditItemModal(editItemType: string, editItemItemId: string):
                 fullScreenOverlay.id = 'full-screen-overlay-div';
                 fullScreenOverlay.innerHTML = modalContent;
                 popup.appendChild(fullScreenOverlay);
+                history.pushState(null, document.title, window.location.href);
             }
         }).catch(function (error) {
             console.error('Error getting edit item popup content:', error);
@@ -377,6 +379,7 @@ async function popupCopyItemModal(copyItemType: string, copyItemItemId: string):
                 fullScreenOverlay.id = 'full-screen-overlay-div';
                 fullScreenOverlay.innerHTML = modalContent;
                 popup.appendChild(fullScreenOverlay);
+                history.pushState(null, document.title, window.location.href);
             }
         }).catch(function (error) {
             console.error('Error getting copy item popup content:', error);
@@ -517,6 +520,7 @@ async function popupDeleteItemModal(deleteItemType: string, deleteItemItemId: st
                 fullScreenOverlay.classList.add('full-screen-bg');
                 fullScreenOverlay.innerHTML = modalContent;
                 popup.appendChild(fullScreenOverlay);
+                history.pushState(null, document.title, window.location.href);
             }
         }).catch(function (error) {
             console.error('Error getting delete item popup content:', error);
@@ -625,6 +629,7 @@ async function popupPreviousItem(buttonClicked: HTMLElement): Promise<void> {
             itemDetailsPopupDiv.innerHTML = '';
             itemDetailsPopupDiv.classList.add('d-none');
             showBodyScrollbars();
+            history.back();
         }
     }
 
@@ -658,7 +663,6 @@ async function onSaveItemFormSubmit(event: SubmitEvent): Promise<void> {
     let itemDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
     if (itemDetailsPopupDiv) {
         itemDetailsPopupDiv.classList.add('d-none');
-        
     }
     let addItemForm = document.querySelector<HTMLFormElement>('#save-item-form');
     

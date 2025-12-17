@@ -136,6 +136,7 @@ async function displayKanbanBoard(kanbanBoardId: string): Promise<void> {
                 fullScreenOverlay.innerHTML = kanbanBoardElementHtml;
                 kanbanBoardDetailsPopupDiv.appendChild(fullScreenOverlay);
                 hideBodyScrollbars();
+                history.pushState(null, document.title, window.location.href);
                 kanbanBoardDetailsPopupDiv.classList.remove('d-none');
                 setKanbanBoardDetailsEventListeners(kanbanBoardId, kanbanBoardDetailsPopupDiv);
                 setEditItemButtonEventListeners();
@@ -295,11 +296,14 @@ function addCardButtonsEventListners(): void {
                     addCardModalDiv.innerHTML = formHtml;
                     addCardModalDiv.classList.remove('d-none');
                     hideBodyScrollbars();
+                    history.pushState(null, document.title, window.location.href);
                     const cancelButton = addCardModalDiv.querySelector<HTMLButtonElement>('.add-kanban-item-cancel-button');
                     if (cancelButton) {
                         const closeButtonFunction = function () {
                             addCardModalDiv.innerHTML = '';
                             addCardModalDiv.classList.add('d-none');
+                            history.back();
+                            showBodyScrollbars();
                         }
                         cancelButton.removeEventListener('click', closeButtonFunction);
                         cancelButton.addEventListener('click', closeButtonFunction);

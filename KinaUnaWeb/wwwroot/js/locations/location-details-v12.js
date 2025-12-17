@@ -86,6 +86,7 @@ async function displayLocationItem(locationId) {
                 fullScreenOverlay.innerHTML = locationElementHtml;
                 locationDetailsPopupDiv.appendChild(fullScreenOverlay);
                 hideBodyScrollbars();
+                history.pushState(null, document.title, window.location.href);
                 locationDetailsPopupDiv.classList.remove('d-none');
                 let closeButtonsList = document.querySelectorAll('.item-details-close-button');
                 if (closeButtonsList) {
@@ -94,6 +95,7 @@ async function displayLocationItem(locationId) {
                             locationDetailsPopupDiv.innerHTML = '';
                             locationDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
+                            history.back();
                         };
                         button.removeEventListener('click', closeClickedAction);
                         button.addEventListener('click', closeClickedAction);

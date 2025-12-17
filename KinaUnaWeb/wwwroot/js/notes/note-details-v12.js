@@ -61,6 +61,7 @@ async function displayNoteItem(noteId) {
                 fullScreenOverlay.innerHTML = noteElementHtml;
                 noteDetailsPopupDiv.appendChild(fullScreenOverlay);
                 hideBodyScrollbars();
+                history.pushState(null, document.title, window.location.href);
                 noteDetailsPopupDiv.classList.remove('d-none');
                 let closeButtonsList = document.querySelectorAll('.item-details-close-button');
                 if (closeButtonsList) {
@@ -69,6 +70,7 @@ async function displayNoteItem(noteId) {
                             noteDetailsPopupDiv.innerHTML = '';
                             noteDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
+                            history.back();
                         };
                         button.removeEventListener('click', closeButtonAction);
                         button.addEventListener('click', closeButtonAction);

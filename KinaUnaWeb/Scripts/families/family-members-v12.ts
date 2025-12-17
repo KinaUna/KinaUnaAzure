@@ -118,6 +118,7 @@ export async function displayFamilyMemberDetails(familyMemberId: number): Promis
             fullScreenOverlay.innerHTML = familyMemberDetails;
             modalDiv.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
+            history.pushState(null, document.title, window.location.href);
             modalDiv.classList.remove('d-none');
 
             setFamilyMemberDetailsEventListeners(familyMemberId);
@@ -171,6 +172,7 @@ function setFamilyMemberDetailsEventListeners(familyMemberId: number): void {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
                 showBodyScrollbars();
+                history.back();
             };
             // Clear existing event listeners.
             button.removeEventListener('click', closeButtonActions);
@@ -218,6 +220,7 @@ export async function displayAddFamilyMemberModal(familyId: string): Promise<voi
             fullScreenOverlay.innerHTML = familyDetailsHTML;
             popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
+            history.pushState(null, document.title, window.location.href);
             popup.classList.remove('d-none');
             addAddFamilyMemberModalEventListeners();
             await initializeAddEditFamilyMember('0');
@@ -246,6 +249,7 @@ function addAddFamilyMemberModalEventListeners() {
                 popup.innerHTML = '';
                 popup.classList.add('d-none');
                 hideBodyScrollbars();
+                history.back();
             };
             // Clear existing event listeners.
             button.removeEventListener('click', closeButtonActions);
@@ -312,6 +316,7 @@ export async function displayEditFamilyMemberModal(familyMemberId: string): Prom
             fullScreenOverlay.innerHTML = familyDetailsHTML;
             popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
+            history.pushState(null, document.title, window.location.href);
             popup.classList.remove('d-none');
             addEditFamilyMemberModalEventListeners();
             await initializeAddEditFamilyMember(familyMemberId);
@@ -340,6 +345,7 @@ function addEditFamilyMemberModalEventListeners() {
                 popup.innerHTML = '';
                 popup.classList.add('d-none');
                 hideBodyScrollbars();
+                history.back();
             };
             // Clear existing event listeners.
             button.removeEventListener('click', closeButtonActions);
@@ -406,6 +412,7 @@ export async function displayDeleteFamilyMemberModal(familyMemberId: string): Pr
             fullScreenOverlay.innerHTML = familyDetailsHTML;
             popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
+            history.pushState(null, document.title, window.location.href);
             popup.classList.remove('d-none');
             addDeleteFamilyMemberModalEventListeners();
             await initializeAddEditFamilyMember(familyMemberId);
@@ -434,6 +441,7 @@ function addDeleteFamilyMemberModalEventListeners() {
                 popup.innerHTML = '';
                 popup.classList.add('d-none');
                 hideBodyScrollbars();
+                history.back();
             };
             // Clear existing event listeners.
             button.removeEventListener('click', closeButtonActions);

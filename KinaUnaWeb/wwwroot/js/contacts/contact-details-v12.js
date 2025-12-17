@@ -61,6 +61,7 @@ async function displayContactItem(contactId) {
                 fullScreenOverlay.innerHTML = contactElementHtml;
                 contactDetailsPopupDiv.appendChild(fullScreenOverlay);
                 hideBodyScrollbars();
+                history.pushState(null, document.title, window.location.href);
                 contactDetailsPopupDiv.classList.remove('d-none');
                 let closeButtonsList = document.querySelectorAll('.item-details-close-button');
                 if (closeButtonsList) {
@@ -69,6 +70,7 @@ async function displayContactItem(contactId) {
                             contactDetailsPopupDiv.innerHTML = '';
                             contactDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
+                            history.back();
                         };
                         button.removeEventListener('click', closePopupDiv);
                         button.addEventListener('click', closePopupDiv);

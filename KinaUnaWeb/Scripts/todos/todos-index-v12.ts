@@ -249,11 +249,13 @@ async function assignTodoItemTo(todoItemId: string) {
         if (modalDiv) {
             modalDiv.innerHTML = formHtml;
             modalDiv.classList.remove('d-none');
+            history.pushState(null, document.title, window.location.href);
             const cancelButton = modalDiv.querySelector<HTMLButtonElement>('.assign-todo-item-to-cancel-button');
             if (cancelButton) {
                 const closeButtonFunction = function () {
                     modalDiv.innerHTML = '';
                     modalDiv.classList.add('d-none');
+                    history.back();
                 }
                 cancelButton.removeEventListener('click', closeButtonFunction);
                 cancelButton.addEventListener('click', closeButtonFunction);
@@ -328,11 +330,13 @@ async function addTodoItemToBoard(todoItemId: string) {
         if (modalDiv) {
             modalDiv.innerHTML = formHtml;
             modalDiv.classList.remove('d-none');
+            history.pushState(null, document.title, window.location.href);
             const cancelButton = modalDiv.querySelector<HTMLButtonElement>('.add-todo-item-to-kanban-board-cancel-button');
             if (cancelButton) {
                 const closeButtonFunction = function () {
                     modalDiv.innerHTML = '';
                     modalDiv.classList.add('d-none');
+                    history.back();
                 }
                 cancelButton.removeEventListener('click', closeButtonFunction);
                 cancelButton.addEventListener('click', closeButtonFunction);

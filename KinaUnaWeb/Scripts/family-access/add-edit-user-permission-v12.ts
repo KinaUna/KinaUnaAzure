@@ -19,6 +19,7 @@ export async function displayAddUserPermissionModal(progenyId: string, familyId:
             fullScreenOverlay.innerHTML = addGroupContent;
             popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
+            history.pushState(null, document.title, window.location.href);
             popup.classList.remove('d-none');
             addAddUserPermissionModalEventListeners();
             validateInputs();
@@ -45,6 +46,7 @@ function addAddUserPermissionModalEventListeners(): void {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
                 document.body.style.overflow = 'auto';
+                history.back();
             }
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
@@ -106,6 +108,7 @@ export async function displayEditFamilyPermissionModal(permissionId: string) {
             fullScreenOverlay.innerHTML = editPermissionContent;
             popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
+            history.pushState(null, document.title, window.location.href);
             popup.classList.remove('d-none');
             addEditFamilyPermissionModalEventListeners();
             validateInputs();
@@ -132,6 +135,7 @@ function addEditFamilyPermissionModalEventListeners(): void {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
                 document.body.style.overflow = 'auto';
+                history.back();
             }
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
@@ -192,6 +196,7 @@ export async function displayDeleteFamilyPermissionModal(permissionId: string) {
             fullScreenOverlay.innerHTML = deletePermissionContent;
             popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
+            history.pushState(null, document.title, window.location.href);
             popup.classList.remove('d-none');
             addDeleteFamilyPermissionModalEventListeners();
 
@@ -217,6 +222,7 @@ function addDeleteFamilyPermissionModalEventListeners(): void {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
                 document.body.style.overflow = 'auto';
+                history.back();
             }
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
@@ -271,6 +277,7 @@ export async function displayEditProgenyPermissionModal(permissionId: string) {
             fullScreenOverlay.innerHTML = editPermissionContent;
             popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
+            history.pushState(null, document.title, window.location.href);
             popup.classList.remove('d-none');
             addEditProgenyPermissionModalEventListeners();
             validateInputs();
@@ -297,6 +304,7 @@ function addEditProgenyPermissionModalEventListeners(): void {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
                 document.body.style.overflow = 'auto';
+                history.back();
             }
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
@@ -357,6 +365,7 @@ export async function displayDeleteProgenyPermissionModal(permissionId: string) 
             fullScreenOverlay.innerHTML = deletePermissionContent;
             popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
+            history.pushState(null, document.title, window.location.href);
             popup.classList.remove('d-none');
             addDeleteProgenyPermissionModalEventListeners();
             
@@ -382,6 +391,7 @@ function addDeleteProgenyPermissionModalEventListeners(): void {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
                 document.body.style.overflow = 'auto';
+                history.back();
             }
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);

@@ -66,6 +66,7 @@ async function displayVocabularyItem(vocabularyId: string): Promise<void> {
                 fullScreenOverlay.innerHTML = vocabularyElementHtml;
                 vocabularyDetailsPopupDiv.appendChild(fullScreenOverlay);
                 hideBodyScrollbars();
+                history.pushState(null, document.title, window.location.href);
                 vocabularyDetailsPopupDiv.classList.remove('d-none');
                 let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
                 if (closeButtonsList) {
@@ -73,6 +74,7 @@ async function displayVocabularyItem(vocabularyId: string): Promise<void> {
                         vocabularyDetailsPopupDiv.innerHTML = '';
                         vocabularyDetailsPopupDiv.classList.add('d-none');
                         showBodyScrollbars();
+                        history.back();
                     };
                     closeButtonsList.forEach((button) => {
                         button.removeEventListener('click', closeButtonAction);

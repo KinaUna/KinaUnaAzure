@@ -62,6 +62,7 @@ async function displaySleepItem(sleepId: string): Promise<void> {
                 fullScreenOverlay.innerHTML = sleepElementHtml;
                 sleepDetailsPopupDiv.appendChild(fullScreenOverlay);
                 hideBodyScrollbars();
+                history.pushState(null, document.title, window.location.href);
                 sleepDetailsPopupDiv.classList.remove('d-none');
                 let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
                 if (closeButtonsList) {
@@ -70,6 +71,7 @@ async function displaySleepItem(sleepId: string): Promise<void> {
                             sleepDetailsPopupDiv.innerHTML = '';
                             sleepDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
+                            history.back();
                         }
                         button.removeEventListener('click', closeButtonAction);
                         button.addEventListener('click', closeButtonAction);

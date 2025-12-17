@@ -64,6 +64,7 @@ async function popupKanbanItem(kanbanItem, containerId) {
         setDeleteItemButtonEventListeners();
         await getSubtaskList(kanbanItem.todoItemId.toString(), true);
         containerElement.classList.remove('d-none');
+        history.pushState(null, document.title, window.location.href);
     }
     else {
         console.error('Container element not found: ' + containerId);
@@ -85,6 +86,7 @@ function setKanbanItemDetailsEventListeners(itemId, todoDetailsPopupDivId) {
                     return;
                 todoDetailsPopupDiv.innerHTML = '';
                 todoDetailsPopupDiv.classList.add('d-none');
+                history.back();
             };
             // Clear existing event listeners.
             button.removeEventListener('click', closeButtonActions);
@@ -467,11 +469,13 @@ export async function removeKanbanItemFunction(kanbanItemId) {
         const formHtml = await getRemoveKanbanItemForm(kanbanItemId);
         removeKanbanItemModalDiv.innerHTML = formHtml;
         removeKanbanItemModalDiv.classList.remove('d-none');
+        history.pushState(null, document.title, window.location.href);
         const cancelButton = removeKanbanItemModalDiv.querySelector('.remove-kanban-item-cancel-button');
         if (cancelButton) {
             const closeButtonFunction = function () {
                 removeKanbanItemModalDiv.innerHTML = '';
                 removeKanbanItemModalDiv.classList.add('d-none');
+                history.back();
             };
             cancelButton.removeEventListener('click', closeButtonFunction);
             cancelButton.addEventListener('click', closeButtonFunction);
@@ -534,11 +538,13 @@ export async function editKanbanItemFunction(kanbanItemId) {
         const formHtml = await getEditKanbanItemForm(kanbanItemId);
         editKanbanItemModalDiv.innerHTML = formHtml;
         editKanbanItemModalDiv.classList.remove('d-none');
+        history.pushState(null, document.title, window.location.href);
         const cancelButton = editKanbanItemModalDiv.querySelector('.edit-kanban-item-cancel-button');
         if (cancelButton) {
             const closeButtonFunction = function () {
                 editKanbanItemModalDiv.innerHTML = '';
                 editKanbanItemModalDiv.classList.add('d-none');
+                history.back();
             };
             cancelButton.removeEventListener('click', closeButtonFunction);
             cancelButton.addEventListener('click', closeButtonFunction);

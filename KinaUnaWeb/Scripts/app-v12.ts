@@ -292,6 +292,137 @@ async function setDefaultProgeny(progenyId: number) {
     }); 
 }
 
+/**
+ * Closes the item details modal if it is open.
+ * @return True if the modal was open and is now closed, false if it was already closed.
+ */
+function closeItemDetailsModal(): boolean {
+    const itemDetailsPopupDiv = document.querySelector<HTMLDivElement>('#item-details-div');
+    if (itemDetailsPopupDiv !== null) {
+        if (itemDetailsPopupDiv.classList.contains('d-none')) {
+            return false;
+        }
+        itemDetailsPopupDiv.innerHTML = '';
+        itemDetailsPopupDiv.classList.add('d-none');
+        showBodyScrollbars();
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Closes the quick search modal if it is open.
+ * @return True if the modal was open and is now closed, false if it was already closed.
+ */
+function closeQuickSearchModal(): boolean {
+    const quickSearchModalDiv = document.querySelector<HTMLDivElement>('#quick-search-modal-div');
+    if (quickSearchModalDiv !== null) {
+        if (quickSearchModalDiv.classList.contains('d-none')) {
+            return false;
+        }
+        quickSearchModalDiv.innerHTML = '';
+        quickSearchModalDiv.classList.add('d-none');
+        showBodyScrollbars();
+        return true;
+    }
+    return false;
+}
+
+function closeKanbanItemDetailsModal(): boolean {
+    const kanbanItemDetailsPopupDiv = document.querySelector<HTMLDivElement>('#kanban-item-details-div');
+    if (kanbanItemDetailsPopupDiv !== null) {
+        if (kanbanItemDetailsPopupDiv.classList.contains('d-none')) {
+            return false;
+        }
+        kanbanItemDetailsPopupDiv.innerHTML = '';
+        kanbanItemDetailsPopupDiv.classList.add('d-none');
+        showBodyScrollbars();
+        return true;
+    }
+    return false;
+}
+
+function closeSettingsModals(): boolean {
+    const settingsModals = document.querySelectorAll<HTMLDivElement>('.settings-modal');
+    let anyClosed = false;
+    settingsModals.forEach(function (modal) {
+        if (!modal.classList.contains('d-none')) {
+            modal.classList.add('d-none');
+            anyClosed = true;
+            showBodyScrollbars();
+        }
+    });
+    return anyClosed;
+}
+
+function closeAddItemModal(): boolean {
+    const addItemModalDiv = document.querySelector<HTMLDivElement>('#main-modal');
+    if (addItemModalDiv !== null) {
+        if (addItemModalDiv.classList.contains('d-none')) {
+            return false;
+        }
+        addItemModalDiv.classList.add('d-none');
+        return true;
+    }
+
+    return false;
+}
+
+/**
+ * Handles the popstate event to close modals/pop-ups instead of navigating back.
+ * @param event The PopStateEvent object.
+ */
+function onPopState(event: PopStateEvent): void {
+    closeItemDetailsModal();
+    closeQuickSearchModal();
+    closeKanbanItemDetailsModal();
+    closeSettingsModals();
+    closeAddItemModal();
+}
+
+/**
+ * Overrides the back button behavior to close modals/pop-ups instead of navigating back.
+ */
+function addOverrideBackButtonEventListener(): void {
+    window.removeEventListener('popstate', onPopState);
+    window.addEventListener('popstate', onPopState);
+}
+
+/**
+ * Handles the click event on the "Add Item" button to open the "Add Item" modal.
+ * @param event The MouseEvent object.
+ */
+function onAddItemButtonClicked(event: MouseEvent): void {
+    event.preventDefault();
+    const addItemModalDiv = document.querySelector<HTMLDivElement>('#main-modal');
+    if (addItemModalDiv !== null) {
+        addItemModalDiv.classList.remove('d-none');
+        history.pushState(null, document.title, window.location.href);
+        hideBodyScrollbars();
+        const addItemModalCloseButton = document.querySelector<HTMLButtonElement>('#add-item-modal-close-button');
+        if (addItemModalCloseButton !== null) {
+            const closeAddItemModalAction = function () {
+                addItemModalDiv.classList.add('d-none');
+                showBodyScrollbars();
+                history.back();
+            }
+            addItemModalCloseButton.removeEventListener('click', closeAddItemModalAction);
+            addItemModalCloseButton.addEventListener('click', closeAddItemModalAction);
+        }
+    }    
+}
+
+/**
+ * Adds event listeners to the "Add Item" button on the main page.
+ * When clicked, it opens the "Add Item" modal.
+ */
+function addAddItemButtonEventListeners(): void {
+    let addItemButton = document.querySelector<HTMLButtonElement>('#main-page-add-item-button');
+    if (addItemButton !== null) {
+        addItemButton.removeEventListener('click', onAddItemButtonClicked);
+        addItemButton.addEventListener('click', onAddItemButtonClicked);
+    }
+}
 
 /**
  * Initializes the page settings when the website is first loaded.
@@ -316,4 +447,6 @@ document.addEventListener('DOMContentLoaded', function (): void {
 
     setAddItemButtonEventListeners();
     addQuickSearchButtonEventListener();
+    addOverrideBackButtonEventListener();
+    addAddItemButtonEventListeners();
 });

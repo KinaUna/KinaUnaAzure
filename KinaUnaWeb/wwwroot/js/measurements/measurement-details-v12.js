@@ -65,6 +65,7 @@ async function displayMeasurementItem(measurementId) {
                 fullScreenOverlay.innerHTML = measurementElementHtml;
                 measurementDetailsPopupDiv.appendChild(fullScreenOverlay);
                 hideBodyScrollbars();
+                history.pushState(null, document.title, window.location.href);
                 measurementDetailsPopupDiv.classList.remove('d-none');
                 let closeButtonsList = document.querySelectorAll('.item-details-close-button');
                 if (closeButtonsList) {
@@ -73,6 +74,7 @@ async function displayMeasurementItem(measurementId) {
                             measurementDetailsPopupDiv.innerHTML = '';
                             measurementDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
+                            history.back();
                         };
                         button.removeEventListener('click', closeButtonAction);
                         button.addEventListener('click', closeButtonAction);
