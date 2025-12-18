@@ -19,6 +19,7 @@ export async function displayAddGroupMemberModal(groupId: string) {
             fullScreenOverlay.innerHTML = addGroupMemberContent;
             popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
+            history.pushState(null, document.title, window.location.href);
             popup.classList.remove('d-none');
             addAddGroupMemberModalEventListeners();
             validateInputs();
@@ -45,6 +46,7 @@ function addAddGroupMemberModalEventListeners(): void {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
                 document.body.style.overflow = 'auto';
+                history.back();
             }
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
@@ -106,6 +108,7 @@ export async function displayEditGroupMemberModal(groupMemberId: string) {
             fullScreenOverlay.innerHTML = editGroupMemberContent;
             popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
+            history.pushState(null, document.title, window.location.href);
             popup.classList.remove('d-none');
             addEditGroupMemberModalEventListeners();
             validateInputs();
@@ -131,6 +134,7 @@ function addEditGroupMemberModalEventListeners(): void {
             if (modalDiv) {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
+                history.back();
                 document.body.style.overflow = 'auto';
             }
         };
@@ -195,6 +199,7 @@ export async function displayDeleteGroupMemberModal(groupMemberId: string) {
             fullScreenOverlay.innerHTML = deleteGroupMemberContent;
             popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
+            history.pushState(null, document.title, window.location.href);
             popup.classList.remove('d-none');
             addDeleteGroupMemberModalEventListeners();
             
@@ -220,6 +225,7 @@ function addDeleteGroupMemberModalEventListeners(): void {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
                 document.body.style.overflow = 'auto';
+                history.back();
             }
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);

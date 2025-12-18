@@ -18,6 +18,7 @@ export async function displayAddGroupMemberModal(groupId) {
             fullScreenOverlay.innerHTML = addGroupMemberContent;
             popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
+            history.pushState(null, document.title, window.location.href);
             popup.classList.remove('d-none');
             addAddGroupMemberModalEventListeners();
             validateInputs();
@@ -43,6 +44,7 @@ function addAddGroupMemberModalEventListeners() {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
                 document.body.style.overflow = 'auto';
+                history.back();
             }
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);
@@ -101,6 +103,7 @@ export async function displayEditGroupMemberModal(groupMemberId) {
             fullScreenOverlay.innerHTML = editGroupMemberContent;
             popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
+            history.pushState(null, document.title, window.location.href);
             popup.classList.remove('d-none');
             addEditGroupMemberModalEventListeners();
             validateInputs();
@@ -125,6 +128,7 @@ function addEditGroupMemberModalEventListeners() {
             if (modalDiv) {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
+                history.back();
                 document.body.style.overflow = 'auto';
             }
         };
@@ -184,6 +188,7 @@ export async function displayDeleteGroupMemberModal(groupMemberId) {
             fullScreenOverlay.innerHTML = deleteGroupMemberContent;
             popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
+            history.pushState(null, document.title, window.location.href);
             popup.classList.remove('d-none');
             addDeleteGroupMemberModalEventListeners();
             return Promise.resolve();
@@ -208,6 +213,7 @@ function addDeleteGroupMemberModalEventListeners() {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
                 document.body.style.overflow = 'auto';
+                history.back();
             }
         };
         closeButton.removeEventListener('click', closeButtonClickedAction);

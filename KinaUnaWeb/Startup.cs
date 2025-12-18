@@ -23,6 +23,7 @@ using System;
 using System.Globalization;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using KinaUnaWeb.Services.HttpClients.Search;
 using Microsoft.AspNetCore.Authentication;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 
@@ -95,6 +96,7 @@ namespace KinaUnaWeb
             services.AddHttpClient<IAutoSuggestsHttpClient, AutoSuggestsHttpClient>();
             services.AddHttpClient<IFamiliesHttpClient, FamiliesHttpClient>();
             services.AddHttpClient<IUserGroupsHttpClient, UserGroupsHttpClient>();
+            services.AddHttpClient<ISearchHttpClient, SearchHttpClient>();
 
             string authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey) ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + " was not found in the configuration data.");
             string webServerClientId = Configuration.GetValue<string>(AuthConstants.WebServerClientIdKey) ?? throw new InvalidOperationException(AuthConstants.WebServerClientIdKey + " was not found in the configuration data.");

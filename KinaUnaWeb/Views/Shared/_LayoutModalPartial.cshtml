@@ -5,19 +5,20 @@
     int languageId = LocaleManager.GetLanguageId(Context.Request);
     string titleString = await LocaleManager.GetTranslation("Add item", PageNames.AddItem, languageId);
 }
-<div id="main-modal" class="modal fade" tabindex="-1" role="dialog" data-keyboard="false">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title">
-                    @titleString
-                </h4>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">×</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4">
+<div id="main-modal" class="item-details-popup d-none" tabindex="-1" role="dialog" data-keyboard="false">
+    <div class="full-screen-bg">
+        <div class="space-50"></div>
+        <div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper" role="document">
+            <div class="timeline-card-body modal-content item-details-content">
+                <div class="row sticky-top m-0 item-details-header">
+                    <div class="col-12 bg-add-item-header">
+                        <span class="h4 mr-3 align-bottom">@titleString</span>
+                    </div>
+                    <button id="add-item-modal-close-button" type="button" class="btn btn-link item-details-close-button" aria-label="Close">
+                        <span>×</span>
+                    </button>
+                </div>
+                <div class="row m-0" style="max-height: 85vh;">
                     <div class="col">
                         <a class="btn btn-add-note add-item-button" data-add-item-type="note" data-add-item-progeny-id="0">
                             <div class="space-20"></div>

@@ -594,11 +594,13 @@ async function assignTo(kanbanItemId: string) {
             if (modalDiv) {
                 modalDiv.innerHTML = formHtml;
                 modalDiv.classList.remove('d-none');
+                history.pushState(null, document.title, window.location.href);
                 const cancelButton = modalDiv.querySelector<HTMLButtonElement>('.assign-todo-item-to-cancel-button');
                 if (cancelButton) {
                     const closeButtonFunction = function () {
                         modalDiv.innerHTML = '';
                         modalDiv.classList.add('d-none');
+                        history.back();
                     }
                     cancelButton.removeEventListener('click', closeButtonFunction);
                     cancelButton.addEventListener('click', closeButtonFunction);
@@ -782,12 +784,13 @@ async function removeCard(kanbanItemId: string) {
         if (removeCardModalDiv) {
             removeCardModalDiv.innerHTML = removeCardHtml;
             removeCardModalDiv.classList.remove('d-none');
-            
+            history.pushState(null, document.title, window.location.href);
             const cancelButton = removeCardModalDiv.querySelector<HTMLButtonElement>('.remove-kanban-item-cancel-button');
             if (cancelButton) {
                 const closeButtonFunction = function () {
                     removeCardModalDiv.innerHTML = '';
                     removeCardModalDiv.classList.add('d-none');
+                    history.back();
                 }
                 cancelButton.removeEventListener('click', closeButtonFunction);
                 cancelButton.addEventListener('click', closeButtonFunction);
@@ -860,11 +863,13 @@ async function copyCardToBoard(kanbanItemId: string) {
         if (modalDiv) {
             modalDiv.innerHTML = formHtml;
             modalDiv.classList.remove('d-none');
+            history.pushState(null, document.title, window.location.href);
             const cancelButton = modalDiv.querySelector<HTMLButtonElement>('.copy-kanban-item-cancel-button');            
             if (cancelButton) {
                 const closeButtonFunction = function () {
                     modalDiv.innerHTML = '';
                     modalDiv.classList.add('d-none');
+                    history.back();
                 }
                 cancelButton.removeEventListener('click', closeButtonFunction);
                 cancelButton.addEventListener('click', closeButtonFunction);
@@ -921,11 +926,13 @@ async function moveCardToBoard(kanbanItemId: string) {
         if (modalDiv) {
             modalDiv.innerHTML = formHtml;
             modalDiv.classList.remove('d-none');
+            history.pushState(null, document.title, window.location.href);
             const cancelButton = modalDiv.querySelector<HTMLButtonElement>('.move-kanban-item-cancel-button');
             if (cancelButton) {
                 const closeButtonFunction = function () {
                     modalDiv.innerHTML = '';
                     modalDiv.classList.add('d-none');
+                    history.back();
                 }
                 cancelButton.removeEventListener('click', closeButtonFunction);
                 cancelButton.addEventListener('click', closeButtonFunction);

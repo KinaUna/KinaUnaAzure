@@ -1,9 +1,11 @@
 import { setAddItemButtonEventListeners } from './addItem/add-item-v12.js';
 import { getCurrentLanguageId, getCurrentProgenyId } from './data-tools-v12.js';
 import { addFamilyItemEventListenersForAllFamilies } from './families/family-details-v12.js';
+import { hideBodyScrollbars, showBodyScrollbars } from './item-details/items-display-v12.js';
 import { startFullPageSpinner, startFullPageSpinner2, setFullPageSpinnerEventListeners } from './navigation-tools-v12.js';
 import { SetProgenyRequest } from './page-models-v12.js';
 import { addProgenyItemEventListenersForAllProgenies } from './progeny/progeny-details-v12.js';
+import { addQuickSearchButtonEventListener } from './search/quick-search.js';
 import { getSelectedFamilies, getSelectedProgenies } from './settings-tools-v12.js';
 import { initSidebar } from './sidebar-v12.js';
 const serviceWorkerVersion = 'v11';
@@ -246,6 +248,128 @@ async function setDefaultProgeny(progenyId) {
     });
 }
 /**
+ * Closes the item details modal if it is open.
+ * @return True if the modal was open and is now closed, false if it was already closed.
+ */
+function closeItemDetailsModal() {
+    const itemDetailsPopupDiv = document.querySelector('#item-details-div');
+    if (itemDetailsPopupDiv !== null) {
+        if (itemDetailsPopupDiv.classList.contains('d-none')) {
+            return false;
+        }
+        itemDetailsPopupDiv.innerHTML = '';
+        itemDetailsPopupDiv.classList.add('d-none');
+        showBodyScrollbars();
+        return true;
+    }
+    return false;
+}
+/**
+ * Closes the quick search modal if it is open.
+ * @return True if the modal was open and is now closed, false if it was already closed.
+ */
+function closeQuickSearchModal() {
+    const quickSearchModalDiv = document.querySelector('#quick-search-modal-div');
+    if (quickSearchModalDiv !== null) {
+        if (quickSearchModalDiv.classList.contains('d-none')) {
+            return false;
+        }
+        quickSearchModalDiv.innerHTML = '';
+        quickSearchModalDiv.classList.add('d-none');
+        showBodyScrollbars();
+        return true;
+    }
+    return false;
+}
+function closeKanbanItemDetailsModal() {
+    const kanbanItemDetailsPopupDiv = document.querySelector('#kanban-item-details-div');
+    if (kanbanItemDetailsPopupDiv !== null) {
+        if (kanbanItemDetailsPopupDiv.classList.contains('d-none')) {
+            return false;
+        }
+        kanbanItemDetailsPopupDiv.innerHTML = '';
+        kanbanItemDetailsPopupDiv.classList.add('d-none');
+        showBodyScrollbars();
+        return true;
+    }
+    return false;
+}
+function closeSettingsModals() {
+    const settingsModals = document.querySelectorAll('.settings-modal');
+    let anyClosed = false;
+    settingsModals.forEach(function (modal) {
+        if (!modal.classList.contains('d-none')) {
+            modal.classList.add('d-none');
+            anyClosed = true;
+            showBodyScrollbars();
+        }
+    });
+    return anyClosed;
+}
+function closeAddItemModal() {
+    const addItemModalDiv = document.querySelector('#main-modal');
+    if (addItemModalDiv !== null) {
+        if (addItemModalDiv.classList.contains('d-none')) {
+            return false;
+        }
+        addItemModalDiv.classList.add('d-none');
+        return true;
+    }
+    return false;
+}
+/**
+ * Handles the popstate event to close modals/pop-ups instead of navigating back.
+ * @param event The PopStateEvent object.
+ */
+function onPopState(event) {
+    closeItemDetailsModal();
+    closeQuickSearchModal();
+    closeKanbanItemDetailsModal();
+    closeSettingsModals();
+    closeAddItemModal();
+}
+/**
+ * Overrides the back button behavior to close modals/pop-ups instead of navigating back.
+ */
+function addOverrideBackButtonEventListener() {
+    window.removeEventListener('popstate', onPopState);
+    window.addEventListener('popstate', onPopState);
+}
+/**
+ * Handles the click event on the "Add Item" button to open the "Add Item" modal.
+ * @param event The MouseEvent object.
+ */
+function onAddItemButtonClicked(event) {
+    event.preventDefault();
+    const addItemModalDiv = document.querySelector('#main-modal');
+    if (addItemModalDiv !== null) {
+        addItemModalDiv.classList.remove('d-none');
+        history.pushState(null, document.title, window.location.href);
+        hideBodyScrollbars();
+        const addItemModalCloseButton = document.querySelector('#add-item-modal-close-button');
+        if (addItemModalCloseButton !== null) {
+            const closeAddItemModalAction = function () {
+                addItemModalDiv.classList.add('d-none');
+                showBodyScrollbars();
+                history.back();
+            };
+            addItemModalCloseButton.removeEventListener('click', closeAddItemModalAction);
+            addItemModalCloseButton.addEventListener('click', closeAddItemModalAction);
+        }
+    }
+}
+/**
+ * Adds event listeners to the "Add Item" button on the main page.
+ * When clicked, it opens the "Add Item" modal.
+ */
+function addAddItemButtonEventListeners() {
+    let addItemButton = document.querySelector('#main-page-add-item-button');
+    if (addItemButton !== null) {
+        addItemButton.removeEventListener('click', onAddItemButtonClicked);
+        addItemButton.addEventListener('click', onAddItemButtonClicked);
+    }
+}
+/**
  * Initializes the page settings when the website is first loaded.
  */
 document.addEventListener('DOMContentLoaded', function () {
@@ -259,5 +383,8 @@ document.addEventListener('DOMContentLoaded', function () {
     addProgenyItemEventListenersForAllProgenies();
     addFamilyItemEventListenersForAllFamilies();
     setAddItemButtonEventListeners();
+    addQuickSearchButtonEventListener();
+    addOverrideBackButtonEventListener();
+    addAddItemButtonEventListeners();
 });
 //# sourceMappingURL=app-v12.js.map

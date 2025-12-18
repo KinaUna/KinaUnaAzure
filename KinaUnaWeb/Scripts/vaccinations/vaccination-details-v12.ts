@@ -66,6 +66,7 @@ async function displayVaccinationItem(vaccinationId: string): Promise<void> {
                 fullScreenOverlay.innerHTML = vaccinationElementHtml;
                 vaccinationDetailsPopupDiv.appendChild(fullScreenOverlay);
                 hideBodyScrollbars();
+                history.pushState(null, document.title, window.location.href);
                 vaccinationDetailsPopupDiv.classList.remove('d-none');
                 let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
                 if (closeButtonsList) {
@@ -74,6 +75,7 @@ async function displayVaccinationItem(vaccinationId: string): Promise<void> {
                             vaccinationDetailsPopupDiv.innerHTML = '';
                             vaccinationDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
+                            history.back();
                         };
                         button.removeEventListener('click', closeButtonAction);
                         button.addEventListener('click', closeButtonAction);

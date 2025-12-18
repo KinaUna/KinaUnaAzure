@@ -352,6 +352,7 @@ function addCloseButtonEventListener(): void {
                     itemDetailsPopupDiv.innerHTML = '';
                     itemDetailsPopupDiv.classList.add('d-none');
                     showBodyScrollbars();
+                    history.back();
                 }
             };
             button.removeEventListener('click', closeButtonAction);
@@ -433,6 +434,7 @@ async function displayVideoDetails(videoId: string, isPopupVisible: boolean = fa
                 itemDetailsPopupDiv.classList.remove('d-none');
                 itemDetailsPopupDiv.innerHTML = itemElementHtml;
                 hideBodyScrollbars();
+                history.pushState(null, document.title, window.location.href);
                 addCloseButtonEventListener();
                 addNavigationEventListeners();
                 addEditEventListeners();

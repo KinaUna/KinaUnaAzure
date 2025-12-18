@@ -139,6 +139,7 @@ async function displayFamilyDetails(familyId: number): Promise<void> {
             hideBodyScrollbars();
             familyDetailsDiv.classList.remove('d-none');
             addFamilyDetailsEventListeners();
+            history.pushState(null, document.title, window.location.href);
         }
 
     } else {
@@ -161,6 +162,7 @@ function addCloseButtonsEventListeners(): void {
             if (modalDiv) {
                 modalDiv.innerHTML = '';
                 modalDiv.classList.add('d-none');
+                history.back();
                 document.body.style.overflow = 'auto';
             }
         };
@@ -233,6 +235,7 @@ async function displayAddFamilyModal(): Promise<void> {
             fullScreenOverlay.innerHTML = modalContent;
             popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
+            history.pushState(null, document.title, window.location.href);
             popup.classList.remove('d-none');
             addAddFamilyModalEventListeners();
             await initializeAddEditFamily(0);
@@ -272,6 +275,7 @@ function addAddFamilyModalEventListeners(): void {
                 if (popup) {
                     popup.innerHTML = '';
                     popup.classList.add('d-none');
+                    history.back();
                     document.body.style.overflow = 'auto';
                     // Refresh the families list on the main page.
                     await getFamiliesList();
@@ -308,6 +312,7 @@ async function displayEditFamilyModal(familyId: number): Promise<void> {
             fullScreenOverlay.innerHTML = familyDetailsHTML;
             popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
+            history.pushState(null, document.title, window.location.href);
             popup.classList.remove('d-none');
             addEditFamilyModalEventListeners();
             await initializeAddEditFamily(familyId);
@@ -383,6 +388,7 @@ async function displayDeleteFamilyModal(familyId: number): Promise<void> {
             fullScreenOverlay.innerHTML = familyDetailsHTML;
             popup.appendChild(fullScreenOverlay);
             hideBodyScrollbars();
+            history.pushState(null, document.title, window.location.href);
             popup.classList.remove('d-none');
             addDeleteFamilyModalEventListeners();
             await initializeAddEditFamily(familyId);

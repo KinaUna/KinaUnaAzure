@@ -78,6 +78,7 @@ async function popupAddItemModal(addItemType, addItemProgenyId) {
                 fullScreenOverlay.id = 'full-screen-overlay-div';
                 fullScreenOverlay.innerHTML = modalContent;
                 popup.appendChild(fullScreenOverlay);
+                history.pushState(null, document.title, window.location.href);
             }
         }).catch(function (error) {
             console.error('Error getting add item popup content:', error);
@@ -227,6 +228,7 @@ async function popupEditItemModal(editItemType, editItemItemId) {
                 fullScreenOverlay.id = 'full-screen-overlay-div';
                 fullScreenOverlay.innerHTML = modalContent;
                 popup.appendChild(fullScreenOverlay);
+                history.pushState(null, document.title, window.location.href);
             }
         }).catch(function (error) {
             console.error('Error getting edit item popup content:', error);
@@ -317,6 +319,7 @@ async function popupCopyItemModal(copyItemType, copyItemItemId) {
                 fullScreenOverlay.id = 'full-screen-overlay-div';
                 fullScreenOverlay.innerHTML = modalContent;
                 popup.appendChild(fullScreenOverlay);
+                history.pushState(null, document.title, window.location.href);
             }
         }).catch(function (error) {
             console.error('Error getting copy item popup content:', error);
@@ -433,6 +436,7 @@ async function popupDeleteItemModal(deleteItemType, deleteItemItemId) {
                 fullScreenOverlay.classList.add('full-screen-bg');
                 fullScreenOverlay.innerHTML = modalContent;
                 popup.appendChild(fullScreenOverlay);
+                history.pushState(null, document.title, window.location.href);
             }
         }).catch(function (error) {
             console.error('Error getting delete item popup content:', error);
@@ -525,6 +529,7 @@ async function popupPreviousItem(buttonClicked) {
             itemDetailsPopupDiv.innerHTML = '';
             itemDetailsPopupDiv.classList.add('d-none');
             showBodyScrollbars();
+            history.back();
         }
     }
     return new Promise(function (resolve, reject) {

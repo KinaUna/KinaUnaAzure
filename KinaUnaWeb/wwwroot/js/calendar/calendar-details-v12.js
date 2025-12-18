@@ -67,6 +67,7 @@ async function displayEventItem(eventId, eventYear, eventMonth, eventDay) {
                 fullScreenOverlay.innerHTML = eventElementHtml;
                 eventDetailsPopupDiv.appendChild(fullScreenOverlay);
                 hideBodyScrollbars();
+                history.pushState(null, document.title, window.location.href);
                 eventDetailsPopupDiv.classList.remove('d-none');
                 let closeButtonsList = document.querySelectorAll('.item-details-close-button');
                 if (closeButtonsList) {
@@ -75,6 +76,7 @@ async function displayEventItem(eventId, eventYear, eventMonth, eventDay) {
                             eventDetailsPopupDiv.innerHTML = '';
                             eventDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
+                            history.back();
                         });
                     });
                 }

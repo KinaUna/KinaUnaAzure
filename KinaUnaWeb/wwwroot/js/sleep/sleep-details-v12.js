@@ -57,6 +57,7 @@ async function displaySleepItem(sleepId) {
                 fullScreenOverlay.innerHTML = sleepElementHtml;
                 sleepDetailsPopupDiv.appendChild(fullScreenOverlay);
                 hideBodyScrollbars();
+                history.pushState(null, document.title, window.location.href);
                 sleepDetailsPopupDiv.classList.remove('d-none');
                 let closeButtonsList = document.querySelectorAll('.item-details-close-button');
                 if (closeButtonsList) {
@@ -65,6 +66,7 @@ async function displaySleepItem(sleepId) {
                             sleepDetailsPopupDiv.innerHTML = '';
                             sleepDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
+                            history.back();
                         };
                         button.removeEventListener('click', closeButtonAction);
                         button.addEventListener('click', closeButtonAction);

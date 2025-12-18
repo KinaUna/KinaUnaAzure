@@ -412,11 +412,14 @@ async function assignTo(todoItemId: string, detailsShown: boolean) {
             fullScreenOverlay.innerHTML = formHtml;
             modalDiv.appendChild(fullScreenOverlay);
             modalDiv.classList.remove('d-none');
+            hideBodyScrollbars();
+            history.pushState(null, document.title, window.location.href);
             const cancelButton = modalDiv.querySelector<HTMLButtonElement>('.assign-todo-item-to-cancel-button');
             if (cancelButton) {
                 const closeButtonFunction = async function () {
                     modalDiv.innerHTML = '';
                     modalDiv.classList.add('d-none');
+                    history.back();
                     if (detailsShown) {
                         await displayTodoItem(todoItemId);
                     }
@@ -494,6 +497,7 @@ async function displayTodoItem(todoId: string): Promise<void> {
                 fullScreenOverlay.innerHTML = todoElementHtml;
                 todoDetailsPopupDiv.appendChild(fullScreenOverlay);
                 hideBodyScrollbars();
+                history.pushState(null, document.title, window.location.href);
                 todoDetailsPopupDiv.classList.remove('d-none');
                 setTodoDetailsEventListeners(todoId, todoDetailsPopupDiv);
                 setEditItemButtonEventListeners();

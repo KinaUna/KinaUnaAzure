@@ -60,6 +60,7 @@ async function displayFriendItem(friendId) {
                 fullScreenOverlay.innerHTML = friendElementHtml;
                 friendDetailsPopupDiv.appendChild(fullScreenOverlay);
                 hideBodyScrollbars();
+                history.pushState(null, document.title, window.location.href);
                 friendDetailsPopupDiv.classList.remove('d-none');
                 let closeButtonsList = document.querySelectorAll('.item-details-close-button');
                 if (closeButtonsList) {
@@ -68,6 +69,7 @@ async function displayFriendItem(friendId) {
                             friendDetailsPopupDiv.innerHTML = '';
                             friendDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
+                            history.back();
                         };
                         button.removeEventListener('click', closePopupDiv);
                         button.addEventListener('click', closePopupDiv);

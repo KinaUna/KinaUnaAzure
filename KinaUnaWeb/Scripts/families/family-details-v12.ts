@@ -40,6 +40,7 @@ async function displayFamilyDetails(familyId: string): Promise<void> {
                 fullScreenOverlay.innerHTML = itemElementHtml;
                 itemDetailsPopupDiv.appendChild(fullScreenOverlay);
                 hideBodyScrollbars();
+                history.pushState(null, document.title, window.location.href);
                 itemDetailsPopupDiv.classList.remove('d-none');
                 let closeButtonsList = document.querySelectorAll<HTMLButtonElement>('.item-details-close-button');
                 if (closeButtonsList) {
@@ -48,6 +49,7 @@ async function displayFamilyDetails(familyId: string): Promise<void> {
                             itemDetailsPopupDiv.innerHTML = '';
                             itemDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
+                            history.back();
                         });
                     });
                 }

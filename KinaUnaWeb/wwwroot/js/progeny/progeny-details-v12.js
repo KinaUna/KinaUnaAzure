@@ -67,6 +67,7 @@ async function displayProgenyDetails(progenyId) {
                 fullScreenOverlay.innerHTML = itemElementHtml;
                 itemDetailsPopupDiv.appendChild(fullScreenOverlay);
                 hideBodyScrollbars();
+                history.pushState(null, document.title, window.location.href);
                 itemDetailsPopupDiv.classList.remove('d-none');
                 let closeButtonsList = document.querySelectorAll('.item-details-close-button');
                 if (closeButtonsList) {
@@ -75,6 +76,7 @@ async function displayProgenyDetails(progenyId) {
                             itemDetailsPopupDiv.innerHTML = '';
                             itemDetailsPopupDiv.classList.add('d-none');
                             showBodyScrollbars();
+                            history.back();
                         });
                     });
                 }

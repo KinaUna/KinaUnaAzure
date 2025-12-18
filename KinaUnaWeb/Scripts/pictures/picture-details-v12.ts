@@ -21,6 +21,7 @@ export async function addPictureItemEventListeners(pictureId: string): Promise<v
     const pictureElementsWithDataId = document.querySelectorAll<HTMLDivElement>('[data-picture-id="' + pictureId + '"]');
     if (pictureElementsWithDataId) {
         pictureElementsWithDataId.forEach((element) => {
+            element.removeEventListener('click', onPictureItemDivClicked);
             element.addEventListener('click', onPictureItemDivClicked);
         });
     }
@@ -259,6 +260,7 @@ function addCloseButtonEventListener(): void {
                     itemDetailsPopupDiv.innerHTML = '';
                     itemDetailsPopupDiv.classList.add('d-none');
                     showBodyScrollbars();
+                    history.back();
                 }
             }
             button.removeEventListener('click', closeButtonAction);
@@ -339,6 +341,7 @@ async function displayPictureDetails(pictureId: string, isPopupVisible: boolean 
                 itemDetailsPopupDiv.classList.remove('d-none');
                 itemDetailsPopupDiv.innerHTML = itemElementHtml;
                 hideBodyScrollbars();
+                history.pushState(null, document.title, window.location.href);
                 addCloseButtonEventListener();
                 addNavigationEventListeners();
                 await addCommentEventListeners();
