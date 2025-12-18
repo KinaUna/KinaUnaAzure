@@ -1032,7 +1032,7 @@ namespace KinaUnaProgenyApi.Services.Search
                 PageNumber = request.NumberOfItems > 0 && request.Skip > 0
                     ? request.Skip / request.NumberOfItems + 1
                     : 1,
-                RemainingItems = items.Count - paginated.Count,
+                RemainingItems = items.Count - (request.Skip + paginated.Count),
                 SearchRequest = request
             };
         }
