@@ -216,7 +216,6 @@ namespace KinaUnaProgenyApi.Services.Search
                         VocabularyItem vocabularyItem = await progenyDbContext.VocabularyDb.FindAsync(int.Parse(item.ItemId));
                         if (vocabularyItem != null &&
                             ((vocabularyItem.Word ?? string.Empty).ToLower().Contains(query)
-                            || (vocabularyItem.Word ?? string.Empty).ToLower().Contains(query)
                             || (vocabularyItem.Description ?? string.Empty).ToLower().Contains(query)
                             || (vocabularyItem.SoundsLike ?? string.Empty).ToLower().Contains(query)))
                         {
