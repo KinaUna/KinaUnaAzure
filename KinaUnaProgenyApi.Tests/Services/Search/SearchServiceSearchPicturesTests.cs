@@ -1084,7 +1084,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             // Assert
             Assert.NotNull(result);
             Assert.True(result.Results.Count >= 1);
-            Assert.True(result.Results.Any(p => p.Tags.Contains("beach") || p.Location.Contains("Beach")));
+            Assert.Contains(result.Results, p => p.Tags.Contains("beach") || p.Location.Contains("Beach"));
         }
 
         [Fact]

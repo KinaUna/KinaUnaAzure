@@ -864,7 +864,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(1, result.Results.Count);
+            Assert.Single(result.Results);
             Assert.Equal(result.TotalCount - 1, result.RemainingItems);
         }
 
