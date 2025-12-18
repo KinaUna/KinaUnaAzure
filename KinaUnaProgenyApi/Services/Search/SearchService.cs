@@ -462,7 +462,7 @@ namespace KinaUnaProgenyApi.Services.Search
                     {
                         // Check also description as plain text, as some HTML tags may match the query.
                         if (item.Title.ToLower().Contains(query)
-                            || item.DescriptionAsPlainText().Contains(query)
+                            || item.DescriptionAsPlainText().ToLower().Contains(query)
                             || item.Tags.ToLower().Contains(query)
                             || item.Context.ToLower().Contains(query))
                         {
@@ -494,7 +494,7 @@ namespace KinaUnaProgenyApi.Services.Search
                     {
                         // Check also description as plain text, as some HTML tags may match the query.
                         if (item.Title.ToLower().Contains(query)
-                            || item.DescriptionAsPlainText().Contains(query)
+                            || item.DescriptionAsPlainText().ToLower().Contains(query)
                             || item.Tags.ToLower().Contains(query)
                             || item.Context.ToLower().Contains(query))
                         {
@@ -661,7 +661,7 @@ namespace KinaUnaProgenyApi.Services.Search
                     {
                         // Check also content as plain text, as some HTML tags may match the query.
                         if (item.Title.ToLower().Contains(query)
-                            || item.ContentAsPlainText().Contains(query)
+                            || item.ContentAsPlainText().ToLower().Contains(query)
                             || item.Category.ToLower().Contains(query))
                         {
                             item.ItemPerMission = await accessManagementService.GetItemPermissionForUser(
@@ -832,7 +832,7 @@ namespace KinaUnaProgenyApi.Services.Search
                     {
                         // Check also description as plain text, as some HTML tags may match the query.
                         if (item.Title.ToLower().Contains(query)
-                            || item.DescriptionAsPlainText().Contains(query)
+                            || item.DescriptionAsPlainText().ToLower().Contains(query)
                             || item.Notes.ToLower().Contains(query)
                             || item.Tags.ToLower().Contains(query)
                             || item.Context.ToLower().Contains(query)
@@ -868,7 +868,7 @@ namespace KinaUnaProgenyApi.Services.Search
                     {
                         // Check also description as plain text, as some HTML tags may match the query.
                         if (item.Title.ToLower().Contains(query)
-                            || item.DescriptionAsPlainText().Contains(query)
+                            || item.DescriptionAsPlainText().ToLower().Contains(query)
                             || item.Notes.ToLower().Contains(query)
                             || item.Tags.ToLower().Contains(query)
                             || item.Context.ToLower().Contains(query)
