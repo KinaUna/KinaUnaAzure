@@ -275,7 +275,7 @@ function addAddFamilyModalEventListeners(): void {
                 if (popup) {
                     popup.innerHTML = '';
                     popup.classList.add('d-none');
-                    history.pushState(null, document.title, window.location.href);
+                    history.back();
                     document.body.style.overflow = 'auto';
                     // Refresh the families list on the main page.
                     await getFamiliesList();
