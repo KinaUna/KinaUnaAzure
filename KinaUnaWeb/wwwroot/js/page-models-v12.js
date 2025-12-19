@@ -864,4 +864,14 @@ export class SearchResponse {
         this.remainingItems = 0;
     }
 }
+export class HelpContent {
+    constructor() {
+        this.id = 0;
+        this.page = '';
+        this.element = '';
+        this.languageId = 0;
+        this.title = '';
+        this.content = '';
+    }
+}
 //# sourceMappingURL=page-models-v12.js.map

@@ -1,5 +1,6 @@
 ﻿import { setDeleteItemButtonEventListeners, setEditItemButtonEventListeners } from '../addItem/add-item-v12.js';
 import { TimelineChangedEvent } from '../data-tools-v12.js';
+import { addHelpEventListeners } from '../help/help-details.js';
 import { hideBodyScrollbars, showBodyScrollbars } from '../item-details/items-display-v12.js';
 import { startFullPageSpinner, stopFullPageSpinner } from '../navigation-tools-v12.js';
 import { KanbanItem, SubtasksPageParameters, TimelineItem, TodoItem } from '../page-models-v12.js';
@@ -504,6 +505,7 @@ async function displayTodoItem(todoId: string): Promise<void> {
                 setDeleteItemButtonEventListeners();
                 await getSubtaskList(todoId, true);
                 ($(".selectpicker") as any).selectpicker('refresh');
+                addHelpEventListeners();
                 document.removeEventListener('click', hideAllTodoDetailsMenusAndModals);
                 document.addEventListener('click', hideAllTodoDetailsMenusAndModals);
                 

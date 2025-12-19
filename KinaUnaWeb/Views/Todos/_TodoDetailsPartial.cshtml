@@ -41,9 +41,11 @@
                     <img src="@Model.TodoItem.Family.GetProfilePictureUrl()" class="item-details-title-picture" />
                 }
                 <span class="h4 mr-3 align-bottom">@title</span>
+                <button type="button" class="btn btn-sm btn-round help-button" data-page="todo-details" data-element="page" data-target-div="todo-details-help-div">?</button>
                 <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
             </div>
         </div>
+        <div id="todo-details-help-div" class="row m-0 d-none"></div>
         <div class="space-10"></div>
         <div class="row m-0">
             <div class="col-12">

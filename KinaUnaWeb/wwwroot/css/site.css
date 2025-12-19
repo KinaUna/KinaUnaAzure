@@ -4665,3 +4665,12 @@ noUi-handle:after, .noUi-handle:before {
     max-width: 42px;
     object-fit: contain;
 }
+
+.help-modal {
+    position: fixed;
+    top: 0;
+    left: 0px;
+    right: 0px;
+    z-index: 1055;
+    max-height: 100vh;
+}

@@ -788,3 +788,12 @@ export class SearchResponse<T> {
     pageNumber: number = 1;
     remainingItems: number = 0;
 }
+
+export class HelpContent {
+    id: number = 0;
+    page: string = '';
+    element: string = '';
+    languageId: number = 0;
+    title: string = '';
+    content: string = '';
+}

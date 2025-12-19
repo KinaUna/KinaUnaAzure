@@ -1,0 +1,11 @@
+﻿@model KinaUna.Data.Models.Support.HelpContent
+<div>
+    <div class="row sticky-top m-0 help-content-header">
+        <div class="col-12 bg-help-header">
+            <span class="h4 mr-3 align-bottom">@Model.Title</span>
+            <button type="button" class="btn btn-link help-details-close-button"><span>×</span></button>
+        </div>
+    </div>
+    <div>@Html.Raw(Model.Content)</div>
+
+</div>
