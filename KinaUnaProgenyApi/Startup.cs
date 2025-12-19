@@ -20,6 +20,7 @@ using KinaUnaProgenyApi.Services.CacheServices;
 using KinaUnaProgenyApi.Services.FamiliesServices;
 using KinaUnaProgenyApi.Services.KanbanServices;
 using KinaUnaProgenyApi.Services.Search;
+using KinaUnaProgenyApi.Services.Support;
 using KinaUnaProgenyApi.Services.TodosServices;
 
 namespace KinaUnaProgenyApi
@@ -106,6 +107,7 @@ namespace KinaUnaProgenyApi
             services.AddScoped<IKinaUnaCacheService, KinaUnaInMemoryCacheService>();
             services.AddScoped<ISearchService, SearchService>();
             services.AddTransient<IEmailSender, EmailSender>();
+            services.AddScoped<IHelpContentService, HelpContentService>();
             services.AddHostedService<TimedSchedulerService>();
             services.AddControllers().AddJsonOptions(options =>
             {
