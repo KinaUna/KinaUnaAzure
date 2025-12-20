@@ -1,6 +1,7 @@
 ﻿using KinaUna.Data.Models;
 using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.Family;
+using KinaUna.Data.Models.Support;
 using Microsoft.EntityFrameworkCore;
 
 namespace KinaUna.Data.Contexts
@@ -46,5 +47,6 @@ namespace KinaUna.Data.Contexts
         public DbSet<PermissionAuditLog> PermissionAuditLogsDb { get; init; }
         public DbSet<FamilyAuditLog> FamilyAuditLogsDb { get; init; }
         public DbSet<UserGroupAuditLog> UserGroupAuditLogsDb { get; init; }
+        public DbSet<HelpContent> HelpContentsDb { get; init; }
     }
 }

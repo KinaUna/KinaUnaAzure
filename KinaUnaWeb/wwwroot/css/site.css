@@ -4667,7 +4667,7 @@ noUi-handle:after, .noUi-handle:before {
 }
 
 .help-modal {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0px;
     right: 0px;
