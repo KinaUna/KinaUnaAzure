@@ -47,5 +47,7 @@ namespace KinaUnaWeb.Services.HttpClients.Support
         /// otherwise, an empty <see cref="HelpContent"/> object.</returns>
         Task<HelpContent> DeleteHelpContent(int helpContentId);
 
+        Task<HelpContent> GetHelpContentById(int helpContentId);
+
     }
 }

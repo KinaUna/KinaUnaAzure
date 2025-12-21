@@ -3,6 +3,7 @@ using System.Linq;
 using KinaUna.Data.Models.Support;
 using System.Threading.Tasks;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace KinaUnaProgenyApi.Services.Support
@@ -46,15 +47,34 @@ namespace KinaUnaProgenyApi.Services.Support
         }
 
         /// <summary>
+        /// Retrieves the help content entry with the specified identifier.
+        /// </summary>
+        /// <param name="helpContentId">The unique identifier of the help content to retrieve.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the <see cref="HelpContent"/>
+        /// with the specified identifier, or <see langword="null"/> if no matching entry is found.</returns>
+        public async Task<HelpContent> GetHelpContentById(int helpContentId)
+        {
+            HelpContent helpContent = await progenyDbContext.HelpContentsDb.AsNoTracking().SingleOrDefaultAsync(hc => hc.Id == helpContentId);
+            return helpContent;
+        }
+
+
+        /// <summary>
         /// Adds a new help content entry to the data store asynchronously.
         /// </summary>
         /// <param name="helpContent">The help content to add. The <see cref="HelpContent.Page"/> and <see cref="HelpContent.Content"/> properties
         /// must not be null or empty.</param>
+        /// <param name="currentUserInfo">The current user's information for authorization purposes.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the added <see
         /// cref="HelpContent"/> if the operation succeeds; otherwise, <see langword="null"/> if required properties are
         /// missing.</returns>
-        public async Task<HelpContent> AddHelpContent(HelpContent helpContent)
+        public async Task<HelpContent> AddHelpContent(HelpContent helpContent, UserInfo currentUserInfo)
         {
+            if (!currentUserInfo.IsKinaUnaAdmin)
+            {
+                return null;
+            }
+
             helpContent.CreatedTime = System.DateTime.UtcNow;
             helpContent.UpdatedTime = System.DateTime.UtcNow;
             if(string.IsNullOrEmpty(helpContent.Page) || string.IsNullOrEmpty(helpContent.Content))
@@ -73,9 +93,15 @@ namespace KinaUnaProgenyApi.Services.Support
         /// </summary>
         /// <param name="helpContent">The help content entity to update. Must not be null and should represent an existing entry in the data
         /// store.</param>
+        /// <param name="currentUserInfo">The current user's information for authorization purposes.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the updated help content entity.</returns>
-        public async Task<HelpContent> UpdateHelpContent(HelpContent helpContent)
+        public async Task<HelpContent> UpdateHelpContent(HelpContent helpContent, UserInfo currentUserInfo)
         {
+            if (!currentUserInfo.IsKinaUnaAdmin)
+            {
+                return null;
+            }
+
             helpContent.UpdatedTime = System.DateTime.UtcNow;
             progenyDbContext.HelpContentsDb.Update(helpContent);
             await progenyDbContext.SaveChangesAsync();
@@ -88,9 +114,15 @@ namespace KinaUnaProgenyApi.Services.Support
         /// <remarks>If no help content with the specified identifier exists, the method returns <see
         /// langword="null"/> and no action is taken.</remarks>
         /// <param name="helpContentId">The unique identifier of the help content to delete.</param>
+        /// <param name="currentUserInfo">The current user's information for authorization purposes.</param>
         /// <returns>The deleted help content entry if found and removed; otherwise, <see langword="null"/>.</returns>
-        public async Task<HelpContent> DeleteHelpContent(int helpContentId)
+        public async Task<HelpContent> DeleteHelpContent(int helpContentId, UserInfo currentUserInfo)
         {
+            if (!currentUserInfo.IsKinaUnaAdmin)
+            {
+                return null;
+            }
+
             HelpContent helpContent = await progenyDbContext.HelpContentsDb.SingleOrDefaultAsync(hc => hc.Id == helpContentId);
             if (helpContent != null)
             {

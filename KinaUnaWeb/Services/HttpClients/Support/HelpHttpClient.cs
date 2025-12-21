@@ -15,7 +15,7 @@ namespace KinaUnaWeb.Services.HttpClients.Support
     {
         private readonly HttpClient _httpClient;
         private readonly ITokenService _tokenService;
-        private readonly IHttpContextAccessor _httpContextAccessor = new HttpContextAccessor();
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         /// <summary>
         /// Initializes a new instance of the HelpHttpClient class with the specified HTTP client, token service,
@@ -154,6 +154,24 @@ namespace KinaUnaWeb.Services.HttpClients.Support
                 if (deletedHelpContent != null)
                 {
                     return deletedHelpContent;
+                }
+            }
+
+            return new HelpContent();
+        }
+
+        public async Task<HelpContent> GetHelpContentById(int helpContentId)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+            HttpResponseMessage response = await _httpClient.GetAsync($"/api/Help/GetHelpContentById?helpContentId={helpContentId}");
+            if (response.IsSuccessStatusCode)
+            {
+                HelpContent helpContent = await response.Content.ReadAsAsync<HelpContent>();
+                if (helpContent != null)
+                {
+                    return helpContent;
                 }
             }
 

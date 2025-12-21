@@ -34,6 +34,14 @@ namespace KinaUnaProgenyApi.Controllers
             return Ok(helpContent);
         }
 
+        [HttpGet]
+        [Route("[action]/{helpContentId}")]
+        public async Task<IActionResult> GetHelpContentById(int helpContentId)
+        {
+            HelpContent helpContent = await helpContentService.GetHelpContentById(helpContentId);
+            return Ok(helpContent);
+        }
+
         /// <summary>
         /// Adds a new help content entry to the system.
         /// </summary>
@@ -45,12 +53,8 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> AddHelpContent([FromBody] HelpContent helpContent)
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
-            if (currentUserInfo == null || !currentUserInfo.IsKinaUnaAdmin)
-            {
-                return Unauthorized();
-            }
-
-            HelpContent addedHelpContent = await helpContentService.AddHelpContent(helpContent);
+            
+            HelpContent addedHelpContent = await helpContentService.AddHelpContent(helpContent, currentUserInfo);
             return Ok(addedHelpContent);
         }
 
@@ -67,12 +71,8 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> UpdateHelpContent([FromBody] HelpContent helpContent)
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
-            if (currentUserInfo == null || !currentUserInfo.IsKinaUnaAdmin)
-            {
-                return Unauthorized();
-            }
-
-            HelpContent updatedHelpContent = await helpContentService.UpdateHelpContent(helpContent);
+            
+            HelpContent updatedHelpContent = await helpContentService.UpdateHelpContent(helpContent, currentUserInfo);
             return Ok(updatedHelpContent);
         }
 
@@ -90,12 +90,8 @@ namespace KinaUnaProgenyApi.Controllers
         public async Task<IActionResult> DeleteHelpContent(int helpContentId)
         {
             UserInfo currentUserInfo = await userInfoService.GetUserInfoByUserId(User.GetUserId());
-            if (currentUserInfo == null || !currentUserInfo.IsKinaUnaAdmin)
-            {
-                return Unauthorized();
-            }
-
-            HelpContent deletedHelpContent = await helpContentService.DeleteHelpContent(helpContentId);
+            
+            HelpContent deletedHelpContent = await helpContentService.DeleteHelpContent(helpContentId, currentUserInfo);
             return Ok(deletedHelpContent);
         }
     }
