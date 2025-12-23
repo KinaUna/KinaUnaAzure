@@ -1,2 +1,63 @@
 ﻿@model KinaUna.Data.Models.Support.HelpContent
+<div class="ml-auto mr-auto mt-auto mb-auto item-details-content-wrapper">
+    <div class="timeline-card-body modal-content item-details-content">
+        <div class="row sticky-top m-0 item-details-header">
+            <div class="col-12 bg-add-item-header">
+                <span class="h4 mr-3 align-bottom">Add Help Content</span>
+                <button type="button" class="btn btn-link item-details-close-button"><span>×</span></button>
+            </div>
+        </div>
+        <form id="save-item-form" asp-action="AddHelpContent" asp-controller="Help" role="form" method="post" enctype="multipart/form-data">
+            <div class="space-20"></div>
+            <div class="form-group ">
+                <label asp-for="Title" class="col-auto control-label">Title</label>
+                <div class="col-auto">
+                    <input asp-for="Title" class="form-control" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="Content" class="col-auto control-label">Content</label>
+                <div class="col-auto">
+                    @{
+                        string[] toolbarItems = new[]
+                        {
+                            "Bold", "Italic", "Underline", "StrikeThrough",
+                            "FontName", "FontSize", "FontColor", "BackgroundColor",
+                            "LowerCase", "UpperCase", "|",
+                            "Formats", "Alignments", "OrderedList", "UnorderedList",
+                            "Outdent", "Indent", "|",
+                            "CreateLink", "Image", "CreateTable", "|", "ClearFormat",
+                            "SourceCode", "FullScreen", "|", "Undo", "Redo"
+                        };
+                    }
+                    <ejs-richtexteditor id="content-rich-text-editor" ejs-for="Content" height="400px" enableResize="true">
+                        <e-richtexteditor-toolbarsettings items="@toolbarItems"></e-richtexteditor-toolbarsettings>
+                        <e-richtexteditor-insertimagesettings saveUrl="/AddItem/SaveRtfFile" path=""></e-richtexteditor-insertimagesettings>
+                        <e-content-template>
+                        </e-content-template>
+                    </ejs-richtexteditor>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="Page" class="col-auto control-label">Page</label>
+                <div class="col-auto">
+                    <input asp-for="Page" class="form-control" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="Element" class="col-auto control-label">Element</label>
+                <div class="col-auto">
+                    <input asp-for="Element" class="form-control" />
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="hidden" asp-for="LanguageId" value="1" />
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+            
+        </form>
 
+    </div>
+</div>

@@ -75,6 +75,17 @@ namespace KinaUnaProgenyApi.Services.Support
                 return null;
             }
 
+            if (helpContent.TextId == 0)
+            {
+                KinaUnaTextNumber kinaUnaTextNumber = new()
+                {
+                    DefaultLanguage = 1
+                };
+                progenyDbContext.KinaUnaTextNumbers.Add(kinaUnaTextNumber);
+                await progenyDbContext.SaveChangesAsync();
+                helpContent.TextId = kinaUnaTextNumber.Id;
+            }
+
             helpContent.CreatedTime = System.DateTime.UtcNow;
             helpContent.UpdatedTime = System.DateTime.UtcNow;
             if(string.IsNullOrEmpty(helpContent.Page) || string.IsNullOrEmpty(helpContent.Content))
@@ -102,10 +113,19 @@ namespace KinaUnaProgenyApi.Services.Support
                 return null;
             }
 
-            helpContent.UpdatedTime = System.DateTime.UtcNow;
-            progenyDbContext.HelpContentsDb.Update(helpContent);
+            HelpContent originalHelpContent = await progenyDbContext.HelpContentsDb.SingleOrDefaultAsync(hc => hc.Id == helpContent.Id);
+            if (originalHelpContent == null)
+            {
+                return null;
+            }
+
+            originalHelpContent.UpdatedTime = System.DateTime.UtcNow;
+            originalHelpContent.Content = helpContent.Content;
+            originalHelpContent.Title = helpContent.Title;
+
+            progenyDbContext.HelpContentsDb.Update(originalHelpContent);
             await progenyDbContext.SaveChangesAsync();
-            return helpContent;
+            return originalHelpContent;
         }
 
         /// <summary>
