@@ -48,5 +48,6 @@ namespace KinaUna.Data.Contexts
         public DbSet<FamilyAuditLog> FamilyAuditLogsDb { get; init; }
         public DbSet<UserGroupAuditLog> UserGroupAuditLogsDb { get; init; }
         public DbSet<HelpContent> HelpContentsDb { get; init; }
+        public DbSet<HelpTextNumber> HelpTextNumbersDb { get; init; }
     }
 }

@@ -27,6 +27,12 @@ namespace KinaUna.OpenIddict.Controllers
         [AllowAnonymous]
         public IActionResult Login(string? returnUrl = null)
         {
+            // Validate return URL to prevent open redirect attacks
+            if (!string.IsNullOrEmpty(returnUrl) && !Url.IsLocalUrl(returnUrl))
+            {
+                returnUrl = null;
+            }
+
             LoginViewModel model = new()
             {
                 Email = string.Empty,
@@ -46,6 +52,12 @@ namespace KinaUna.OpenIddict.Controllers
             if (!ModelState.IsValid)
             {
                 return View(model);
+            }
+
+            // Validate return URL to prevent open redirect attacks
+            if (!string.IsNullOrEmpty(model.ReturnUrl) && !Url.IsLocalUrl(model.ReturnUrl))
+            {
+                model.ReturnUrl = null;
             }
 
             if (User.Identity != null && User.Identity.IsAuthenticated)
@@ -80,7 +92,7 @@ namespace KinaUna.OpenIddict.Controllers
             }
             
             await signInManager.SignInAsync(user, true);
-            return Redirect(model.ReturnUrl?? "/");
+            return Redirect(model.ReturnUrl ?? "/");
 
         }
 

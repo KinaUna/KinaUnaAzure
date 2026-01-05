@@ -1,5 +1,6 @@
-﻿using System.Threading.Tasks;
-using KinaUna.Data.Models.Support;
+﻿using KinaUna.Data.Models.Support;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Services.HttpClients.Support
 {
@@ -47,7 +48,28 @@ namespace KinaUnaWeb.Services.HttpClients.Support
         /// otherwise, an empty <see cref="HelpContent"/> object.</returns>
         Task<HelpContent> DeleteHelpContent(int helpContentId);
 
+        /// <summary>
+        /// Asynchronously retrieves the help content associated with the specified identifier.
+        /// </summary>
+        /// <param name="helpContentId">The unique identifier of the help content to retrieve. Must be a positive integer.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the <see cref="HelpContent"/>
+        /// object if found; otherwise, <c>null</c>.</returns>
         Task<HelpContent> GetHelpContentById(int helpContentId);
 
+        /// <summary>
+        /// Retrieves a list of available help content page identifiers from the remote help API.
+        /// </summary>
+        /// <remarks>This method requires the caller to be authenticated. The returned list may be empty
+        /// if the user does not have access to any help content or if the remote service is unavailable.</remarks>
+        /// <returns>A list of strings representing the identifiers of available help content pages. Returns an empty list if no
+        /// pages are found or if the request fails.</returns>
+        Task<List<string>> GetHelpContentPages();
+
+        /// <summary>
+        /// Retrieves all available help content entries asynchronously.
+        /// </summary>
+        /// <returns>A list of <see cref="HelpContent"/> objects representing all help content entries. Returns an empty list if
+        /// no help content is available.</returns>
+        Task<List<HelpContent>> GetAllHelpContents();
     }
 }

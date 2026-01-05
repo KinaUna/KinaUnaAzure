@@ -62,5 +62,12 @@ namespace KinaUnaProgenyApi.Services.Support
         /// <returns>A task that represents the asynchronous operation. The task result contains the <see cref="HelpContent"/>
         /// object if found; otherwise, <c>null</c>.</returns>
         Task<HelpContent> GetHelpContentById(int helpContentId);
+
+        /// <summary>
+        /// Asynchronously retrieves a list of unique help content page names.
+        /// </summary>
+        /// <returns>A list of strings containing the names of all distinct help content pages. The list will be empty if no help
+        /// content pages are found.</returns>
+        Task<List<string>> GetHelpContentPages();
     }
 }

@@ -1,4 +1,5 @@
-﻿using KinaUna.Data.Extensions;
+﻿using System.Collections.Generic;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models;
 using KinaUna.Data.Models.Support;
 using KinaUnaProgenyApi.Services;
@@ -93,6 +94,20 @@ namespace KinaUnaProgenyApi.Controllers
             
             HelpContent deletedHelpContent = await helpContentService.DeleteHelpContent(helpContentId, currentUserInfo);
             return Ok(deletedHelpContent);
+        }
+
+        [HttpGet]
+        [Route("[action]")]
+        public async Task<IActionResult> GetHelpContentForPage(string page, int languageId)
+        {
+            List<HelpContent> helpContentList = await helpContentService.GetHelpContentForPage(page, languageId);
+            return Ok(helpContentList);
+        }
+
+        public async Task<IActionResult> GetHelpContentPages()
+        {
+            List<string> helpContentPages = await helpContentService.GetHelpContentPages();
+            return Ok(helpContentPages);
         }
     }
 }

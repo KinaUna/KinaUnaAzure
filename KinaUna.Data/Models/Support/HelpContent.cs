@@ -17,7 +17,7 @@ namespace KinaUna.Data.Models.Support
         /// </summary>
         public int Id { get; set; }
         /// <summary>
-        /// KinaUnaTextNumber reference Id, same for all translations of the same text.
+        /// HelpTextNumber reference ID, same for all translations of the same text.
         /// </summary>
         public int TextId { get; set; }
         /// <summary>
@@ -52,5 +52,11 @@ namespace KinaUna.Data.Models.Support
         /// Gets or sets the date and time when the entity was last updated.
         /// </summary>
         public DateTime UpdatedTime { get; set; }
+    }
+
+    public class HelpTextNumber
+    {
+        [Key]
+        public int TextId { get; set; }
     }
 }

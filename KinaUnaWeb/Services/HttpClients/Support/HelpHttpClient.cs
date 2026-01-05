@@ -4,6 +4,7 @@ using KinaUna.Data.Models.Support;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -176,6 +177,54 @@ namespace KinaUnaWeb.Services.HttpClients.Support
             }
 
             return new HelpContent();
+        }
+
+        /// <summary>
+        /// Retrieves a list of available help content page identifiers from the remote help API.
+        /// </summary>
+        /// <remarks>This method requires the caller to be authenticated. The returned list may be empty
+        /// if the user does not have access to any help content or if the remote service is unavailable.</remarks>
+        /// <returns>A list of strings representing the identifiers of available help content pages. Returns an empty list if no
+        /// pages are found or if the request fails.</returns>
+        public async Task<List<string>> GetHelpContentPages()
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+            HttpResponseMessage response = await _httpClient.GetAsync($"/api/Help/GetHelpContentPages");
+            if (response.IsSuccessStatusCode)
+            {
+                List<string> helpContentPages = await response.Content.ReadAsAsync<List<string>>();
+                if (helpContentPages != null)
+                {
+                    return helpContentPages;
+                }
+            }
+
+            return new List<string>();
+        }
+
+
+        /// <summary>
+        /// Retrieves all available help content entries asynchronously.
+        /// </summary>
+        /// <returns>A list of <see cref="HelpContent"/> objects representing all help content entries. Returns an empty list if
+        /// no help content is available.</returns>
+        public async Task<List<HelpContent> > GetAllHelpContents()
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+            HttpResponseMessage response = await _httpClient.GetAsync($"/api/Help/GetAllHelpContents");
+            if (response.IsSuccessStatusCode)
+            {
+                List<HelpContent> helpContents = await response.Content.ReadAsAsync<List<HelpContent>>();
+                if (helpContents != null)
+                {
+                    return helpContents;
+                }
+            }
+            return new List<HelpContent>();
         }
     }
 }

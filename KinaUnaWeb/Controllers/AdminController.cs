@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR;
 using KinaUnaWeb.Services.HttpClients;
 using System.Text.Json;
+using KinaUnaWeb.Services.HttpClients.Support;
 
 namespace KinaUnaWeb.Controllers
 {
@@ -41,7 +42,8 @@ namespace KinaUnaWeb.Controllers
         IPageTextsHttpClient pageTextsHttpClient,
         ImageStore imageStore,
         IWebNotificationsService webNotificationsService,
-        ITasksHttpClient tasksHttpClient)
+        ITasksHttpClient tasksHttpClient,
+        IHelpHttpClient helpHttpClient)
         : Controller
     {
         /// <summary>
@@ -798,6 +800,20 @@ namespace KinaUnaWeb.Controllers
             }
 
             return task;
+        }
+
+        public async Task<IActionResult> HelpPages()
+        {
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            ManageHelpPagesViewModel model = new();
+            model.Pages = await helpHttpClient.GetHelpContentPages();
+
+            return View();
         }
     }
 }

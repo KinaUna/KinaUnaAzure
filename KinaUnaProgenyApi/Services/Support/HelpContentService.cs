@@ -77,13 +77,10 @@ namespace KinaUnaProgenyApi.Services.Support
 
             if (helpContent.TextId == 0)
             {
-                KinaUnaTextNumber kinaUnaTextNumber = new()
-                {
-                    DefaultLanguage = 1
-                };
-                progenyDbContext.KinaUnaTextNumbers.Add(kinaUnaTextNumber);
+                HelpTextNumber helpTextNumber = new();
+                progenyDbContext.HelpTextNumbersDb.Add(helpTextNumber);
                 await progenyDbContext.SaveChangesAsync();
-                helpContent.TextId = kinaUnaTextNumber.Id;
+                helpContent.TextId = helpTextNumber.TextId;
             }
 
             helpContent.CreatedTime = System.DateTime.UtcNow;
@@ -164,6 +161,20 @@ namespace KinaUnaProgenyApi.Services.Support
                 .Where(hc => hc.Page == page && hc.LanguageId == languageId)
                 .ToListAsync();
             return helpContents;
+        }
+
+        /// <summary>
+        /// Asynchronously retrieves a list of unique help content page names.
+        /// </summary>
+        /// <returns>A list of strings containing the names of all distinct help content pages. The list will be empty if no help
+        /// content pages are found.</returns>
+        public async Task<List<string>> GetHelpContentPages()
+        {
+            List<string> pages = await progenyDbContext.HelpContentsDb.AsNoTracking()
+                .Select(hc => hc.Page)
+                .Distinct()
+                .ToListAsync();
+            return pages;
         }
     }
 }
