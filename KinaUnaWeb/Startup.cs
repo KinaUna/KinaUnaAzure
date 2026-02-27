@@ -3,7 +3,6 @@ using KinaUna.Data;
 using KinaUnaWeb.Hubs;
 using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
-using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -36,8 +35,6 @@ namespace KinaUnaWeb
 
         public void ConfigureServices(IServiceCollection services)
         {
-            TelemetryDebugWriter.IsTracingDisabled = true;
-
             _ = services.Configure<CookiePolicyOptions>(options =>
             {
                 options.CheckConsentNeeded = delegate { return true; };

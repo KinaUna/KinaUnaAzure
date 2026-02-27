@@ -810,10 +810,12 @@ namespace KinaUnaWeb.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            ManageHelpPagesViewModel model = new();
-            model.Pages = await helpHttpClient.GetHelpContentPages();
+            ManageHelpPagesViewModel model = new()
+            {
+                Pages = await helpHttpClient.GetHelpContentPages()
+            };
 
-            return View();
+            return View(model);
         }
     }
 }

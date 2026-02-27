@@ -64,6 +64,15 @@ namespace KinaUnaProgenyApi.Services.Support
         Task<HelpContent> GetHelpContentById(int helpContentId);
 
         /// <summary>
+        /// Asynchronously retrieves the help content associated with the specified identifier.
+        /// </summary>
+        /// <param name="helpContentTextId">The unique identifier of the help content to retrieve. Must be a positive integer.</param>
+        /// <param name="languageId">The unique identifier of the language to retrieve the help content for. Must be a positive integer.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the <see cref="HelpContent"/>
+        /// object if found; otherwise, <c>null</c>.</returns>
+        Task<HelpContent> GetHelpContentByTextId(int helpContentTextId, int languageId);
+
+        /// <summary>
         /// Asynchronously retrieves a list of unique help content page names.
         /// </summary>
         /// <returns>A list of strings containing the names of all distinct help content pages. The list will be empty if no help

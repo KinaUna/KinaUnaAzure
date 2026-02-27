@@ -161,12 +161,43 @@ namespace KinaUnaWeb.Services.HttpClients.Support
             return new HelpContent();
         }
 
+        /// <summary>
+        /// Retrieves help content by its unique identifier.
+        /// </summary>
+        /// <param name="helpContentId">The unique identifier of the help content to retrieve.</param>
+        /// <returns>The <see cref="HelpContent"/> object corresponding to the specified identifier.</returns>
         public async Task<HelpContent> GetHelpContentById(int helpContentId)
         {
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
-            HttpResponseMessage response = await _httpClient.GetAsync($"/api/Help/GetHelpContentById?helpContentId={helpContentId}");
+            HttpResponseMessage response = await _httpClient.GetAsync($"/api/Help/GetHelpContentById/{helpContentId}");
+            if (response.IsSuccessStatusCode)
+            {
+                HelpContent helpContent = await response.Content.ReadAsAsync<HelpContent>();
+                if (helpContent != null)
+                {
+                    return helpContent;
+                }
+            }
+
+            return new HelpContent();
+        }
+
+        /// <summary>
+        /// Retrieves help content for the specified text identifier and language.
+        /// </summary>
+        /// <param name="helpContentTextId">The unique identifier of the help content text to retrieve.</param>
+        /// <param name="languageId">The identifier of the language in which to retrieve the help content.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the <see cref="HelpContent"/>
+        /// for the specified text and language. Returns an empty <see cref="HelpContent"/> object if no matching
+        /// content is found.</returns>
+        public async Task<HelpContent> GetHelpContentByTextId(int helpContentTextId, int languageId)
+        {
+            string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
+            TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
+            _httpClient.SetBearerToken(tokenInfo.AccessToken);
+            HttpResponseMessage response = await _httpClient.GetAsync($"/api/Help/GetHelpContentByTextId/{helpContentTextId}/{languageId}");
             if (response.IsSuccessStatusCode)
             {
                 HelpContent helpContent = await response.Content.ReadAsAsync<HelpContent>();
@@ -208,14 +239,16 @@ namespace KinaUnaWeb.Services.HttpClients.Support
         /// <summary>
         /// Retrieves all available help content entries asynchronously.
         /// </summary>
+        /// <param name="page">Specifies the page for which to retrieve help content entries. Empty string for all pages.</param>
+        /// <param name="languageId">Specifies the language identifier for the help content to retrieve.</param>
         /// <returns>A list of <see cref="HelpContent"/> objects representing all help content entries. Returns an empty list if
         /// no help content is available.</returns>
-        public async Task<List<HelpContent> > GetAllHelpContents()
+        public async Task<List<HelpContent> > GetAllHelpContents(string page, int languageId)
         {
             string signedInUserId = _httpContextAccessor.HttpContext?.User.FindFirst("sub")?.Value ?? string.Empty;
             TokenInfo tokenInfo = await _tokenService.GetValidTokenAsync(signedInUserId);
             _httpClient.SetBearerToken(tokenInfo.AccessToken);
-            HttpResponseMessage response = await _httpClient.GetAsync($"/api/Help/GetAllHelpContents");
+            HttpResponseMessage response = await _httpClient.GetAsync($"/api/Help/GetHelpContentForPage/" + page + "/" + languageId);
             if (response.IsSuccessStatusCode)
             {
                 List<HelpContent> helpContents = await response.Content.ReadAsAsync<List<HelpContent>>();

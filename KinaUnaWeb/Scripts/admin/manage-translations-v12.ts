@@ -356,7 +356,7 @@ document.addEventListener('DOMContentLoaded', function (): void {
             pageName = pageLiElement.dataset.viewid;
         }
 
-        const selectPageClickAction = function(event: MouseEvent){
+        const selectPageClickAction = async function(event: MouseEvent){
             const translationsPageSelectedDiv = document.querySelector<HTMLDivElement>('#translations-page-selected-div');
             if (translationsPageSelectedDiv !== null) {
                 translationsPageSelectedDiv.innerHTML = pageName;
@@ -368,7 +368,7 @@ document.addEventListener('DOMContentLoaded', function (): void {
 
             const liElement = event.target as HTMLLIElement;
             liElement.classList.add('select-view-item-selected')
-            getPageTranslations(pageName);
+            await getPageTranslations(pageName);
         };
         pageLiElement.removeEventListener('click', selectPageClickAction);
         pageLiElement.addEventListener('click', selectPageClickAction);

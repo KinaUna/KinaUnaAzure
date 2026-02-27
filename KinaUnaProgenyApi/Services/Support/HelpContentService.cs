@@ -58,6 +58,19 @@ namespace KinaUnaProgenyApi.Services.Support
             return helpContent;
         }
 
+        /// <summary>
+        /// Asynchronously retrieves the help content associated with the specified identifier.
+        /// </summary>
+        /// <param name="helpContentTextId">The unique identifier of the help content to retrieve. Must be a positive integer.</param>
+        /// <param name="languageId">The unique identifier of the language to retrieve the help content for. Must be a positive integer.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the <see cref="HelpContent"/>
+        /// object if found; otherwise, <c>null</c>.</returns>
+        public async Task<HelpContent> GetHelpContentByTextId(int helpContentTextId, int languageId)
+        {
+            HelpContent helpContent = await progenyDbContext.HelpContentsDb.AsNoTracking()
+                .SingleOrDefaultAsync(hc => hc.TextId == helpContentTextId && hc.LanguageId == languageId);
+            return helpContent;
+        }
 
         /// <summary>
         /// Adds a new help content entry to the data store asynchronously.
@@ -92,6 +105,8 @@ namespace KinaUnaProgenyApi.Services.Support
 
             progenyDbContext.HelpContentsDb.Add(helpContent);
             await progenyDbContext.SaveChangesAsync();
+
+            await VerifyTranslationsExist();
 
             return helpContent;
         }
@@ -152,11 +167,16 @@ namespace KinaUnaProgenyApi.Services.Support
         /// <summary>
         /// Retrieves all help content entries for a specified page and language.
         /// </summary>
-        /// <param name="page">The name of the page for which to retrieve help content.</param>
+        /// <param name="page">The name of the page for which to retrieve help content. Empty string for all pages.</param>
         /// <param name="languageId">The identifier of the language in which the help content should be returned.</param>
         /// <returns>A List of <see cref="HelpContent"/> entries for the specified page and language.</returns>
         public async Task<List<HelpContent>> GetHelpContentForPage(string page, int languageId)
         {
+            if (string.IsNullOrEmpty(page))
+            {
+                return await progenyDbContext.HelpContentsDb.AsNoTracking().Where(hc => hc.LanguageId == languageId).ToListAsync();
+            }
+
             List<HelpContent> helpContents = await progenyDbContext.HelpContentsDb.AsNoTracking()
                 .Where(hc => hc.Page == page && hc.LanguageId == languageId)
                 .ToListAsync();
@@ -170,11 +190,65 @@ namespace KinaUnaProgenyApi.Services.Support
         /// content pages are found.</returns>
         public async Task<List<string>> GetHelpContentPages()
         {
+            // Verify that translations exist for all languages for all help content entries. Ensures adding future languages does not result in missing help content.
+            await VerifyTranslationsExist();
+
             List<string> pages = await progenyDbContext.HelpContentsDb.AsNoTracking()
                 .Select(hc => hc.Page)
                 .Distinct()
                 .ToListAsync();
             return pages;
+        }
+
+        /// <summary>
+        /// Ensures that a help content translation exists for each supported language and help text number, creating
+        /// missing translations by duplicating the default language content if necessary.
+        /// </summary>
+        /// <remarks>This method checks all help text numbers and verifies that a corresponding help
+        /// content entry exists for every supported language. If a translation is missing, it creates a new entry by
+        /// copying the content from the default language. This operation may result in database writes if missing
+        /// translations are found.</remarks>
+        /// <returns>A task that represents the asynchronous operation.</returns>
+        private async Task VerifyTranslationsExist()
+        {
+            List<HelpTextNumber> helpTextNumbers = await progenyDbContext.HelpTextNumbersDb.AsNoTracking().ToListAsync();
+            foreach (HelpTextNumber number in helpTextNumbers)
+            {
+                List<HelpContent> helpContentsWithNumber = await progenyDbContext.HelpContentsDb
+                    .AsNoTracking()
+                    .Where(hc => hc.TextId == number.TextId)
+                    .ToListAsync();
+                if(helpContentsWithNumber.Count < 1)
+                {
+                    continue;
+                }
+
+                List<KinaUnaLanguage> languages = await progenyDbContext.Languages.AsNoTracking().ToListAsync();
+                foreach (KinaUnaLanguage language in languages)
+                {
+                    bool hasTranslation = helpContentsWithNumber.Any(hc => hc.LanguageId == language.Id);
+                    if (!hasTranslation)
+                    {
+                        HelpContent defaultHelpContent = helpContentsWithNumber.FirstOrDefault(hc => hc.LanguageId == 1);
+                        if (defaultHelpContent != null)
+                        {
+                            HelpContent newHelpContent = new()
+                            {
+                                TextId = number.TextId,
+                                Page = defaultHelpContent.Page,
+                                Element = defaultHelpContent.Element,
+                                LanguageId = language.Id,
+                                Title = defaultHelpContent.Title,
+                                Content = defaultHelpContent.Content,
+                                CreatedTime = System.DateTime.UtcNow,
+                                UpdatedTime = System.DateTime.UtcNow
+                            };
+                            progenyDbContext.HelpContentsDb.Add(newHelpContent);
+                            await progenyDbContext.SaveChangesAsync();
+                        }
+                    }
+                }
+            }
         }
     }
 }

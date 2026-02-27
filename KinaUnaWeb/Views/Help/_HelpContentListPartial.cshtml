@@ -1,0 +1,15 @@
+﻿@using KinaUna.Data.Models.Support
+@model System.Collections.Generic.List<KinaUna.Data.Models.Support.HelpContent>
+
+<div class="col">
+    <div class="col-12">
+        @foreach (HelpContent helpContent in Model)
+        {
+            <div class="help-content-item">
+                <h4>@helpContent.Title</h4>
+                <span>@helpContent.Element</span>
+                <button class="btn btn-info" data-page-content-text-id="@helpContent.TextId">Edit</button>
+            </div>
+        }
+    </div>
+</div>

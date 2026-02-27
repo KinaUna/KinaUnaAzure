@@ -264,7 +264,7 @@ namespace KinaUnaWeb.Controllers
         [AllowAnonymous]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult SetLanguage(string culture, string returnUrl)
+        public IActionResult SetLanguage(string culture, string returnUrl = "/")
         {
             if (env.IsDevelopment())
             {
@@ -294,6 +294,18 @@ namespace KinaUnaWeb.Controllers
                 }
                 
             }
+
+            // Check if returnUrl is local to prevent open redirect attacks
+            if (!string.IsNullOrEmpty(returnUrl) && !Url.IsLocalUrl(returnUrl))
+            {
+                returnUrl = "/";
+            }
+
+            if (string.IsNullOrEmpty(returnUrl))
+            {
+                returnUrl = "/";
+            }
+
             return Redirect(returnUrl);
         }
 
@@ -344,8 +356,19 @@ namespace KinaUnaWeb.Controllers
             }
             
             Response.SetLanguageCookie(languageId);
+
+            // Check if returnUrl is local to prevent open redirect attacks
+            if (!string.IsNullOrEmpty(returnUrl) && !Url.IsLocalUrl(returnUrl))
+            {
+                returnUrl = "/";
+            }
+
+            if (string.IsNullOrEmpty(returnUrl))
+            {
+                returnUrl = "/";
+            }
+
             return Redirect(returnUrl);
         }
-        
     }
 }

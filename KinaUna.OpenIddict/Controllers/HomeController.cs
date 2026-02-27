@@ -49,6 +49,12 @@ namespace KinaUna.OpenIddict.Controllers
                 cookieOptions
             );
 
+            // Check if returnUrl is local to prevent open redirect attacks
+            if (!string.IsNullOrEmpty(returnUrl) && !Url.IsLocalUrl(returnUrl))
+            {
+                returnUrl = "/";
+            }
+
             return Redirect(returnUrl);
         }
 
@@ -57,6 +63,11 @@ namespace KinaUna.OpenIddict.Controllers
         public IActionResult SetLanguageId(string languageId, string returnUrl)
         {
             Response.SetLanguageCookie(languageId);
+            // Check if returnUrl is local to prevent open redirect attacks
+            if (!string.IsNullOrEmpty(returnUrl) && !Url.IsLocalUrl(returnUrl))
+            {
+                returnUrl = "/";
+            }
             return Redirect(returnUrl);
         }
 

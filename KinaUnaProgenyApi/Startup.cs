@@ -4,7 +4,6 @@ using KinaUnaProgenyApi.AuthorizationHandlers;
 using KinaUnaProgenyApi.Services;
 using KinaUnaProgenyApi.Services.CalendarServices;
 using KinaUnaProgenyApi.Services.ScheduledTasks;
-using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
@@ -31,8 +30,6 @@ namespace KinaUnaProgenyApi
 
         public void ConfigureServices(IServiceCollection services)
         {
-            TelemetryDebugWriter.IsTracingDisabled = true;
-            
             services.AddDbContext<ProgenyDbContext>(options =>
                 options.UseSqlServer(Configuration["ProgenyDefaultConnection"],
                     sqlServerOptionsAction: sqlOptions =>

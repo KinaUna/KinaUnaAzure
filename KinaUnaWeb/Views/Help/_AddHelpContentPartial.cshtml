@@ -19,8 +19,8 @@
                 <label asp-for="Content" class="col-auto control-label">Content</label>
                 <div class="col-auto">
                     @{
-                        string[] toolbarItems = new[]
-                        {
+                        string[] toolbarItems =
+                        [
                             "Bold", "Italic", "Underline", "StrikeThrough",
                             "FontName", "FontSize", "FontColor", "BackgroundColor",
                             "LowerCase", "UpperCase", "|",
@@ -28,7 +28,7 @@
                             "Outdent", "Indent", "|",
                             "CreateLink", "Image", "CreateTable", "|", "ClearFormat",
                             "SourceCode", "FullScreen", "|", "Undo", "Redo"
-                        };
+                        ];
                     }
                     <ejs-richtexteditor id="content-rich-text-editor" ejs-for="Content" height="400px" enableResize="true">
                         <e-richtexteditor-toolbarsettings items="@toolbarItems"></e-richtexteditor-toolbarsettings>
@@ -56,8 +56,7 @@
                     <button type="submit" class="btn btn-primary">Save</button>
                 </div>
             </div>
-            
         </form>
-
     </div>
 </div>
+<ejs-scripts></ejs-scripts>

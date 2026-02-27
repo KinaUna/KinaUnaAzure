@@ -36,10 +36,18 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet]
-        [Route("[action]/{helpContentId}")]
+        [Route("[action]/{helpContentId:int}")]
         public async Task<IActionResult> GetHelpContentById(int helpContentId)
         {
             HelpContent helpContent = await helpContentService.GetHelpContentById(helpContentId);
+            return Ok(helpContent);
+        }
+
+        [HttpGet]
+        [Route("[action]/{helpTextId:int}/{languageId:int}")]
+        public async Task<IActionResult> GetHelpContentByTextId(int helpTextId, int languageId)
+        {
+            HelpContent helpContent = await helpContentService.GetHelpContentByTextId(helpTextId, languageId);
             return Ok(helpContent);
         }
 
@@ -97,13 +105,15 @@ namespace KinaUnaProgenyApi.Controllers
         }
 
         [HttpGet]
-        [Route("[action]")]
+        [Route("[action]/{page}/{languageId}")]
         public async Task<IActionResult> GetHelpContentForPage(string page, int languageId)
         {
             List<HelpContent> helpContentList = await helpContentService.GetHelpContentForPage(page, languageId);
             return Ok(helpContentList);
         }
 
+        [HttpGet]
+        [Route("[action]")]
         public async Task<IActionResult> GetHelpContentPages()
         {
             List<string> helpContentPages = await helpContentService.GetHelpContentPages();

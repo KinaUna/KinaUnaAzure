@@ -57,6 +57,16 @@ namespace KinaUnaWeb.Services.HttpClients.Support
         Task<HelpContent> GetHelpContentById(int helpContentId);
 
         /// <summary>
+        /// Retrieves help content for the specified text identifier and language.
+        /// </summary>
+        /// <param name="helpContentTextId">The unique identifier of the help content text to retrieve.</param>
+        /// <param name="languageId">The identifier of the language in which to retrieve the help content.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the <see cref="HelpContent"/>
+        /// for the specified text and language. Returns an empty <see cref="HelpContent"/> object if no matching
+        /// content is found.</returns>
+        Task<HelpContent> GetHelpContentByTextId(int helpContentTextId, int languageId);
+
+        /// <summary>
         /// Retrieves a list of available help content page identifiers from the remote help API.
         /// </summary>
         /// <remarks>This method requires the caller to be authenticated. The returned list may be empty
@@ -68,8 +78,10 @@ namespace KinaUnaWeb.Services.HttpClients.Support
         /// <summary>
         /// Retrieves all available help content entries asynchronously.
         /// </summary>
+        /// <param name="page">Specifies the page for which to retrieve help content. Empty string for all pages.</param>
+        /// <param name="languageId">Specifies the language identifier for the help content to retrieve.</param>
         /// <returns>A list of <see cref="HelpContent"/> objects representing all help content entries. Returns an empty list if
         /// no help content is available.</returns>
-        Task<List<HelpContent>> GetAllHelpContents();
+        Task<List<HelpContent>> GetAllHelpContents(string page, int languageId);
     }
 }

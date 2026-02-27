@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (pageLiElement.dataset.viewid) {
             pageName = pageLiElement.dataset.viewid;
         }
-        const selectPageClickAction = function (event) {
+        const selectPageClickAction = async function (event) {
             const translationsPageSelectedDiv = document.querySelector('#translations-page-selected-div');
             if (translationsPageSelectedDiv !== null) {
                 translationsPageSelectedDiv.innerHTML = pageName;
@@ -313,7 +313,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             const liElement = event.target;
             liElement.classList.add('select-view-item-selected');
-            getPageTranslations(pageName);
+            await getPageTranslations(pageName);
         };
         pageLiElement.removeEventListener('click', selectPageClickAction);
         pageLiElement.addEventListener('click', selectPageClickAction);

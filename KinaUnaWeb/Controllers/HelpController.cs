@@ -1,4 +1,5 @@
-﻿using KinaUna.Data.Extensions;
+﻿using System.Collections.Generic;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models.Support;
 using KinaUnaWeb.Services.HttpClients;
 using KinaUnaWeb.Services.HttpClients.Support;
@@ -25,6 +26,11 @@ namespace KinaUnaWeb.Controllers
             return PartialView("HelpContentPartialView", helpContent);
         }
 
+        public async Task<IActionResult> HelpContentByTextId(int helpContentTextId, int languageId)
+        {
+            HelpContent helpContent = await helpHttpClient.GetHelpContentByTextId(helpContentTextId, languageId);
+            return PartialView("HelpContentPartialView", helpContent);
+        }
 
         public async Task<IActionResult> AddHelpContent()
         {
@@ -85,6 +91,45 @@ namespace KinaUnaWeb.Controllers
             }
 
             return PartialView("_EditHelpContentPartial", helpContent);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DeleteHelpContent(int helpContentId)
+        {
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            HelpContent helpContent = await helpHttpClient.GetHelpContentById(helpContentId);
+            return PartialView("_DeleteHelpContentPartial", helpContent);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteHelpContentConfirmed(int helpContentId)
+        {
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            HelpContent deletedHelpContent = await helpHttpClient.DeleteHelpContent(helpContentId);
+            return PartialView("_HelpContentDeletedPartial", deletedHelpContent);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> HelpContentList(string page, int languageId)
+        {
+            UserInfo userInfo = await userInfosHttpClient.GetExtendedUserInfoByUserId(User.GetUserId());
+            if (userInfo == null || !userInfo.IsKinaUnaAdmin)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            List<HelpContent> helpContents = await helpHttpClient.GetAllHelpContents(page, languageId);
+            
+            return PartialView("_HelpContentListPartial", helpContents);
         }
     }
 }
