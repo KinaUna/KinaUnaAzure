@@ -22,26 +22,26 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Data.Tables" Version="12.11.0" />
-    <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.4.0" />
-    <PackageReference Include="Azure.Identity" Version="1.18.0" />
+    <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.5.0" />
+    <PackageReference Include="Azure.Identity" Version="1.19.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0" />
     <PackageReference Include="Azure.Storage.Files.Shares" Version="12.25.0" />
     <PackageReference Include="Azure.Storage.Queues" Version="12.25.0" />
     <PackageReference Include="Cnblogs.IdentityServer4.EntityFramework" Version="4.3.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="3.0.0" />
-    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="10.0.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.3">
+    <PackageReference Include="Microsoft.AspNetCore.AzureAppServices.HostingStartup" Version="10.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Azure" Version="1.13.1" />
-    <PackageReference Include="OpenIddict" Version="7.2.0" />
-    <PackageReference Include="OpenIddict.AspNetCore" Version="7.2.0" />
-    <PackageReference Include="OpenIddict.EntityFrameworkCore" Version="7.2.0" />
-    <PackageReference Include="OpenIddict.Quartz" Version="7.2.0" />
-    <PackageReference Include="Quartz.Extensions.Hosting" Version="3.15.1" />
+    <PackageReference Include="OpenIddict" Version="7.4.0" />
+    <PackageReference Include="OpenIddict.AspNetCore" Version="7.4.0" />
+    <PackageReference Include="OpenIddict.EntityFrameworkCore" Version="7.4.0" />
+    <PackageReference Include="OpenIddict.Quartz" Version="7.4.0" />
+    <PackageReference Include="Quartz.Extensions.Hosting" Version="3.16.1" />
   </ItemGroup>
 
   <ItemGroup>
