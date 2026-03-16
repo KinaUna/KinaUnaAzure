@@ -1,0 +1,28 @@
+# Dockerfile.auth — KinaUna.OpenIddict (authentication/authorization server)
+# Place at solution root.
+
+# Stage 1: Build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy project files first for layer caching
+COPY KinaUna.sln ./
+COPY KinaUna.Data/KinaUna.Data.csproj KinaUna.Data/
+COPY KinaUna.OpenIddict/KinaUna.OpenIddict.csproj KinaUna.OpenIddict/
+
+# Restore NuGet packages
+RUN dotnet restore KinaUna.OpenIddict/KinaUna.OpenIddict.csproj
+
+# Copy full source and publish
+COPY . .
+WORKDIR /src/KinaUna.OpenIddict
+RUN dotnet publish -c Release -o /app/publish --no-restore
+
+# Stage 2: Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+WORKDIR /app
+COPY --from=build /app/publish .
+
+EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
+ENTRYPOINT ["dotnet", "KinaUna.OpenIddict.dll"]

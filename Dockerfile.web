@@ -1,0 +1,45 @@
+# Dockerfile.web — KinaUnaWeb (front-end web application)
+# Place at solution root.
+
+# Stage 1: Build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Install Node.js (required by Microsoft.TypeScript.MSBuild for TS compilation)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    curl -fsSL https://deb.nodesource.com/setup_22.x | bash - && \
+    apt-get install -y --no-install-recommends nodejs && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copy project files first for layer caching
+COPY KinaUna.sln ./
+COPY KinaUna.Data/KinaUna.Data.csproj KinaUna.Data/
+COPY KinaUnaWeb/KinaUnaWeb.csproj KinaUnaWeb/
+
+# Restore NuGet packages
+RUN dotnet restore KinaUnaWeb/KinaUnaWeb.csproj
+
+# Copy package.json and install npm dependencies before copying full source
+# This layer is cached unless package.json or package-lock.json changes
+COPY KinaUnaWeb/package.json KinaUnaWeb/
+COPY KinaUnaWeb/package-lock.json* KinaUnaWeb/
+WORKDIR /src/KinaUnaWeb
+RUN npm ci --ignore-scripts || npm install
+WORKDIR /src
+
+# Copy full source
+COPY . .
+
+# Publish (TypeScript compilation happens automatically via Microsoft.TypeScript.MSBuild)
+WORKDIR /src/KinaUnaWeb
+RUN dotnet publish -c Release -o /app/publish --no-restore
+
+# Stage 2: Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+WORKDIR /app
+COPY --from=build /app/publish .
+
+EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
+ENTRYPOINT ["dotnet", "KinaUnaWeb.dll"]

@@ -1,0 +1,28 @@
+# Dockerfile.api — KinaUnaProgenyApi (back-end REST API)
+# Place at solution root.
+
+# Stage 1: Build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy project files first for layer caching
+COPY KinaUna.sln ./
+COPY KinaUna.Data/KinaUna.Data.csproj KinaUna.Data/
+COPY KinaUnaProgenyApi/KinaUnaProgenyApi.csproj KinaUnaProgenyApi/
+
+# Restore NuGet packages
+RUN dotnet restore KinaUnaProgenyApi/KinaUnaProgenyApi.csproj
+
+# Copy full source and publish
+COPY . .
+WORKDIR /src/KinaUnaProgenyApi
+RUN dotnet publish -c Release -o /app/publish --no-restore
+
+# Stage 2: Runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
+WORKDIR /app
+COPY --from=build /app/publish .
+
+EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
+ENTRYPOINT ["dotnet", "KinaUnaProgenyApi.dll"]
