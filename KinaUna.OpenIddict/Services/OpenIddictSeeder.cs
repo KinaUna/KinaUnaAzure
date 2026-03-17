@@ -148,9 +148,16 @@ namespace KinaUna.OpenIddict.Services
             IEnumerable<OpenIddictApplicationDescriptor> apiClients = provider.GetRequiredService<IClientConfigProvider>().GetApiClientConfigs();
             foreach (OpenIddictApplicationDescriptor clientConfig in apiClients)
             {
-                if (clientConfig.ClientId != null && await applicationManager.FindByClientIdAsync(clientConfig.ClientId, cancellationToken) == null)
+                if (clientConfig.ClientId == null) continue;
+
+                object? existingClient = await applicationManager.FindByClientIdAsync(clientConfig.ClientId, cancellationToken);
+                if (existingClient == null)
                 {
                     await applicationManager.CreateAsync(clientConfig, cancellationToken);
+                }
+                else
+                {
+                    await applicationManager.UpdateAsync(existingClient, clientConfig, cancellationToken);
                 }
             }
         }
@@ -172,9 +179,16 @@ namespace KinaUna.OpenIddict.Services
 
             foreach (OpenIddictApplicationDescriptor clientConfig in webClients)
             {
-                if (clientConfig.ClientId != null && await applicationManager.FindByClientIdAsync(clientConfig.ClientId, cancellationToken) == null)
+                if (clientConfig.ClientId == null) continue;
+
+                object? existingClient = await applicationManager.FindByClientIdAsync(clientConfig.ClientId, cancellationToken);
+                if (existingClient == null)
                 {
                     await applicationManager.CreateAsync(clientConfig, cancellationToken);
+                }
+                else
+                {
+                    await applicationManager.UpdateAsync(existingClient, clientConfig, cancellationToken);
                 }
             }
         }
