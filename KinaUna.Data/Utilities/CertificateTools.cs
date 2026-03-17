@@ -11,7 +11,8 @@ namespace KinaUna.Data.Utilities
     /// <remarks>
     /// On Windows, certificates are loaded from the current user's personal certificate store using a thumbprint.
     /// In Docker/Linux environments where the certificate store is unavailable, certificates can be loaded from
-    /// PFX files instead by setting the <c>CertificatePfxPath</c> and <c>CertificatePfxPassword</c> environment variables.
+    /// PFX files instead by setting environment variables such as <c>EncryptionCertificatePfxPath</c>/<c>EncryptionCertificatePfxPassword</c>,
+    /// <c>SigningCertificatePfxPath</c>/<c>SigningCertificatePfxPassword</c>, or <c>CertificatePfxPath</c>/<c>CertificatePfxPassword</c>, depending on the certificate type.
     /// </remarks>
     public static class CertificateTools
     {
