@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Localization;
 using Quartz;
 using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
-using System.Linq;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);

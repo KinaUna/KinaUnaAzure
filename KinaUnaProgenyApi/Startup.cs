@@ -1,5 +1,4 @@
-﻿using Azure.Storage.Blobs;
-using KinaUna.Data;
+﻿using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUnaProgenyApi.AuthorizationHandlers;
 using KinaUnaProgenyApi.Services;
@@ -129,13 +128,13 @@ namespace KinaUnaProgenyApi
             // Register the OpenIddict services and configure them.
             string authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey) ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + " was not found in the configuration data.");
             
-            if (env.IsDevelopment())
+            if (Environment.IsDevelopment())
             {
                 authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Local") ??
                                             throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + "Local was not found in the configuration data.");
             }
 
-            if (env.IsStaging())
+            if (Environment.IsStaging())
             {
                 authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Azure") ??
                                      throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + "Azure was not found in the configuration data.");
@@ -172,7 +171,7 @@ namespace KinaUnaProgenyApi
                 .ToArray();
 
             // If development, allow any origin.
-            if (env.IsDevelopment())
+            if (Environment.IsDevelopment())
             {
                 services.AddCors(options => options.AddDefaultPolicy(policy =>
                     policy.AllowAnyHeader()
@@ -183,7 +182,7 @@ namespace KinaUnaProgenyApi
             // If production, restrict to the specified origin.
             else
             {
-                if (env.IsStaging())
+                if (Environment.IsStaging())
                 {
                     services.AddCors(options => options.AddDefaultPolicy(policy =>
                         policy.AllowAnyHeader()
@@ -215,7 +214,7 @@ namespace KinaUnaProgenyApi
 
         public void Configure(IApplicationBuilder app)
         {
-            if (env.IsDevelopment())
+            if (Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
