@@ -58,7 +58,7 @@ namespace KinaUna.Data.Utilities
         /// <param name="pfxPassword">The password for the PFX file. Can be null if the PFX file is not password-protected.</param>
         /// <returns>The <see cref="X509Certificate2"/> loaded from the PFX file.</returns>
         /// <exception cref="FileNotFoundException">Thrown if the PFX file does not exist at the specified path.</exception>
-        public static X509Certificate2 GetCertificateFromPfxFile(string pfxPath, string pfxPassword)
+        public static X509Certificate2 GetCertificateFromPfxFile(string pfxPath, string? pfxPassword)
         {
             if (!File.Exists(pfxPath))
                 throw new FileNotFoundException($"Certificate PFX file not found at path: {pfxPath}");
