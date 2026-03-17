@@ -28,6 +28,7 @@ namespace KinaUnaProgenyApi
     public class Startup(IConfiguration configuration, IHostEnvironment env)
     {
         private IConfiguration Configuration { get; } = configuration;
+        private IHostEnvironment Environment { get; } = env;
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -63,12 +64,14 @@ namespace KinaUnaProgenyApi
 
             services.AddDistributedMemoryCache();
 
-            string storageConnectionString = Configuration["BlobStorageConnectionString"]
-                ?? throw new InvalidOperationException("BlobStorageConnectionString was not found in the configuration data.");
-            new BlobContainerClient(storageConnectionString, "dataprotection").CreateIfNotExists();
-            services.AddDataProtection()
-                .SetApplicationName("KinaUnaWebApp")
-                .PersistKeysToAzureBlobStorage(storageConnectionString, "dataprotection", "kukeys.xml");
+            IDataProtectionBuilder dataProtectionBuilder = services.AddDataProtection()
+                .SetApplicationName("KinaUnaWebApp");
+
+            string? storageConnectionString = Configuration["BlobStorageConnectionString"];
+            if (!string.IsNullOrWhiteSpace(storageConnectionString) && !Environment.IsEnvironment("Testing"))
+            {
+                dataProtectionBuilder.PersistKeysToAzureBlobStorage(storageConnectionString, "dataprotection", "kukeys.xml");
+            }
 
             services.AddScoped<IImageStore, ImageStore>();
             services.AddScoped<INotificationsService, NotificationsService>();
