@@ -9,7 +9,6 @@ namespace KinaUna.Data
         public const string AuthenticationServerClientIdKey = "AuthServerClientId";
         public const string AuthApiOnlyClientIdKey = "AuthApiOnlyClientId";
         public const string AuthApiClientIdKey = "AuthApiClientId";
-        public const string AuthServerUrl = "AuthServerUrl";
         public const string AuthServerClientSecretKey = "AuthClientSecret";
 
         public const string ResetOpenIddictDatabaseKey = "ResetOpenIddictDatabase";

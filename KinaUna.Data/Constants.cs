@@ -10,11 +10,9 @@
         public const string WebAppUrl = "https://web.kinauna.com";
         public const string AuthAppUrl = "https://auth.kinauna.com";
         public const string ProgenyApiUrl = "https://progenyapi.kinauna.com";
-        public const string MediaApiUrl = "https://mediaapi.kinauna.com";
         public const string SupportUrl = "https://web.kinauna.com/support";
         public const string AppRootDomain = "kinauna.com";
         public const string SupportEmail = "support@kinauna.com";
-        public const string KeyVaultEndPoint = "https://kinauna.vault.azure.net";
         public const string LanguageCookieName = "KinaUnaLanguage";
         
         public const string DefaultTimezone = "Romance Standard Time";
