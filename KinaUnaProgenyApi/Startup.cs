@@ -144,8 +144,8 @@ namespace KinaUnaProgenyApi
                                                            ?? throw new InvalidOperationException("ServerEncryptionCertificateThumbprint was not found in the configuration data.");
 
             // Check if PFX path and password are provided for Docker/Linux environments. If so, load the certificate from the PFX file; otherwise, load it from the certificate store.
-            string certificatePfxPath = Configuration["CertificatePfxPath"];
-            string certificatePfxPassword = Configuration["CertificatePfxPassword"];
+            string certificatePfxPath = Configuration["EncryptionCertificatePfxPath"];
+            string certificatePfxPassword = Configuration["EncryptionCertificatePfxPassword"];
 
             X509Certificate2 encryptionCertificate = !string.IsNullOrEmpty(certificatePfxPath)
                 ? CertificateTools.GetCertificateFromPfxFile(certificatePfxPath, certificatePfxPassword)
