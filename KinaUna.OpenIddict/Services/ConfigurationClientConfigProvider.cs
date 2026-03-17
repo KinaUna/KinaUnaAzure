@@ -93,6 +93,7 @@ namespace KinaUna.OpenIddict.Services
                     ClientId = authorityServerClientId,
                     DisplayName = "KinaUna Auth Client",
                     ClientSecret = authorityServerClientSecret,
+                    ClientType = ClientTypes.Confidential,
                     ConsentType = ConsentTypes.Implicit,
                     Permissions =
                     {
@@ -134,6 +135,7 @@ namespace KinaUna.OpenIddict.Services
                     ClientId = authorityServerApiOnlyClientId,
                     DisplayName = "KinaUnaAuthApiClient",
                     ClientSecret = authorityServerClientSecret,
+                    ClientType = ClientTypes.Confidential,
                     ConsentType = ConsentTypes.Implicit,
                     Permissions =
                     {
@@ -167,6 +169,7 @@ namespace KinaUna.OpenIddict.Services
                     ClientId = webServerClientId,
                     DisplayName = "KinaUnaWeb",
                     ClientSecret = webServerClientSecret,
+                    ClientType = ClientTypes.Confidential,
                     ConsentType = ConsentTypes.Implicit,
                     Permissions =
                     {
@@ -207,6 +210,7 @@ namespace KinaUna.OpenIddict.Services
                     ClientId = webServerApiClientId,
                     DisplayName = "KinaUnaWebApiClient",
                     ClientSecret = webServerClientSecret,
+                    ClientType = ClientTypes.Confidential,
                     ConsentType = ConsentTypes.Implicit,
                     Permissions =
                     {
