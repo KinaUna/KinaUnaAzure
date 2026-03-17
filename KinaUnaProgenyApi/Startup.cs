@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenIddict.Validation.AspNetCore;
 using System;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using KinaUna.Data.Utilities;
 using KinaUnaProgenyApi.Services.AccessManagementService;
@@ -163,7 +164,12 @@ namespace KinaUnaProgenyApi
 
             // Configure CORS to allow requests from the specified origin.
             // Additional origins can be provided via the CorsOrigins configuration key (semicolon-separated).
-            string[] configuredOrigins = Configuration.GetValue<string>("CorsOrigins")?.Split(';', StringSplitOptions.RemoveEmptyEntries) ?? [];
+            string[] configuredOrigins = (Configuration.GetValue<string>("CorsOrigins") ?? string.Empty)
+                .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .Select(origin => origin.Trim())
+                .Where(origin => !string.IsNullOrWhiteSpace(origin))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
 
             // If development, allow any origin.
             if (env.IsDevelopment())
