@@ -1,4 +1,3 @@
-using Azure.Identity;
 using Azure.Storage.Blobs;
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
@@ -28,12 +27,6 @@ _ = builder.Services.Configure<CookiePolicyOptions>(options =>
     options.Secure = CookieSecurePolicy.Always;
 });
 
-if (builder.Environment.IsProduction() || builder.Environment.IsStaging())
-{
-    string keyVaultUrl = builder.Configuration["VaultUri"]
-                            ?? throw new InvalidOperationException("VaultUri was not found in the configuration data.");
-    builder.Configuration.AddAzureKeyVault(new Uri(keyVaultUrl), new DefaultAzureCredential());
-}
 // Add database context and other services.
 
 string progenyDefaultConnection = builder.Configuration["ProgenyDefaultConnection"] 
@@ -118,12 +111,29 @@ builder.Services.AddQuartz(options =>
 
 builder.Services.AddQuartzHostedService(options => options.WaitForJobsToComplete = true);
 
+// Load certificate thumbprints from configuration data. These thumbprints are used to load the encryption and signing certificates from the certificate store.
+// In production, these thumbprints should be set to the thumbprints of the certificates that are installed in the certificate store on the server.
+// In development, these thumbprints can be set to the thumbprints of the certificates that are installed in the certificate store on the local machine.
+// If the thumbprints are not provided, the application will throw an exception at startup, as the certificates are required for OpenIddict to function properly.
 string serverEncryptionCertificateThumbprint = builder.Configuration["ServerEncryptionCertificateThumbprint"] 
                                                ?? throw new InvalidOperationException("ServerEncryptionCertificateThumbprint was not found in the configuration data.");
 string serverSigningCertificateThumbprint = builder.Configuration["ServerSigningCertificateThumbprint"] 
                                             ?? throw new InvalidOperationException("ServerSigningCertificateThumbprint was not found in the configuration data.");
-X509Certificate2 encryptionCertificate = CertificateTools.GetCertificate(serverEncryptionCertificateThumbprint);
-X509Certificate2 signingCertificate = CertificateTools.GetCertificate(serverSigningCertificateThumbprint);
+
+// In Docker/Linux environments, load certificates from PFX files instead of the certificate store.
+// The PFX file paths and passwords are specified in the configuration data (e.g., appsettings.json or environment variables).
+// If the PFX paths are not provided, the application will fall back to loading certificates from the certificate store using the specified thumbprints.
+string? encryptionPfxPath = builder.Configuration["EncryptionCertificatePfxPath"];
+string? encryptionPfxPassword = builder.Configuration["EncryptionCertificatePfxPassword"];
+string? signingPfxPath = builder.Configuration["SigningCertificatePfxPath"];
+string? signingPfxPassword = builder.Configuration["SigningCertificatePfxPassword"];
+
+X509Certificate2 encryptionCertificate = !string.IsNullOrEmpty(encryptionPfxPath)
+    ? CertificateTools.GetCertificateFromPfxFile(encryptionPfxPath, encryptionPfxPassword)
+    : CertificateTools.GetCertificate(serverEncryptionCertificateThumbprint);
+X509Certificate2 signingCertificate = !string.IsNullOrEmpty(signingPfxPath)
+    ? CertificateTools.GetCertificateFromPfxFile(signingPfxPath, signingPfxPassword)
+    : CertificateTools.GetCertificate(serverSigningCertificateThumbprint);
 
 builder.Services.AddOpenIddict()
     .AddCore(options =>
@@ -190,13 +200,23 @@ builder.Services.AddScoped<IClientConfigProvider, ConfigurationClientConfigProvi
 builder.Services.AddHostedService<OpenIddictSeeder>();
 
 // Configure CORS to allow requests from the specified origin.
+// Additional origins can be provided via the CorsOrigins configuration key (semicolon-separated).
+string[] rawConfiguredOrigins = builder.Configuration.GetValue<string>("CorsOrigins")
+    ?.Split(';', StringSplitOptions.RemoveEmptyEntries) ?? [];
+
+string[] configuredOrigins = rawConfiguredOrigins
+    .Select(origin => origin.Trim())
+    .Where(origin => !string.IsNullOrWhiteSpace(origin))
+    .Distinct(StringComparer.OrdinalIgnoreCase)
+    .ToArray();
+
 // If development, allow any origin.
 if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
         policy.AllowAnyHeader()
             .AllowAnyMethod()
-            .WithOrigins(Constants.DevelopmentCorsList)));
+            .WithOrigins([.. Constants.DevelopmentCorsList, .. configuredOrigins])));
 }
 else
 {
@@ -205,7 +225,7 @@ else
         builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
             policy.AllowAnyHeader()
                 .AllowAnyMethod()
-                .WithOrigins(Constants.StagingCorsList)));
+                .WithOrigins([.. Constants.StagingCorsList, .. configuredOrigins])));
     }
     else
     {
@@ -214,13 +234,15 @@ else
         builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
             policy.AllowAnyHeader()
                 .AllowAnyMethod()
-                .WithOrigins(Constants.ProductionCorsList)));
+                .WithOrigins([.. Constants.ProductionCorsList, .. configuredOrigins])));
     }
 }
 
 builder.Services.AddControllersWithViews().AddViewLocalization();
 
 builder.Services.AddRazorPages();
+
+builder.Services.AddHealthChecks();
 
 WebApplication app = builder.Build();
 
@@ -273,6 +295,7 @@ app.UseEndpoints(options =>
 {
     _ = options.MapControllers();
     _ = options.MapDefaultControllerRoute();
+    _ = options.MapHealthChecks("/health").AllowAnonymous();
 });
 
 app.Run();

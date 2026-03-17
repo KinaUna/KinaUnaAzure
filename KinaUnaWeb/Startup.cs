@@ -24,6 +24,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using KinaUnaWeb.Services.HttpClients.Search;
 using Microsoft.AspNetCore.Authentication;
+using System.Linq;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 
 namespace KinaUnaWeb
@@ -139,6 +140,7 @@ namespace KinaUnaWeb
             {
                 options.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.Authority = authorityServerUrl; // OpenIddict server
+                options.RequireHttpsMetadata = authorityServerUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
                 options.ClientId = webServerClientId;
                 options.ClientSecret = authenticationServerClientSecret;
                 options.ResponseType = "code";
@@ -210,13 +212,23 @@ namespace KinaUnaWeb
             });
 
             // Configure CORS to allow requests from the specified origin.
+            // Additional origins can be provided via the CorsOrigins configuration key (semicolon-separated).
+            string corsOriginsConfig = Configuration.GetValue<string>("CorsOrigins") ?? string.Empty;
+
+            string[] configuredOrigins = corsOriginsConfig
+                .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .Select(origin => origin.Trim())
+                .Where(origin => !string.IsNullOrEmpty(origin))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
             // If development, allow any origin.
             if (env.IsDevelopment())
             {
                 services.AddCors(options => options.AddDefaultPolicy(policy =>
                     policy.AllowAnyHeader()
                         .AllowAnyMethod()
-                        .WithOrigins(Constants.DevelopmentCorsList)
+                        .WithOrigins([.. Constants.DevelopmentCorsList, .. configuredOrigins])
                         .SetPreflightMaxAge(TimeSpan.FromMinutes(15))));
             }
             // If production, restrict to the specified origin.
@@ -227,7 +239,7 @@ namespace KinaUnaWeb
                     services.AddCors(options => options.AddDefaultPolicy(policy =>
                         policy.AllowAnyHeader()
                             .AllowAnyMethod()
-                            .WithOrigins(Constants.StagingCorsList)
+                            .WithOrigins([.. Constants.StagingCorsList, .. configuredOrigins])
                             .SetPreflightMaxAge(TimeSpan.FromMinutes(15))));
                 }
                 else
@@ -237,9 +249,9 @@ namespace KinaUnaWeb
                     services.AddCors(options => options.AddDefaultPolicy(policy =>
                         policy.AllowAnyHeader()
                             .AllowAnyMethod()
-                            .WithOrigins(Constants.ProductionCorsList)));
+                            .WithOrigins([.. Constants.ProductionCorsList, .. configuredOrigins])));
                 }
-                
+
             }
             
             services.AddAuthorization();
@@ -270,6 +282,7 @@ namespace KinaUnaWeb
             );
             services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
             services.AddApplicationInsightsTelemetry();
+            services.AddHealthChecks();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -322,8 +335,9 @@ namespace KinaUnaWeb
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapHub<WebNotificationHub>("/webnotificationhub");
+                endpoints.MapHealthChecks("/health").AllowAnonymous();
                 endpoints.MapDefaultControllerRoute();
-            });            
+            });
         }
     }
 }

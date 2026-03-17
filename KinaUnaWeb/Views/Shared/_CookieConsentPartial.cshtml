@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Hosting
+﻿    @using Microsoft.AspNetCore.Hosting
 @using Microsoft.Extensions.Hosting
 @using KinaUnaWeb.Services
 @using KinaUna.Data
@@ -17,6 +17,15 @@
         if (Env.IsStaging())
         {
             cookieDomainName = "domain=.azurewebsites.net;path=/";
+        }
+        else
+        {
+            string requestHost = Context.Request.Host.Host;
+            if (!requestHost.EndsWith(".kinauna.com", StringComparison.OrdinalIgnoreCase)
+                && !string.Equals(requestHost, "kinauna.com", StringComparison.OrdinalIgnoreCase))
+            {
+                cookieDomainName = "path=/";
+            }
         }
     }
 

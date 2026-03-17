@@ -6,12 +6,14 @@ using KinaUnaProgenyApi.Services.CalendarServices;
 using KinaUnaProgenyApi.Services.ScheduledTasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenIddict.Validation.AspNetCore;
 using System;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using KinaUna.Data.Utilities;
 using KinaUnaProgenyApi.Services.AccessManagementService;
@@ -26,6 +28,7 @@ namespace KinaUnaProgenyApi
     public class Startup(IConfiguration configuration, IHostEnvironment env)
     {
         private IConfiguration Configuration { get; } = configuration;
+        private IHostEnvironment Environment { get; } = env;
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -60,6 +63,16 @@ namespace KinaUnaProgenyApi
             });
 
             services.AddDistributedMemoryCache();
+
+            IDataProtectionBuilder dataProtectionBuilder = services.AddDataProtection()
+                .SetApplicationName("KinaUnaWebApp");
+
+            string? storageConnectionString = Configuration["BlobStorageConnectionString"];
+            if (!string.IsNullOrWhiteSpace(storageConnectionString) && !Environment.IsEnvironment("Testing"))
+            {
+                dataProtectionBuilder.PersistKeysToAzureBlobStorage(storageConnectionString, "dataprotection", "kukeys.xml");
+            }
+
             services.AddScoped<IImageStore, ImageStore>();
             services.AddScoped<INotificationsService, NotificationsService>();
             services.AddScoped<IProgenyService, ProgenyService>();
@@ -115,13 +128,13 @@ namespace KinaUnaProgenyApi
             // Register the OpenIddict services and configure them.
             string authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey) ?? throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + " was not found in the configuration data.");
             
-            if (env.IsDevelopment())
+            if (Environment.IsDevelopment())
             {
                 authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Local") ??
                                             throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + "Local was not found in the configuration data.");
             }
 
-            if (env.IsStaging())
+            if (Environment.IsStaging())
             {
                 authorityServerUrl = Configuration.GetValue<string>(AuthConstants.AuthenticationServerUrlKey + "Azure") ??
                                      throw new InvalidOperationException(AuthConstants.AuthenticationServerUrlKey + "Azure was not found in the configuration data.");
@@ -129,7 +142,14 @@ namespace KinaUnaProgenyApi
 
             string serverEncryptionCertificateThumbprint = Configuration["ServerEncryptionCertificateThumbprint"]
                                                            ?? throw new InvalidOperationException("ServerEncryptionCertificateThumbprint was not found in the configuration data.");
-            X509Certificate2 encryptionCertificate = CertificateTools.GetCertificate(serverEncryptionCertificateThumbprint);
+
+            // Check if PFX path and password are provided for Docker/Linux environments. If so, load the certificate from the PFX file; otherwise, load it from the certificate store.
+            string certificatePfxPath = Configuration["CertificatePfxPath"];
+            string certificatePfxPassword = Configuration["CertificatePfxPassword"];
+
+            X509Certificate2 encryptionCertificate = !string.IsNullOrEmpty(certificatePfxPath)
+                ? CertificateTools.GetCertificateFromPfxFile(certificatePfxPath, certificatePfxPassword)
+                : CertificateTools.GetCertificate(serverEncryptionCertificateThumbprint);
             
             // Todo: Add Audience support.
             services.AddOpenIddict()
@@ -142,24 +162,32 @@ namespace KinaUnaProgenyApi
                 });
 
             // Configure CORS to allow requests from the specified origin.
+            // Additional origins can be provided via the CorsOrigins configuration key (semicolon-separated).
+            string[] configuredOrigins = (Configuration.GetValue<string>("CorsOrigins") ?? string.Empty)
+                .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .Select(origin => origin.Trim())
+                .Where(origin => !string.IsNullOrWhiteSpace(origin))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
             // If development, allow any origin.
-            if (env.IsDevelopment())
+            if (Environment.IsDevelopment())
             {
                 services.AddCors(options => options.AddDefaultPolicy(policy =>
                     policy.AllowAnyHeader()
                         .AllowAnyMethod()
-                        .WithOrigins(Constants.DevelopmentCorsList)
+                        .WithOrigins([.. Constants.DevelopmentCorsList, .. configuredOrigins])
                         .SetPreflightMaxAge(TimeSpan.FromMinutes(15))));
             }
             // If production, restrict to the specified origin.
             else
             {
-                if (env.IsStaging())
+                if (Environment.IsStaging())
                 {
                     services.AddCors(options => options.AddDefaultPolicy(policy =>
                         policy.AllowAnyHeader()
                             .AllowAnyMethod()
-                            .WithOrigins(Constants.StagingCorsList)
+                            .WithOrigins([.. Constants.StagingCorsList, .. configuredOrigins])
                             .SetPreflightMaxAge(TimeSpan.FromMinutes(15))));
                 }
                 else
@@ -169,9 +197,9 @@ namespace KinaUnaProgenyApi
                     services.AddCors(options => options.AddDefaultPolicy(policy =>
                         policy.AllowAnyHeader()
                             .AllowAnyMethod()
-                            .WithOrigins(Constants.ProductionCorsList)));
+                            .WithOrigins([.. Constants.ProductionCorsList, .. configuredOrigins])));
                 }
-                
+
             }
 
             services.AddAuthentication(options => { options.DefaultScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme; });
@@ -181,11 +209,12 @@ namespace KinaUnaProgenyApi
             services.AddSingleton<IAuthorizationHandler, UserOrClientHandler>();
             services.AddSingleton<IAuthorizationHandler, ClientHandler>();
             services.AddApplicationInsightsTelemetry();
+            services.AddHealthChecks();
         }
 
         public void Configure(IApplicationBuilder app)
         {
-            if (env.IsDevelopment())
+            if (Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
@@ -200,7 +229,11 @@ namespace KinaUnaProgenyApi
 
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapHealthChecks("/health").AllowAnonymous();
+                endpoints.MapControllers();
+            });
         }
     }
 }

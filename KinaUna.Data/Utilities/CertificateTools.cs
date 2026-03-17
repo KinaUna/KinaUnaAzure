@@ -1,15 +1,19 @@
 ﻿using System;
+using System.IO;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
 namespace KinaUna.Data.Utilities
 {
     /// <summary>
-    /// Retrieves an X.509 certificate from the current user's certificate store using the specified thumbprint.
+    /// Provides methods for loading X.509 certificates from the certificate store or from PFX files.
     /// </summary>
-    /// <remarks>This method searches the current user's personal certificate store for a certificate that is
-    /// valid at the current time and matches the specified thumbprint. If multiple certificates match, the first one
-    /// found is returned.</remarks>
+    /// <remarks>
+    /// On Windows, certificates are loaded from the current user's personal certificate store using a thumbprint.
+    /// In Docker/Linux environments where the certificate store is unavailable, certificates can be loaded from
+    /// PFX files instead by setting environment variables such as <c>EncryptionCertificatePfxPath</c>/<c>EncryptionCertificatePfxPassword</c>,
+    /// <c>SigningCertificatePfxPath</c>/<c>SigningCertificatePfxPassword</c>, or <c>CertificatePfxPath</c>/<c>CertificatePfxPassword</c>, depending on the certificate type.
+    /// </remarks>
     public static class CertificateTools
     {
         /// <summary>
@@ -43,6 +47,23 @@ namespace KinaUna.Data.Utilities
             {
                 store.Close();
             }
+        }
+
+        /// <summary>
+        /// Loads an X.509 certificate from a PFX file.
+        /// </summary>
+        /// <remarks>This method is intended for Docker/Linux environments where the Windows certificate store is not available.
+        /// The PFX file should contain both the certificate and its private key.</remarks>
+        /// <param name="pfxPath">The file path to the PFX file.</param>
+        /// <param name="pfxPassword">The password for the PFX file. Can be null if the PFX file is not password-protected.</param>
+        /// <returns>The <see cref="X509Certificate2"/> loaded from the PFX file.</returns>
+        /// <exception cref="FileNotFoundException">Thrown if the PFX file does not exist at the specified path.</exception>
+        public static X509Certificate2 GetCertificateFromPfxFile(string pfxPath, string? pfxPassword)
+        {
+            if (!File.Exists(pfxPath))
+                throw new FileNotFoundException($"Certificate PFX file not found at path: {pfxPath}");
+
+            return X509CertificateLoader.LoadPkcs12FromFile(pfxPath, pfxPassword, X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.EphemeralKeySet);
         }
     }
 }
