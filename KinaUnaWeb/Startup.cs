@@ -24,6 +24,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using KinaUnaWeb.Services.HttpClients.Search;
 using Microsoft.AspNetCore.Authentication;
+using System.Linq;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 
 namespace KinaUnaWeb
@@ -212,7 +213,14 @@ namespace KinaUnaWeb
 
             // Configure CORS to allow requests from the specified origin.
             // Additional origins can be provided via the CorsOrigins configuration key (semicolon-separated).
-            string[] configuredOrigins = Configuration.GetValue<string>("CorsOrigins")?.Split(';', StringSplitOptions.RemoveEmptyEntries) ?? [];
+            string corsOriginsConfig = Configuration.GetValue<string>("CorsOrigins") ?? string.Empty;
+
+            string[] configuredOrigins = corsOriginsConfig
+                .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .Select(origin => origin.Trim())
+                .Where(origin => !string.IsNullOrEmpty(origin))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
 
             // If development, allow any origin.
             if (env.IsDevelopment())
