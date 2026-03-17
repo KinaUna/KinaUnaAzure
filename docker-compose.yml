@@ -1,0 +1,209 @@
+# docker-compose.yml — KinaUna multi-container setup
+# Usage:
+#   1. Copy .env.example to .env and fill in the required values.
+#   2. Generate a dev certificate — see .env.example for the PowerShell command.
+#   3. Place the PFX files in the ./certs/ directory.
+#   4. Run: docker compose up --build
+#
+# Database: Uses your existing SQL Server instance (local or Azure).
+#   Set the connection strings in the .env file.
+#
+# HTTPS notes:
+#   All services use HTTPS via Kestrel with a single dev certificate.
+#   host.docker.internal is used for all service URLs so that both the browser
+#   and other containers can reach each service at the same address.
+#   On Windows with Docker Desktop, host.docker.internal resolves to the host
+#   machine from both the browser and from inside Docker containers.
+#
+# Services:
+#   - auth : KinaUna.OpenIddict (authentication/authorization server) — https://host.docker.internal:5000
+#   - api  : KinaUnaProgenyApi (back-end REST API)                    — https://host.docker.internal:5001
+#   - web  : KinaUnaWeb (front-end web application)                   — https://host.docker.internal:5002
+
+services:
+  auth:
+    build:
+      context: .
+      dockerfile: Dockerfile.auth
+    ports:
+      - "5000:8443"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      ASPNETCORE_URLS: "https://+:8443"
+      ASPNETCORE_Kestrel__Certificates__Default__Path: "/app/certs/aspnetapp.pfx"
+      ASPNETCORE_Kestrel__Certificates__Default__Password: "${KESTREL_CERT_PASSWORD}"
+      # Database connection strings — point to your existing SQL Server
+      ProgenyDefaultConnection: "${PROGENY_DB_CONNECTION}"
+      MediaDefaultConnection: "${MEDIA_DB_CONNECTION}"
+      AuthDefaultConnection: "${AUTH_DB_CONNECTION}"
+      # Blob storage (Azurite or Azure Storage)
+      BlobStorageConnectionString: "${BLOB_STORAGE_CONNECTION_STRING}"
+      # OpenIddict signing/encryption certificate PFX files (mounted via volume)
+      EncryptionCertificatePfxPath: "/app/certs/encryption.pfx"
+      EncryptionCertificatePfxPassword: "${ENCRYPTION_CERT_PASSWORD}"
+      SigningCertificatePfxPath: "/app/certs/signing.pfx"
+      SigningCertificatePfxPassword: "${SIGNING_CERT_PASSWORD}"
+      ServerEncryptionCertificateThumbprint: "${SERVER_ENCRYPTION_CERT_THUMBPRINT}"
+      ServerSigningCertificateThumbprint: "${SERVER_SIGNING_CERT_THUMBPRINT}"
+      # Service URLs — host.docker.internal resolves on both the Windows browser and inside containers
+      AuthServerUrl: "${AUTH_SERVER_URL:-https://host.docker.internal:5000}"
+      WebServerUrl: "${WEB_SERVER_URL:-https://host.docker.internal:5002}"
+      ProgenyApiUrl: "${PROGENY_API_URL:-https://host.docker.internal:5001}"
+      # Client IDs and secrets
+      # The OpenIddict seeder registers clients for all environments (base, Local, Azure) at once.
+      # All three variants of each secret must be supplied even though they share the same value here.
+      AuthApiClientId: "${AUTH_API_CLIENT_ID}"
+      AuthClientSecret: "${AUTH_CLIENT_SECRET}"
+      AuthClientSecretLocal: "${AUTH_CLIENT_SECRET}"
+      AuthClientSecretAzure: "${AUTH_CLIENT_SECRET}"
+      AuthServerClientId: "${AUTH_SERVER_CLIENT_ID}"
+      AuthApiOnlyClientId: "${AUTH_API_ONLY_CLIENT_ID}"
+      WebServerClientId: "${WEB_SERVER_CLIENT_ID}"
+      WebServerApiClientId: "${WEB_SERVER_API_CLIENT_ID}"
+      WebServerClientSecret: "${WEB_SERVER_CLIENT_SECRET}"
+      WebServerClientSecretLocal: "${WEB_SERVER_CLIENT_SECRET}"
+      WebServerClientSecretAzure: "${WEB_SERVER_CLIENT_SECRET}"
+      ProgenyApiClientId: "${PROGENY_API_CLIENT_ID}"
+      ProgenyApiClientSecret: "${PROGENY_API_CLIENT_SECRET}"
+      ProgenyApiClientSecretLocal: "${PROGENY_API_CLIENT_SECRET}"
+      ProgenyApiClientSecretAzure: "${PROGENY_API_CLIENT_SECRET}"
+      # CORS — semicolon-separated additional origins
+      CorsOrigins: "${CORS_ORIGINS:-https://host.docker.internal:5000;https://host.docker.internal:5001;https://host.docker.internal:5002}"
+      # OpenIddict database reset (set to true on first run to seed the database)
+      ResetOpenIddictDatabase: "${RESET_OPENIDDICT_DATABASE:-false}"
+      # Admin
+      AdminEmail: "${ADMIN_EMAIL}"
+      # SMTP / Email
+      SmtpServer: "${SMTP_SERVER}"
+      SmtpUserName: "${SMTP_USERNAME}"
+      SmtpFrom: "${SMTP_FROM}"
+      SupportMailPassword: "${SUPPORT_MAIL_PASSWORD}"
+      # Application Insights (optional)
+      APPINSIGHTS_CONNECTIONSTRING: "${APPINSIGHTS_CONNECTIONSTRING}"
+    volumes:
+      - ./certs:/app/certs:ro
+    networks:
+      - kinauna
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "5001:8443"
+    depends_on:
+      auth:
+        condition: service_started
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      ASPNETCORE_URLS: "https://+:8443"
+      ASPNETCORE_Kestrel__Certificates__Default__Path: "/app/certs/aspnetapp.pfx"
+      ASPNETCORE_Kestrel__Certificates__Default__Password: "${KESTREL_CERT_PASSWORD}"
+      # Database connection strings — point to your existing SQL Server
+      ProgenyDefaultConnection: "${PROGENY_DB_CONNECTION}"
+      MediaDefaultConnection: "${MEDIA_DB_CONNECTION}"
+      DataProtectionConnection: "${AUTH_DB_CONNECTION}"
+      # Blob storage (Azurite or Azure Storage)
+      BlobStorageConnectionString: "${BLOB_STORAGE_CONNECTION_STRING}"
+      # OpenIddict encryption certificate PFX file (mounted via volume)
+      CertificatePfxPath: "/app/certs/encryption.pfx"
+      CertificatePfxPassword: "${ENCRYPTION_CERT_PASSWORD}"
+      ServerEncryptionCertificateThumbprint: "${SERVER_ENCRYPTION_CERT_THUMBPRINT}"
+      # Auth server URL — must match the issuer embedded in tokens, reachable from inside the container
+      AuthServerUrl: "${AUTH_SERVER_URL:-https://host.docker.internal:5000}"
+      WebServerUrl: "${WEB_SERVER_URL:-https://host.docker.internal:5002}"
+      ProgenyApiUrl: "${PROGENY_API_URL:-https://host.docker.internal:5001}"
+      # Client IDs and secrets
+      AuthApiClientId: "${AUTH_API_CLIENT_ID}"
+      AuthClientSecret: "${AUTH_CLIENT_SECRET}"
+      AuthServerClientId: "${AUTH_SERVER_CLIENT_ID}"
+      ProgenyApiClientId: "${PROGENY_API_CLIENT_ID}"
+      ProgenyApiClientSecret: "${PROGENY_API_CLIENT_SECRET}"
+      # CORS
+      CorsOrigins: "${CORS_ORIGINS:-https://host.docker.internal:5000;https://host.docker.internal:5001;https://host.docker.internal:5002}"
+      # SMTP / Email
+      SmtpServer: "${SMTP_SERVER}"
+      SmtpUserName: "${SMTP_USERNAME}"
+      SmtpFrom: "${SMTP_FROM}"
+      SupportMailPassword: "${SUPPORT_MAIL_PASSWORD}"
+      # Blob storage details
+      CloudBlobBase: "${CLOUD_BLOB_BASE}"
+      CloudBlobUserName: "${CLOUD_BLOB_USERNAME}"
+      BlobStorageKey: "${BLOB_STORAGE_KEY}"
+      # VAPID keys (Web Push)
+      VapidPublicKey: "${VAPID_PUBLIC_KEY}"
+      VapidPrivateKey: "${VAPID_PRIVATE_KEY}"
+      # Azure Notification Hubs (optional)
+      NotificationHubConnection: "${NOTIFICATION_HUB_CONNECTION}"
+      # Application Insights (optional)
+      APPINSIGHTS_CONNECTIONSTRING: "${APPINSIGHTS_CONNECTIONSTRING}"
+    volumes:
+      - ./certs:/app/certs:ro
+    networks:
+      - kinauna
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    ports:
+      - "5002:8443"
+    depends_on:
+      auth:
+        condition: service_started
+      api:
+        condition: service_started
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      ASPNETCORE_URLS: "https://+:8443"
+      ASPNETCORE_Kestrel__Certificates__Default__Path: "/app/certs/aspnetapp.pfx"
+      ASPNETCORE_Kestrel__Certificates__Default__Password: "${KESTREL_CERT_PASSWORD}"
+      # Blob storage
+      BlobStorageConnectionString: "${BLOB_STORAGE_CONNECTION_STRING}"
+      # Auth server URL — browser-accessible for OIDC redirects, also reachable inside the container
+      AuthServerUrl: "${AUTH_SERVER_URL:-https://host.docker.internal:5000}"
+      WebServerUrl: "${WEB_SERVER_URL:-https://host.docker.internal:5002}"
+      ProgenyApiUrl: "${PROGENY_API_URL:-https://host.docker.internal:5001}"
+      # Client IDs and secrets
+      WebServerClientId: "${WEB_SERVER_CLIENT_ID}"
+      WebServerApiClientId: "${WEB_SERVER_API_CLIENT_ID}"
+      WebServerClientSecret: "${WEB_SERVER_CLIENT_SECRET}"
+      AuthApiClientId: "${AUTH_API_CLIENT_ID}"
+      AuthClientSecret: "${AUTH_CLIENT_SECRET}"
+      AuthServerClientId: "${AUTH_SERVER_CLIENT_ID}"
+      ProgenyApiClientId: "${PROGENY_API_CLIENT_ID}"
+      ProgenyApiClientSecret: "${PROGENY_API_CLIENT_SECRET}"
+      # CORS
+      CorsOrigins: "${CORS_ORIGINS:-https://host.docker.internal:5000;https://host.docker.internal:5001;https://host.docker.internal:5002}"
+      # Admin
+      AdminEmail: "${ADMIN_EMAIL}"
+      # SMTP / Email
+      SmtpServer: "${SMTP_SERVER}"
+      SmtpUserName: "${SMTP_USERNAME}"
+      SmtpFrom: "${SMTP_FROM}"
+      SupportMailPassword: "${SUPPORT_MAIL_PASSWORD}"
+      # Blob storage details
+      CloudBlobBase: "${CLOUD_BLOB_BASE}"
+      CloudBlobUserName: "${CLOUD_BLOB_USERNAME}"
+      BlobStorageKey: "${BLOB_STORAGE_KEY}"
+      # VAPID keys (Web Push)
+      VapidPublicKey: "${VAPID_PUBLIC_KEY}"
+      VapidPrivateKey: "${VAPID_PRIVATE_KEY}"
+      # Here Maps
+      HereMapsId: "${HERE_MAPS_ID}"
+      HereMapsKey: "${HERE_MAPS_KEY}"
+      # Syncfusion
+      SyncfusionKey: "${SYNCFUSION_KEY}"
+      # Application Insights (optional)
+      APPINSIGHTS_CONNECTIONSTRING: "${APPINSIGHTS_CONNECTIONSTRING}"
+    volumes:
+      - ./certs:/app/certs:ro
+    networks:
+      - kinauna
+
+networks:
+  kinauna:
+    driver: bridge

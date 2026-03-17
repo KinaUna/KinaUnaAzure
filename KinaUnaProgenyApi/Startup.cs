@@ -1,4 +1,5 @@
-﻿using KinaUna.Data;
+﻿using Azure.Storage.Blobs;
+using KinaUna.Data;
 using KinaUna.Data.Contexts;
 using KinaUnaProgenyApi.AuthorizationHandlers;
 using KinaUnaProgenyApi.Services;
@@ -6,6 +7,7 @@ using KinaUnaProgenyApi.Services.CalendarServices;
 using KinaUnaProgenyApi.Services.ScheduledTasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -60,6 +62,14 @@ namespace KinaUnaProgenyApi
             });
 
             services.AddDistributedMemoryCache();
+
+            string storageConnectionString = Configuration["BlobStorageConnectionString"]
+                ?? throw new InvalidOperationException("BlobStorageConnectionString was not found in the configuration data.");
+            new BlobContainerClient(storageConnectionString, "dataprotection").CreateIfNotExists();
+            services.AddDataProtection()
+                .SetApplicationName("KinaUnaWebApp")
+                .PersistKeysToAzureBlobStorage(storageConnectionString, "dataprotection", "kukeys.xml");
+
             services.AddScoped<IImageStore, ImageStore>();
             services.AddScoped<INotificationsService, NotificationsService>();
             services.AddScoped<IProgenyService, ProgenyService>();
@@ -129,7 +139,14 @@ namespace KinaUnaProgenyApi
 
             string serverEncryptionCertificateThumbprint = Configuration["ServerEncryptionCertificateThumbprint"]
                                                            ?? throw new InvalidOperationException("ServerEncryptionCertificateThumbprint was not found in the configuration data.");
-            X509Certificate2 encryptionCertificate = CertificateTools.GetCertificate(serverEncryptionCertificateThumbprint);
+
+            // Check if PFX path and password are provided for Docker/Linux environments. If so, load the certificate from the PFX file; otherwise, load it from the certificate store.
+            string certificatePfxPath = Configuration["CertificatePfxPath"];
+            string certificatePfxPassword = Configuration["CertificatePfxPassword"];
+
+            X509Certificate2 encryptionCertificate = !string.IsNullOrEmpty(certificatePfxPath)
+                ? CertificateTools.GetCertificateFromPfxFile(certificatePfxPath, certificatePfxPassword)
+                : CertificateTools.GetCertificate(serverEncryptionCertificateThumbprint);
             
             // Todo: Add Audience support.
             services.AddOpenIddict()
@@ -142,13 +159,16 @@ namespace KinaUnaProgenyApi
                 });
 
             // Configure CORS to allow requests from the specified origin.
+            // Additional origins can be provided via the CorsOrigins configuration key (semicolon-separated).
+            string[] configuredOrigins = Configuration.GetValue<string>("CorsOrigins")?.Split(';', StringSplitOptions.RemoveEmptyEntries) ?? [];
+
             // If development, allow any origin.
             if (env.IsDevelopment())
             {
                 services.AddCors(options => options.AddDefaultPolicy(policy =>
                     policy.AllowAnyHeader()
                         .AllowAnyMethod()
-                        .WithOrigins(Constants.DevelopmentCorsList)
+                        .WithOrigins([.. Constants.DevelopmentCorsList, .. configuredOrigins])
                         .SetPreflightMaxAge(TimeSpan.FromMinutes(15))));
             }
             // If production, restrict to the specified origin.
@@ -159,7 +179,7 @@ namespace KinaUnaProgenyApi
                     services.AddCors(options => options.AddDefaultPolicy(policy =>
                         policy.AllowAnyHeader()
                             .AllowAnyMethod()
-                            .WithOrigins(Constants.StagingCorsList)
+                            .WithOrigins([.. Constants.StagingCorsList, .. configuredOrigins])
                             .SetPreflightMaxAge(TimeSpan.FromMinutes(15))));
                 }
                 else
@@ -169,9 +189,9 @@ namespace KinaUnaProgenyApi
                     services.AddCors(options => options.AddDefaultPolicy(policy =>
                         policy.AllowAnyHeader()
                             .AllowAnyMethod()
-                            .WithOrigins(Constants.ProductionCorsList)));
+                            .WithOrigins([.. Constants.ProductionCorsList, .. configuredOrigins])));
                 }
-                
+
             }
 
             services.AddAuthentication(options => { options.DefaultScheme = OpenIddictValidationAspNetCoreDefaults.AuthenticationScheme; });
@@ -181,6 +201,7 @@ namespace KinaUnaProgenyApi
             services.AddSingleton<IAuthorizationHandler, UserOrClientHandler>();
             services.AddSingleton<IAuthorizationHandler, ClientHandler>();
             services.AddApplicationInsightsTelemetry();
+            services.AddHealthChecks();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -200,7 +221,11 @@ namespace KinaUnaProgenyApi
 
             app.UseAuthentication();
             app.UseAuthorization();
-            app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapHealthChecks("/health").AllowAnonymous();
+                endpoints.MapControllers();
+            });
         }
     }
 }
