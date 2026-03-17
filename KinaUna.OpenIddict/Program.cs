@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Localization;
 using Quartz;
 using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
+using System.Linq;
 using static OpenIddict.Abstractions.OpenIddictConstants;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
@@ -201,7 +202,14 @@ builder.Services.AddHostedService<OpenIddictSeeder>();
 
 // Configure CORS to allow requests from the specified origin.
 // Additional origins can be provided via the CorsOrigins configuration key (semicolon-separated).
-string[] configuredOrigins = builder.Configuration.GetValue<string>("CorsOrigins")?.Split(';', StringSplitOptions.RemoveEmptyEntries) ?? [];
+string[] rawConfiguredOrigins = builder.Configuration.GetValue<string>("CorsOrigins")
+    ?.Split(';', StringSplitOptions.RemoveEmptyEntries) ?? [];
+
+string[] configuredOrigins = rawConfiguredOrigins
+    .Select(origin => origin.Trim())
+    .Where(origin => !string.IsNullOrWhiteSpace(origin))
+    .Distinct(StringComparer.OrdinalIgnoreCase)
+    .ToArray();
 
 // If development, allow any origin.
 if (builder.Environment.IsDevelopment())
