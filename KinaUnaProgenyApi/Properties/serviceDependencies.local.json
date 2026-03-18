@@ -4,28 +4,22 @@
       "type": "secrets.user"
     },
     "redis1": {
-      "type": "redis",
-      "connectionId": "",
+      "ignored": "true",
       "suggestion": "true",
-      "ignored": "true"
+      "type": "redis",
+      "connectionId": ""
     },
     "mssql1": {
-      "type": "mssql",
-      "connectionId": "FakeConnection",
+      "ignored": "true",
       "suggestion": "true",
-      "ignored": "true"
+      "type": "mssql",
+      "connectionId": "FakeConnection"
     },
     "storage1": {
-      "type": "storage",
-      "connectionId": "",
+      "ignored": "true",
       "suggestion": "true",
-      "ignored": "true"
-    },
-    "appInsights1": {
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/microsoft.insights/components/KinaUnaProgenyApi",
-      "type": "appInsights.azure",
-      "connectionId": "APPINSIGHTS_CONNECTIONSTRING",
-      "secretStore": "LocalSecretsFile"
+      "type": "storage",
+      "connectionId": ""
     }
   }
 }

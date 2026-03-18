@@ -1,34 +1,28 @@
 {
   "dependencies": {
     "redis1": {
-      "type": "redis",
-      "connectionId": "",
+      "ignored": "true",
       "suggestion": "true",
-      "ignored": "true"
+      "type": "redis",
+      "connectionId": ""
     },
     "mssql1": {
-      "type": "mssql",
-      "connectionId": "FakeConnection",
+      "ignored": "true",
       "suggestion": "true",
-      "ignored": "true"
+      "type": "mssql",
+      "connectionId": "FakeConnection"
     },
     "storage1": {
-      "type": "storage",
-      "connectionId": "",
+      "ignored": "true",
       "suggestion": "true",
-      "ignored": "true"
-    },
-    "appInsights1": {
-      "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/microsoft.insights/components/KinaUnaProgenyApi",
-      "type": "appInsights.azure",
-      "connectionId": "APPINSIGHTS_CONNECTIONSTRING",
-      "secretStore": "AzureAppSettings"
+      "type": "storage",
+      "connectionId": ""
     },
     "secrets1": {
+      "secretStore": "AzureAppSettings",
       "resourceId": "/subscriptions/[parameters('subscriptionId')]/resourceGroups/[parameters('resourceGroupName')]/providers/Microsoft.KeyVault/vaults/kinauna",
       "type": "secrets.keyVault",
-      "connectionId": "VaultUri",
-      "secretStore": "AzureAppSettings"
+      "connectionId": "VaultUri"
     }
   }
 }
