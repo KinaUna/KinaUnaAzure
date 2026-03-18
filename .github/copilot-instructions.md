@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-KinaUna is a family-oriented child-tracking web application hosted on Azure. It allows families to record and share timeline events, photos, videos, notes, contacts, locations, measurements, sleep data, vaccinations, skills, vocabulary, and more for their children ("progenies").
+KinaUna is a family-oriented child-tracking web application deployed on a VPS Linux server using Coolify. It allows families to record and share timeline events, photos, videos, notes, contacts, locations, measurements, sleep data, vaccinations, skills, vocabulary, and more for their children ("progenies").
 
 ## Solution Structure
 
@@ -25,7 +25,10 @@ KinaUna is a family-oriented child-tracking web application hosted on Azure. It 
 - **Serialization:** `System.Text.Json` for new code; `Newtonsoft.Json` exists in some areas via `Microsoft.AspNetCore.Mvc.NewtonsoftJson`
 - **Caching:** `IDistributedCache` (distributed memory cache) and `IMemoryCache`
 - **Real-time:** ASP.NET Core SignalR (via `WebNotificationHub`)
-- **Cloud:** Azure App Service, Azure Blob Storage, Azure Key Vault, Application Insights, Azure Notification Hubs
+- **Hosting/Deployment:** VPS Linux server with Coolify, Docker containers (one per service), reverse proxy with HTTPS
+- **Storage:** Azure Blob Storage (or compatible S3/Azurite alternative)
+- **Monitoring:** Application Insights (optional)
+- **Push Notifications:** Azure Notification Hubs (optional), VAPID web push
 - **Client-side:** TypeScript (ES2020, strict mode), jQuery (legacy usage), no front-end framework (vanilla DOM manipulation)
 - **CSS:** Custom `site.css` with `prefers-color-scheme: dark` media queries (light/dark theme support)
 - **Image Processing:** Magick.NET (`Magick.NET-Q8-AnyCPU`)
@@ -35,7 +38,15 @@ KinaUna is a family-oriented child-tracking web application hosted on Azure. It 
 
 ### Host Configuration
 - Projects use the `Startup` class pattern (`Program.cs` → `CreateHostBuilder` → `webBuilder.UseStartup<Startup>()`), not minimal hosting / top-level statements.
-- Azure Key Vault is used for configuration in production via `AddAzureKeyVault`.
+- Exception: `KinaUna.OpenIddict` uses the minimal hosting pattern (`WebApplication.CreateBuilder`).
+- In production, configuration is provided via environment variables set in Coolify (or the `.env` file for local Docker Compose). Azure Key Vault support exists in the codebase but is no longer the primary configuration source.
+
+### Deployment
+- The application runs as three Docker containers (auth, api, web) orchestrated by Coolify on a VPS Linux server.
+- Each service has its own `Dockerfile` (`Dockerfile.auth`, `Dockerfile.api`, `Dockerfile.web`).
+- A `docker-compose.yml` is provided for local development and can be used as a reference for Coolify configuration.
+- Configuration values (connection strings, client secrets, URLs) are injected as environment variables.
+- HTTPS is terminated by the Coolify reverse proxy (Traefik/Caddy) in production; Kestrel with PFX certificates is used for local Docker Compose development.
 
 ### Dependency Injection
 - **Web app:** Services registered as `Transient` or `Singleton`; HTTP clients registered with `services.AddHttpClient<IInterface, Implementation>()`.
