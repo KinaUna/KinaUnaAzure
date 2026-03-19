@@ -108,7 +108,7 @@ namespace KinaUnaWeb.Tests.Services
             };
 
             string cacheKey = Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + languageId + "_user_" + userEmail.ToUpper() + "_progeny_" + progenyId + "_family_" + familyId;
-            await _cache.SetStringAsync(cacheKey, JsonConvert.SerializeObject(cachedViewModel));
+            await _cache.SetStringAsync(cacheKey, JsonConvert.SerializeObject(cachedViewModel), token: TestContext.Current.CancellationToken);
 
             _userInfosHttpClientMock.Setup(x => x.GetUserInfo(userEmail)).ReturnsAsync(testUserInfo);
 
@@ -252,7 +252,7 @@ namespace KinaUnaWeb.Tests.Services
 
             // Assert
             string cacheKey = Constants.AppName + Constants.ApiVersion + "SetupViewModel_" + languageId + "_user_" + userEmail.ToUpper() + "_progeny_" + progenyId + "_family_" + familyId;
-            string cachedValue = (await _cache.GetStringAsync(cacheKey))!;
+            string cachedValue = (await _cache.GetStringAsync(cacheKey, token: TestContext.Current.CancellationToken))!;
             Assert.NotNull(cachedValue);
         }
 

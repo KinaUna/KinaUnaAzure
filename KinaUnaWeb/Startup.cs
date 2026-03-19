@@ -1,5 +1,4 @@
-﻿using Azure.Storage.Blobs;
-using KinaUna.Data;
+﻿using KinaUna.Data;
 using KinaUnaWeb.Hubs;
 using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
@@ -282,7 +281,6 @@ namespace KinaUnaWeb
             }
             );
             services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
-            services.AddApplicationInsightsTelemetry();
             services.AddHealthChecks();
         }
 

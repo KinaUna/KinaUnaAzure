@@ -112,6 +112,10 @@ services:
       CertificatePfxPath: "/app/certs/encryption.pfx"
       CertificatePfxPassword: "${ENCRYPTION_CERT_PASSWORD}"
       ServerEncryptionCertificateThumbprint: "${SERVER_ENCRYPTION_CERT_THUMBPRINT}"
+      EncryptionCertificatePfxPath: "/app/certs/encryption.pfx"
+      EncryptionCertificatePfxPassword: "${ENCRYPTION_CERT_PASSWORD}"
+      SigningCertificatePfxPath: "/app/certs/signing.pfx"
+      SigningCertificatePfxPassword: "${SIGNING_CERT_PASSWORD}"
       # Auth server URL — must match the issuer embedded in tokens, reachable from inside the container
       AuthServerUrl: "${AUTH_SERVER_URL:-https://host.docker.internal:5000}"
       WebServerUrl: "${WEB_SERVER_URL:-https://host.docker.internal:5002}"

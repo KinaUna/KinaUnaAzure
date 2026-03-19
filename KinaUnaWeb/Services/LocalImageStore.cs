@@ -84,10 +84,18 @@ namespace KinaUnaWeb.Services
         public async Task<MemoryStream> GetStream(string imageId, string containerName = "pictures")
         {
             string filePath = Path.Combine(GetContainerPath(containerName), imageId);
+            // Check if file exists before trying to open it
+            if (!File.Exists(filePath))
+            {
+                // Return a default image if the requested file doesn't exist
+                filePath = Path.Combine(GetContainerPath(BlobContainers.Pictures), "ab5fe7cb-2a66-4785-b39a-aa4eb7953c3d.png");
+            }
+
             MemoryStream memoryStream = new();
             await using FileStream fileStream = new(filePath, FileMode.Open, FileAccess.Read);
             await fileStream.CopyToAsync(memoryStream);
             memoryStream.Position = 0;
+
             return memoryStream;
         }
 

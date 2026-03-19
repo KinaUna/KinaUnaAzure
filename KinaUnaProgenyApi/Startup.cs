@@ -65,7 +65,7 @@ namespace KinaUnaProgenyApi
 
             services.AddDistributedMemoryCache();
 
-            IDataProtectionBuilder dataProtectionBuilder = services.AddDataProtection()
+            services.AddDataProtection()
                 .SetApplicationName("KinaUnaWebApp");
 
             string keyPath = Configuration.GetValue<string>("DataProtectionKeyPath") ?? "/app/storage/dataprotection";
@@ -209,7 +209,6 @@ namespace KinaUnaProgenyApi
                 .AddPolicy("Client", policy => { policy.Requirements.Add(new ClientRequirement()); }); 
             services.AddSingleton<IAuthorizationHandler, UserOrClientHandler>();
             services.AddSingleton<IAuthorizationHandler, ClientHandler>();
-            services.AddApplicationInsightsTelemetry();
             services.AddHealthChecks();
         }
 

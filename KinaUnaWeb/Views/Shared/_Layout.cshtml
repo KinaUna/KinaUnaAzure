@@ -1,5 +1,4 @@
-﻿@inject Microsoft.ApplicationInsights.AspNetCore.JavaScriptSnippet JavaScriptSnippet
-@using KinaUna.Data
+﻿@using KinaUna.Data
 @using KinaUna.Data.Extensions
 @using KinaUna.Data.Models.Family
 @using KinaUnaWeb.Models.HomeViewModels
@@ -109,7 +108,6 @@
             navigator.serviceWorker.register('/pwabuilder-sw-v12.js')
         }
     </script>
-    @Html.Raw(JavaScriptSnippet.FullScript)
 </head>
 <body>
 <div id="top-language-div" class="kinauna-purple-bg">
