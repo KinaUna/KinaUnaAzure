@@ -31,7 +31,7 @@ namespace KinaUnaWeb.Controllers
     /// <param name="authHttpClient"></param>
     /// <param name="userInfosHttpClient"></param>
     /// <param name="tokenService"></param>
-    public class AccountController(ImageStore imageStore, IConfiguration configuration,
+    public class AccountController(IImageStore imageStore, IConfiguration configuration,
         IAuthHttpClient authHttpClient, IUserInfosHttpClient userInfosHttpClient, ITokenService tokenService, IHostEnvironment env)
         : Controller
     {

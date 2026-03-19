@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Controllers
 {
-    public class FriendsController(ImageStore imageStore,
+    public class FriendsController(IImageStore imageStore,
         IFriendsHttpClient friendsHttpClient,
         IViewModelSetupService viewModelSetupService,
         IProgenyHttpClient progenyHttpClient) : Controller

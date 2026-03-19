@@ -20,7 +20,7 @@ namespace KinaUnaWeb.Controllers
         IFamiliesHttpClient familiesHttpClient,
         IProgenyHttpClient progenyHttpClient,
         IViewModelSetupService viewModelSetupService,
-        ImageStore imageStore) : Controller
+        IImageStore imageStore) : Controller
     {
         public async Task<IActionResult> Index()
         {

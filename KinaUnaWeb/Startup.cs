@@ -3,6 +3,8 @@ using KinaUna.Data;
 using KinaUnaWeb.Hubs;
 using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
+using KinaUnaWeb.Services.HttpClients.Search;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Authorization;
@@ -20,11 +22,10 @@ using Microsoft.IdentityModel.Tokens;
 using OpenIddict.Abstractions;
 using System;
 using System.Globalization;
+using System.IO;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using KinaUnaWeb.Services.HttpClients.Search;
-using Microsoft.AspNetCore.Authentication;
-using System.Linq;
 using SameSiteMode = Microsoft.AspNetCore.Http.SameSiteMode;
 
 namespace KinaUnaWeb
@@ -42,19 +43,19 @@ namespace KinaUnaWeb
                 options.Secure = CookieSecurePolicy.Always;
             });
 
-            string storageConnectionString = Configuration["BlobStorageConnectionString"];
-            new BlobContainerClient(storageConnectionString, "dataprotection").CreateIfNotExists();
-
+            string keyPath = Configuration.GetValue<string>("DataProtectionKeyPath") ?? "/app/storage/dataprotection";
+            Directory.CreateDirectory(keyPath);
             services.AddDataProtection()
                 .SetApplicationName("KinaUnaWebApp")
-                .PersistKeysToAzureBlobStorage(storageConnectionString, "dataprotection", "kukeys.xml");
+                .PersistKeysToFileSystem(new DirectoryInfo(keyPath));
+
             services.AddDistributedMemoryCache();
             services.AddMemoryCache();
             services.AddHttpClient();
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<ITokenService, TokenService>();
-            services.AddSingleton<ImageStore>();
+            services.AddSingleton<IImageStore, LocalImageStore>();
 
             services.AddTransient<ILocaleManager, LocaleManager>();
             services.AddTransient<IProgenyManager, ProgenyManager>();

@@ -83,6 +83,7 @@ services:
       APPINSIGHTS_CONNECTIONSTRING: "${APPINSIGHTS_CONNECTIONSTRING}"
     volumes:
       - ./certs:/app/certs:ro
+      - H:\kinauna-storage:/app/storage
     networks:
       - kinauna
 
@@ -141,6 +142,7 @@ services:
       APPINSIGHTS_CONNECTIONSTRING: "${APPINSIGHTS_CONNECTIONSTRING}"
     volumes:
       - ./certs:/app/certs:ro
+      - H:\kinauna-storage:/app/storage
     networks:
       - kinauna
 
@@ -201,6 +203,7 @@ services:
       APPINSIGHTS_CONNECTIONSTRING: "${APPINSIGHTS_CONNECTIONSTRING}"
     volumes:
       - ./certs:/app/certs:ro
+      - H:\kinauna-storage:/app/storage
     networks:
       - kinauna
 

@@ -20,7 +20,7 @@ namespace KinaUnaWeb.Controllers
         INotesHttpClient notesHttpClient,
         IUserInfosHttpClient userInfosHttpClient,
         IViewModelSetupService viewModelSetupService,
-        ImageStore imageStore)
+        IImageStore imageStore)
         : Controller
     {
         /// <summary>

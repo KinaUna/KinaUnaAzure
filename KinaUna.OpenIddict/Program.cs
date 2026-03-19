@@ -39,13 +39,11 @@ string authDefaultConnection = builder.Configuration["AuthDefaultConnection"]
 builder.Services.ConfigureDatabases(progenyDefaultConnection, mediaDefaultConnection, authDefaultConnection);
 
 
-string storageConnectionString = builder.Configuration["BlobStorageConnectionString"] 
-                                 ?? throw new InvalidOperationException("BlobStorageConnectionString was not found in the configuration data.");
-new BlobContainerClient(storageConnectionString, "dataprotection").CreateIfNotExists();
-
+string keyPath = builder.Configuration.GetValue<string>("DataProtectionKeyPath") ?? "/app/storage/dataprotection";
+Directory.CreateDirectory(keyPath);
 builder.Services.AddDataProtection()
     .SetApplicationName("KinaUnaWebApp")
-    .PersistKeysToAzureBlobStorage(storageConnectionString, "dataprotection", "kukeys.xml");
+    .PersistKeysToFileSystem(new DirectoryInfo(keyPath));
 
 builder.Services.AddHttpClient();
 builder.Services.AddDistributedMemoryCache();

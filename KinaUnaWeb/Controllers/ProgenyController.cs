@@ -23,7 +23,7 @@ namespace KinaUnaWeb.Controllers
         IProgenyHttpClient progenyHttpClient,
         IFamiliesHttpClient familiesHttpClient,
         IMediaHttpClient mediaHttpClient,
-        ImageStore imageStore,
+        IImageStore imageStore,
         IUserInfosHttpClient userInfosHttpClient,
         ITimelineHttpClient timelineHttpClient,
         ICalendarsHttpClient calendarsHttpClient,

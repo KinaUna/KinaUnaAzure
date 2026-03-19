@@ -39,7 +39,7 @@ namespace KinaUnaWeb.Controllers
         ILanguagesHttpClient languagesHttpClient,
         ITranslationsHttpClient translationsHttpClient,
         IPageTextsHttpClient pageTextsHttpClient,
-        ImageStore imageStore,
+        IImageStore imageStore,
         IWebNotificationsService webNotificationsService,
         ITasksHttpClient tasksHttpClient)
         : Controller

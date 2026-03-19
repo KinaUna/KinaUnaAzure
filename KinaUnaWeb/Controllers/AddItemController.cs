@@ -19,7 +19,7 @@ namespace KinaUnaWeb.Controllers
     /// </summary>
     /// <param name="imageStore"></param>
     [Authorize]
-    public class AddItemController(ImageStore imageStore) : Controller
+    public class AddItemController(IImageStore imageStore) : Controller
     {
         /// <summary>
         /// Add Item Index page. Not used anymore.

@@ -1,9 +1,16 @@
 ﻿using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Utilities;
 using KinaUnaProgenyApi.AuthorizationHandlers;
 using KinaUnaProgenyApi.Services;
+using KinaUnaProgenyApi.Services.AccessManagementService;
+using KinaUnaProgenyApi.Services.CacheServices;
 using KinaUnaProgenyApi.Services.CalendarServices;
+using KinaUnaProgenyApi.Services.FamiliesServices;
+using KinaUnaProgenyApi.Services.KanbanServices;
 using KinaUnaProgenyApi.Services.ScheduledTasks;
+using KinaUnaProgenyApi.Services.Search;
+using KinaUnaProgenyApi.Services.TodosServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
@@ -13,15 +20,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using OpenIddict.Validation.AspNetCore;
 using System;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
-using KinaUna.Data.Utilities;
-using KinaUnaProgenyApi.Services.AccessManagementService;
-using KinaUnaProgenyApi.Services.CacheServices;
-using KinaUnaProgenyApi.Services.FamiliesServices;
-using KinaUnaProgenyApi.Services.KanbanServices;
-using KinaUnaProgenyApi.Services.Search;
-using KinaUnaProgenyApi.Services.TodosServices;
 
 namespace KinaUnaProgenyApi
 {
@@ -67,13 +68,13 @@ namespace KinaUnaProgenyApi
             IDataProtectionBuilder dataProtectionBuilder = services.AddDataProtection()
                 .SetApplicationName("KinaUnaWebApp");
 
-            string? storageConnectionString = Configuration["BlobStorageConnectionString"];
-            if (!string.IsNullOrWhiteSpace(storageConnectionString) && !Environment.IsEnvironment("Testing"))
-            {
-                dataProtectionBuilder.PersistKeysToAzureBlobStorage(storageConnectionString, "dataprotection", "kukeys.xml");
-            }
+            string keyPath = Configuration.GetValue<string>("DataProtectionKeyPath") ?? "/app/storage/dataprotection";
+            Directory.CreateDirectory(keyPath);
+            services.AddDataProtection()
+                .SetApplicationName("KinaUnaWebApp")
+                .PersistKeysToFileSystem(new DirectoryInfo(keyPath));
 
-            services.AddScoped<IImageStore, ImageStore>();
+            services.AddScoped<IImageStore, LocalImageStore>();
             services.AddScoped<INotificationsService, NotificationsService>();
             services.AddScoped<IProgenyService, ProgenyService>();
             services.AddScoped<IUserInfoService, UserInfoService>();

@@ -22,7 +22,7 @@ namespace KinaUnaWeb.Controllers
 {
     public class PicturesController(
         IMediaHttpClient mediaHttpClient,
-        ImageStore imageStore,
+        IImageStore imageStore,
         IUserInfosHttpClient userInfosHttpClient,
         ILocationsHttpClient locationsHttpClient,
         IEmailSender emailSender,

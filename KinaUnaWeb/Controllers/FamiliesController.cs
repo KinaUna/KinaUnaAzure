@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace KinaUnaWeb.Controllers
 {
     public class FamiliesController(IFamiliesHttpClient familiesHttpClient, IViewModelSetupService viewModelSetupService,
-        IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, ImageStore imageStore) : Controller
+        IProgenyHttpClient progenyHttpClient, IUserInfosHttpClient userInfosHttpClient, IImageStore imageStore) : Controller
     {
         public async Task<IActionResult> Index()
         {

@@ -24,7 +24,7 @@ namespace KinaUnaWeb.Controllers
     /// <param name="locationsHttpClient"></param>
     /// <param name="contactsHttpClient"></param>
     /// <param name="viewModelSetupService"></param>
-    public class ContactsController(ImageStore imageStore,
+    public class ContactsController(IImageStore imageStore,
         ILocationsHttpClient locationsHttpClient,
         IContactsHttpClient contactsHttpClient,
         IViewModelSetupService viewModelSetupService,
