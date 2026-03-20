@@ -42,6 +42,8 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 # from the Kestrel PFX and add it to the OS trusted CA store.
 RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 
+RUN apt-get update && apt-get install -y libgssapi-krb5-2
+
 WORKDIR /app
 COPY --from=build /app/publish .
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
