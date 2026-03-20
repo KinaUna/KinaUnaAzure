@@ -13,16 +13,24 @@ namespace KinaUnaWeb.Models
 
         public PictureTime(DateTime birthday, DateTime? pictureTaken, TimeZoneInfo birthdayTimezone)
         {
-            _birthDayUtc = TimeZoneInfo.ConvertTimeToUtc(birthday, birthdayTimezone);
+            if(birthday.Kind == DateTimeKind.Unspecified)
+            {
+                birthday = DateTime.SpecifyKind(birthday, DateTimeKind.Utc);
+            }
+            if(birthday.Kind != DateTimeKind.Utc)
+            {
+                birthday = TimeZoneInfo.ConvertTimeToUtc(birthday, birthdayTimezone);
+            }
+            _birthDayUtc = birthday;
 
 
             if (pictureTaken != null)
             {
-                _pictureUtcTime = pictureTaken.Value;  //TimeZoneInfo.ConvertTimeToUtc((DateTime)pictureTaken, birthdayTimezone);
+                _pictureUtcTime = pictureTaken.Value;
             }
             else
             {
-                _pictureUtcTime = TimeZoneInfo.ConvertTimeToUtc(birthday, birthdayTimezone);
+                _pictureUtcTime = _birthDayUtc;
             }
         }
 

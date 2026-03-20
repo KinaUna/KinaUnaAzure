@@ -10,7 +10,7 @@ namespace KinaUna.OpenIddict.HostingExtensions
         /// Configures the database contexts for dependency injection with specified connection strings.
         /// </summary>
         /// <remarks>This method registers the <see cref="ProgenyDbContext"/>, <see
-        /// cref="MediaDbContext"/>, and <see cref="ApplicationDbContext"/> with SQL Server support and connection
+        /// cref="MediaDbContext"/>, and <see cref="ApplicationDbContext"/> with PostgreSQL support and connection
         /// resiliency enabled. The connection resiliency is configured to retry failed connections up to 15 times with
         /// a maximum delay of 30 seconds between retries. The <see cref="ApplicationDbContext"/> is also configured to
         /// support OpenIddict.</remarks>
@@ -23,33 +23,33 @@ namespace KinaUna.OpenIddict.HostingExtensions
         {
             // Register the ProgenyDbContext database context with dependency injection.
             services.AddDbContext<ProgenyDbContext>(options =>
-                options.UseSqlServer(progenyDefaultConnection,
-                    sqlServerOptionsAction: sqlOptions =>
+                options.UseNpgsql(progenyDefaultConnection,
+                    npgsqlOptionsAction: npgsqlOptions =>
                     {
-                        sqlOptions.MigrationsAssembly(typeof(Program).GetTypeInfo().Assembly.GetName().Name);
-                        //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
-                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                        npgsqlOptions.MigrationsAssembly(typeof(Program).GetTypeInfo().Assembly.GetName().Name);
+                        //Configuring Connection Resiliency: https://www.npgsql.org/efcore/misc/other.html#execution-strategy
+                        npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorCodesToAdd: null);
                     }));
 
             // Register the MediaDbContext database context with dependency injection.
             services.AddDbContext<MediaDbContext>(options =>
-                options.UseSqlServer(mediaDefaultConnection,
-                    sqlServerOptionsAction: sqlOptions =>
+                options.UseNpgsql(mediaDefaultConnection,
+                    npgsqlOptionsAction: npgsqlOptions =>
                     {
-                        sqlOptions.MigrationsAssembly(typeof(Program).GetTypeInfo().Assembly.GetName().Name);
-                        //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
-                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                        npgsqlOptions.MigrationsAssembly(typeof(Program).GetTypeInfo().Assembly.GetName().Name);
+                        //Configuring Connection Resiliency: https://www.npgsql.org/efcore/misc/other.html#execution-strategy
+                        npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorCodesToAdd: null);
                     }));
 
             // Register the ApplicationDbContext database context with dependency injection.
             services.AddDbContext<ApplicationDbContext>(options =>
             {
-                options.UseSqlServer(authDefaultConnection,
-                    sqlServerOptionsAction: sqlOptions =>
+                options.UseNpgsql(authDefaultConnection,
+                    npgsqlOptionsAction: npgsqlOptions =>
                     {
-                        sqlOptions.MigrationsAssembly(typeof(Program).GetTypeInfo().Assembly.GetName().Name);
-                        //Configuring Connection Resiliency: https://docs.microsoft.com/en-us/ef/core/miscellaneous/connection-resiliency 
-                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                        npgsqlOptions.MigrationsAssembly(typeof(Program).GetTypeInfo().Assembly.GetName().Name);
+                        //Configuring Connection Resiliency: https://www.npgsql.org/efcore/misc/other.html#execution-strategy
+                        npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorCodesToAdd: null);
                     });
                 options.UseOpenIddict(); // Add this line to enable OpenIddict support
             });

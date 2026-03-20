@@ -210,7 +210,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
 
             Video video = CreateTestVideo(1, 1, "birthday party", "Home");
             mediaContext.VideoDb.Add(video);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 

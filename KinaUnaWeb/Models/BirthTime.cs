@@ -7,7 +7,6 @@ namespace KinaUnaWeb.Models
 {
     public class BirthTime(DateTime birthday, TimeZoneInfo birthdayTimezone)
     {
-        private readonly DateTime _birthDay = TimeZoneInfo.ConvertTimeToUtc(birthday, birthdayTimezone);
         private readonly DateTime _currentDateTime = DateTime.UtcNow;
 
         public string CurrentTime => TimeZoneInfo.ConvertTimeFromUtc(_currentDateTime, birthdayTimezone).ToString("dd MMMM yyyy HH:mm:ss"); // Todo: Custom format
@@ -15,8 +14,8 @@ namespace KinaUnaWeb.Models
         public List<string> CalcYears()
         {
             List<string> ageYearsList = [];
-            
-            _birthDay.GetElapsedTime(_currentDateTime, out int ageYears, out int ageMonths, out int ageDays, out int ageHours, out int ageMinutes, out int ageSeconds);
+
+            birthday.GetElapsedTime(_currentDateTime, out int ageYears, out int ageMonths, out int ageDays, out int ageHours, out int ageMinutes, out int ageSeconds);
 
             ageYearsList.Add(ageYears.ToString());
             ageYearsList.Add(ageMonths.ToString());
@@ -30,34 +29,34 @@ namespace KinaUnaWeb.Models
 
         public string CalcMonths()
         {
-            int ageMonths = GetTotalMonthsBetweenDates(_currentDateTime, _birthDay);
+            int ageMonths = GetTotalMonthsBetweenDates(_currentDateTime, birthday);
 
             return ageMonths.ToString();
         }
 
         public string[] CalcWeeks()
         {
-            int ageWeeks = (DateTime.Today.ToUniversalTime() - new DateTime(_birthDay.Year, _birthDay.Month, _birthDay.Day)).Days / 7;
-            int ageWeeksDays = (DateTime.Today.ToUniversalTime() - new DateTime(_birthDay.Year, _birthDay.Month, _birthDay.Day)).Days % 7;
+            int ageWeeks = (DateTime.Today.ToUniversalTime() - new DateTime(birthday.Year, birthday.Month, birthday.Day)).Days / 7;
+            int ageWeeksDays = (DateTime.Today.ToUniversalTime() - new DateTime(birthday.Year, birthday.Month, birthday.Day)).Days % 7;
             string[] ageWeeksResult = [ageWeeks.ToString(), ageWeeksDays.ToString()];
             return ageWeeksResult;
         }
 
         public string CalcDays()
         {
-            double ageDays = (_currentDateTime - _birthDay).TotalDays;
+            double ageDays = (_currentDateTime - birthday).TotalDays;
             return ageDays.ToString("F2");
         }
 
         public string CalcHours()
         {
-            double ageHours = (_currentDateTime - _birthDay).TotalHours;
+            double ageHours = (_currentDateTime - birthday).TotalHours;
             return ageHours.ToString("F4");
         }
 
         public string CalcMinutes()
         {
-            double ageMinutes = (_currentDateTime - _birthDay).TotalMinutes;
+            double ageMinutes = (_currentDateTime - birthday).TotalMinutes;
             return ageMinutes.ToString("F2");
         }
 
@@ -65,14 +64,14 @@ namespace KinaUnaWeb.Models
         {
             int daysToNextBirthday;
 
-            if (DateTime.Today.ToUniversalTime() < new DateTime(_currentDateTime.Year, _birthDay.Month, _birthDay.Day))
+            if (DateTime.Today.ToUniversalTime() < new DateTime(_currentDateTime.Year, birthday.Month, birthday.Day))
             {
-                daysToNextBirthday = (new DateTime(_currentDateTime.Year, _birthDay.Month, _birthDay.Day, 0, 0, 0, DateTimeKind.Utc) -
+                daysToNextBirthday = (new DateTime(_currentDateTime.Year, birthday.Month, birthday.Day, 0, 0, 0, DateTimeKind.Utc) -
                             new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day, 0, 0, 0, DateTimeKind.Utc)).Days;
             }
             else
             {
-                daysToNextBirthday = (new DateTime(_currentDateTime.Year + 1, _birthDay.Month, _birthDay.Day, 0, 0, 0, DateTimeKind.Utc) -
+                daysToNextBirthday = (new DateTime(_currentDateTime.Year + 1, birthday.Month, birthday.Day, 0, 0, 0, DateTimeKind.Utc) -
                             new DateTime(DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day, 0, 0, 0, DateTimeKind.Utc)).Days;
             }
 
@@ -81,9 +80,9 @@ namespace KinaUnaWeb.Models
 
         public string[] CalcMileStoneWeeks()
         {
-            double ageWeeks = Math.Floor((_currentDateTime - _birthDay).TotalDays / 7);
+            double ageWeeks = Math.Floor((_currentDateTime - birthday).TotalDays / 7);
             double milestone = Math.Pow(10, Math.Ceiling(Math.Log10(ageWeeks)));
-            DateTime milestoneDate = _birthDay + TimeSpan.FromDays(milestone * 7);
+            DateTime milestoneDate = birthday + TimeSpan.FromDays(milestone * 7);
             string[] mileStoneWeeks =
             [
                 milestone.ToString(CultureInfo.InvariantCulture),
@@ -94,9 +93,9 @@ namespace KinaUnaWeb.Models
 
         public string[] CalcMileStoneDays()
         {
-            double ageDays = (_currentDateTime - _birthDay).TotalDays;
+            double ageDays = (_currentDateTime - birthday).TotalDays;
             double milestone = Math.Pow(10, Math.Ceiling(Math.Log10(ageDays)));
-            DateTime milestoneDate = _birthDay + TimeSpan.FromDays(milestone);
+            DateTime milestoneDate = birthday + TimeSpan.FromDays(milestone);
             string[] mileStoneDays =
             [
                 milestone.ToString(CultureInfo.InvariantCulture),
@@ -107,9 +106,9 @@ namespace KinaUnaWeb.Models
 
         public string[] CalcMileStoneHours()
         {
-            double ageHours = (_currentDateTime - _birthDay).TotalHours;
+            double ageHours = (_currentDateTime - birthday).TotalHours;
             double milestone = Math.Pow(10, Math.Ceiling(Math.Log10(ageHours)));
-            DateTime milestoneDate = _birthDay + TimeSpan.FromHours(milestone);
+            DateTime milestoneDate = birthday + TimeSpan.FromHours(milestone);
             string[] mileStoneHours =
             [
                 milestone.ToString(CultureInfo.InvariantCulture),
@@ -121,9 +120,9 @@ namespace KinaUnaWeb.Models
 
         public string[] CalcMileStoneMinutes()
         {
-            double ageMinutes = (_currentDateTime - _birthDay).TotalMinutes;
+            double ageMinutes = (_currentDateTime - birthday).TotalMinutes;
             double milestone = Math.Pow(10, Math.Ceiling(Math.Log10(ageMinutes)));
-            DateTime milestoneDate = _birthDay + TimeSpan.FromMinutes(milestone);
+            DateTime milestoneDate = birthday + TimeSpan.FromMinutes(milestone);
             string[] mileStoneMinutes =
             [
                 milestone.ToString(CultureInfo.InvariantCulture),

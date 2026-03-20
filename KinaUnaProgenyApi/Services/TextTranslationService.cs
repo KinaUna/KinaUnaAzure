@@ -68,7 +68,7 @@ namespace KinaUnaProgenyApi.Services
                 languageId = 1;
             }
 
-            TextTranslation textTranslation = await context.TextTranslations.AsNoTracking().SingleOrDefaultAsync(t => t.Word == word && t.Page == page && t.LanguageId == languageId);
+            TextTranslation textTranslation = await context.TextTranslations.AsNoTracking().SingleOrDefaultAsync(t => t.Word.ToLower() == word.ToLower() && t.Page.ToLower() == page.ToLower() && t.LanguageId == languageId);
             return textTranslation;
         }
 

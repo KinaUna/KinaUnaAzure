@@ -141,7 +141,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.VocabularyDb.Add(vocabularyItem);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
             TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
@@ -195,7 +195,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.VocabularyDb.Add(vocabularyItem);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
             TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
@@ -249,7 +249,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.VocabularyDb.Add(vocabularyItem);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
             TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
@@ -303,7 +303,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.VocabularyDb.Add(vocabularyItem);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
             TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
@@ -357,7 +357,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.VocabularyDb.Add(vocabularyItem);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
             TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
@@ -410,7 +410,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.VocabularyDb.Add(vocabularyItem);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -454,7 +454,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.VocabularyDb.Add(vocabularyItem);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -502,7 +502,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.VocabularyDb.Add(vocabularyItem);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
             TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.Edit };
@@ -569,7 +569,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.VocabularyDb.AddRange(vocabularyItem1, vocabularyItem2);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
             TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
@@ -623,7 +623,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                     DateAdded = DateTime.UtcNow.AddDays(-i)
                 });
             }
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
             TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
@@ -680,7 +680,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                     DateAdded = DateTime.UtcNow.AddDays(-i)
                 });
             }
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
             TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
@@ -749,7 +749,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.VocabularyDb.AddRange(oldItem, newItem);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
             TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
@@ -817,7 +817,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.VocabularyDb.AddRange(oldItem, newItem);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
             TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
@@ -873,7 +873,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.VocabularyDb.Add(vocabularyItem);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
             TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
@@ -926,7 +926,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.VocabularyDb.Add(vocabularyItem);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
             TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
@@ -979,7 +979,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.VocabularyDb.Add(vocabularyItem);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -1025,7 +1025,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                     DateAdded = DateTime.UtcNow.AddDays(-i)
                 });
             }
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
             TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };
@@ -1084,7 +1084,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                     DateAdded = DateTime.UtcNow.AddDays(-i)
                 });
             }
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
             TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.View };

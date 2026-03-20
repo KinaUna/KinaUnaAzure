@@ -84,7 +84,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.NotesDb.Add(note);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Note, 1, userInfo, PermissionLevel.View))

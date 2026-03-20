@@ -421,7 +421,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
             // Assert
             Assert.True(result);
 
-            TodoItem? deletedTodo = await _progenyDbContext.TodoItemsDb.FindAsync(1);
+            TodoItem? deletedTodo = await _progenyDbContext.TodoItemsDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
             Assert.NotNull(deletedTodo);
             Assert.True(deletedTodo.IsDeleted);
             Assert.Equal("admin1", deletedTodo.ModifiedBy);

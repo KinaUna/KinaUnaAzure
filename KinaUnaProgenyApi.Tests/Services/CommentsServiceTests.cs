@@ -38,7 +38,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
             context.Add(comment1);
             context.Add(comment2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
@@ -90,7 +90,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
             context.Add(comment1);
             context.Add(comment2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
@@ -134,7 +134,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
             context.Add(comment1);
             context.Add(comment2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
@@ -183,7 +183,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
             context.Add(comment1);
             context.Add(comment2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
@@ -231,7 +231,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
             context.Add(comment1);
             context.Add(comment2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
@@ -250,7 +250,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             Comment addedComment = await commentsService.AddComment(commentToAdd);
-            Comment? dbComment = await context.CommentsDb.AsNoTracking().SingleOrDefaultAsync(ci => ci.CommentId == addedComment.CommentId);
+            Comment? dbComment = await context.CommentsDb.AsNoTracking().SingleOrDefaultAsync(ci => ci.CommentId == addedComment.CommentId, cancellationToken: TestContext.Current.CancellationToken);
             Comment savedComment = await commentsService.GetComment(addedComment.CommentId);
 
             Assert.NotNull(addedComment);
@@ -310,7 +310,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(comment1);
             context.Add(comment2);
             
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
@@ -328,7 +328,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ItemId = "3"
             };
             int commentsCountBefore = 0;
-            CommentThread? testCommentThread = await context.CommentThreadsDb.AsNoTracking().SingleOrDefaultAsync(ct => ct.Id == 1);
+            CommentThread? testCommentThread = await context.CommentThreadsDb.AsNoTracking().SingleOrDefaultAsync(ct => ct.Id == 1, cancellationToken: TestContext.Current.CancellationToken);
             if (testCommentThread != null)
             {
                 commentsCountBefore = testCommentThread.CommentsCount;
@@ -337,7 +337,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Comment addedComment = await commentsService.AddComment(commentToAdd);
 
             int commentsCountAfter = 0;
-            CommentThread? testCommentThread2 = await context.CommentThreadsDb.AsNoTracking().SingleOrDefaultAsync(ct => ct.Id == 1);
+            CommentThread? testCommentThread2 = await context.CommentThreadsDb.AsNoTracking().SingleOrDefaultAsync(ct => ct.Id == 1, cancellationToken: TestContext.Current.CancellationToken);
             if (testCommentThread2 != null)
             {
                 commentsCountAfter = testCommentThread2.CommentsCount;
@@ -378,7 +378,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
             context.Add(comment1);
             context.Add(comment2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
@@ -387,7 +387,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Comment commentToUpdate = await commentsService.GetComment(1);
             commentToUpdate.CommentText = "Test1 Updated";
             Comment updatedComment = await commentsService.UpdateComment(commentToUpdate);
-            Comment? dbComment = await context.CommentsDb.AsNoTracking().SingleOrDefaultAsync(ci => ci.CommentId == updatedComment.CommentId);
+            Comment? dbComment = await context.CommentsDb.AsNoTracking().SingleOrDefaultAsync(ci => ci.CommentId == updatedComment.CommentId, cancellationToken: TestContext.Current.CancellationToken);
             Comment savedComment = await commentsService.GetComment(updatedComment.CommentId);
 
             Assert.NotNull(updatedComment);
@@ -443,7 +443,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
             context.Add(comment1);
             context.Add(comment2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
@@ -451,7 +451,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Comment commentToRemove = await commentsService.GetComment(1);
             await commentsService.DeleteComment(commentToRemove);
-            Comment? dbComment = await context.CommentsDb.AsNoTracking().SingleOrDefaultAsync(ci => ci.CommentId == 1);
+            Comment? dbComment = await context.CommentsDb.AsNoTracking().SingleOrDefaultAsync(ci => ci.CommentId == 1, cancellationToken: TestContext.Current.CancellationToken);
             Comment? savedComment = await commentsService.GetComment(1);
 
             Assert.Null(dbComment);
@@ -494,14 +494,14 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(comment1);
             context.Add(comment2);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CommentsService commentsService = new(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
             
             int commentsCountBefore = 0;
-            CommentThread? testCommentThread = await context.CommentThreadsDb.AsNoTracking().SingleOrDefaultAsync(ct => ct.Id == 1);
+            CommentThread? testCommentThread = await context.CommentThreadsDb.AsNoTracking().SingleOrDefaultAsync(ct => ct.Id == 1, cancellationToken: TestContext.Current.CancellationToken);
             if (testCommentThread != null)
             {
                 commentsCountBefore = testCommentThread.CommentsCount;
@@ -511,7 +511,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await commentsService.DeleteComment(commentToDelete);
 
             int commentsCountAfter = 0;
-            CommentThread? testCommentThread2 = await context.CommentThreadsDb.AsNoTracking().SingleOrDefaultAsync(ct => ct.Id == 1);
+            CommentThread? testCommentThread2 = await context.CommentThreadsDb.AsNoTracking().SingleOrDefaultAsync(ct => ct.Id == 1, cancellationToken: TestContext.Current.CancellationToken);
             if (testCommentThread2 != null)
             {
                 commentsCountAfter = testCommentThread2.CommentsCount;
@@ -532,7 +532,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             
             context.Add(commentThread1);
             context.Add(commentThread2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
@@ -556,7 +556,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             context.Add(commentThread1);
             context.Add(commentThread2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
@@ -578,14 +578,14 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             context.Add(commentThread1);
             context.Add(commentThread2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
             CommentsService commentsService = new(context, memoryCache, _picturesServiceMock.Object, _videosServiceMock.Object);
             
             CommentThread addedCommentThread = await commentsService.AddCommentThread();
-            CommentThread? dbCommentThread = await context.CommentThreadsDb.AsNoTracking().SingleOrDefaultAsync(ct => ct.Id == addedCommentThread.Id);
+            CommentThread? dbCommentThread = await context.CommentThreadsDb.AsNoTracking().SingleOrDefaultAsync(ct => ct.Id == addedCommentThread.Id, cancellationToken: TestContext.Current.CancellationToken);
             CommentThread? savedCommentThread = await commentsService.GetCommentThread(addedCommentThread.Id);
 
             Assert.NotNull(addedCommentThread);
@@ -619,7 +619,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             context.Add(commentThread1);
             context.Add(commentThread2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
@@ -629,7 +629,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             CommentThread commentThreadToDelete = await commentsService.GetCommentThread(1);
             await commentsService.DeleteCommentThread(commentThreadToDelete);
-            CommentThread? dbCommentThread = await context.CommentThreadsDb.AsNoTracking().SingleOrDefaultAsync(ct => ct.Id == 1);
+            CommentThread? dbCommentThread = await context.CommentThreadsDb.AsNoTracking().SingleOrDefaultAsync(ct => ct.Id == 1, cancellationToken: TestContext.Current.CancellationToken);
             CommentThread? savedCommentThread = await commentsService.GetCommentThread(1);
 
             int commentThreadsCountAfter= context.CommentThreadsDb.Count();

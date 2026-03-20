@@ -249,7 +249,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
         {
             // Arrange
             int boardId = 1;
-            KanbanBoard cachedBoard = (await _progenyDbContext.KanbanBoardsDb.FindAsync(boardId))!;
+            KanbanBoard cachedBoard = (await _progenyDbContext.KanbanBoardsDb.FindAsync(new object?[] { boardId }, TestContext.Current.CancellationToken))!;
             string cachedJson = JsonSerializer.Serialize(cachedBoard, JsonSerializerOptions.Web);
             byte[] cachedBytes = Encoding.UTF8.GetBytes(cachedJson);
 

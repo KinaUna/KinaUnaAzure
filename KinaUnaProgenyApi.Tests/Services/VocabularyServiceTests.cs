@@ -69,7 +69,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VocabularyDb.Add(vocabularyItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Vocabulary, 1, userInfo, PermissionLevel.View))
@@ -108,7 +108,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VocabularyDb.Add(vocabularyItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Vocabulary, 1, userInfo, PermissionLevel.View))
@@ -161,7 +161,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VocabularyDb.Add(vocabularyItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Vocabulary, 1, userInfo, PermissionLevel.View))
@@ -238,7 +238,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotEqual(default(DateTime), result.CreatedTime);
             Assert.NotEqual(default(DateTime), result.DateAdded);
 
-            VocabularyItem? dbVocabularyItem = await context.VocabularyDb.FindAsync(result.WordId);
+            VocabularyItem? dbVocabularyItem = await context.VocabularyDb.FindAsync(new object?[] { result.WordId }, TestContext.Current.CancellationToken);
             Assert.NotNull(dbVocabularyItem);
             Assert.Equal("New Word", dbVocabularyItem.Word);
         }
@@ -348,7 +348,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VocabularyDb.Add(vocabularyItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.Entry(vocabularyItem).State = EntityState.Detached;
 
             VocabularyItem updatedVocabularyItem = new()
@@ -389,7 +389,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal("Updated Description", result.Description);
             Assert.Equal("Spanish", result.Language);
 
-            VocabularyItem? dbVocabularyItem = await context.VocabularyDb.FindAsync(1);
+            VocabularyItem? dbVocabularyItem = await context.VocabularyDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
             Assert.NotNull(dbVocabularyItem);
             Assert.Equal("Updated Word", dbVocabularyItem.Word);
             Assert.Equal("Updated Description", dbVocabularyItem.Description);
@@ -412,7 +412,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VocabularyDb.Add(vocabularyItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             VocabularyItem updatedVocabularyItem = new()
             {
@@ -440,7 +440,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Null(result);
 
             // Verify original vocabulary item unchanged
-            VocabularyItem? dbVocabularyItem = await context.VocabularyDb.FindAsync(1);
+            VocabularyItem? dbVocabularyItem = await context.VocabularyDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
             Assert.Equal("Original Word", dbVocabularyItem!.Word);
         }
 
@@ -496,7 +496,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VocabularyDb.Add(vocabularyItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.Entry(vocabularyItem).State = EntityState.Detached;
 
             VocabularyItem updatedVocabularyItem = new()
@@ -560,7 +560,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VocabularyDb.Add(vocabularyItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockUserInfoService
                 .Setup(x => x.GetUserInfoByUserId("testuser@test.com"))
@@ -587,7 +587,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
             Assert.Equal(1, result.WordId);
 
-            VocabularyItem? dbVocabularyItem = await context.VocabularyDb.FindAsync(1);
+            VocabularyItem? dbVocabularyItem = await context.VocabularyDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
             Assert.Null(dbVocabularyItem);
         }
 
@@ -608,7 +608,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VocabularyDb.Add(vocabularyItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockUserInfoService
                 .Setup(x => x.GetUserInfoByUserId("testuser@test.com"))
@@ -627,7 +627,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Null(result);
 
             // Verify vocabulary item still exists
-            VocabularyItem? dbVocabularyItem = await context.VocabularyDb.FindAsync(1);
+            VocabularyItem? dbVocabularyItem = await context.VocabularyDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
             Assert.NotNull(dbVocabularyItem);
         }
 
@@ -688,7 +688,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VocabularyDb.AddRange(vocabularyItem1, vocabularyItem2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockUserInfoService
                 .Setup(x => x.GetUserInfoByUserId("testuser@test.com"))
@@ -762,7 +762,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VocabularyDb.AddRange(vocabularyItems);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Vocabulary, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -810,7 +810,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VocabularyDb.AddRange(vocabularyItems);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Vocabulary, 1, userInfo, PermissionLevel.View))
@@ -893,7 +893,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             VocabularyItem vocabularyItem = new() { WordId = 1, ProgenyId = 1, Word = "Word 1" };
             context.VocabularyDb.Add(vocabularyItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Vocabulary, 1, userInfo, PermissionLevel.View))
@@ -944,7 +944,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VocabularyDb.AddRange(vocabularyItems);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Vocabulary, It.IsAny<int>(), userInfo, PermissionLevel.View))

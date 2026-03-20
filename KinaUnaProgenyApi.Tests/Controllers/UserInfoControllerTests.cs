@@ -658,8 +658,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Put_WhenUserUpdatesOwnInfo_UpdatesAndReturnsUserInfo()
         {
             // Arrange
-            await _applicationDbContext.Users.AddAsync(_testApplicationUser);
-            await _applicationDbContext.SaveChangesAsync();
+            await _applicationDbContext.Users.AddAsync(_testApplicationUser, TestContext.Current.CancellationToken);
+            await _applicationDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo updatedUserInfo = new()
             {
@@ -700,8 +700,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         {
             // Arrange
             SetupControllerContext(AdminUserEmail, AdminUserId, "adminuser");
-            await _applicationDbContext.Users.AddAsync(new ApplicationUser { Id = OtherUserId, Email = OtherUserEmail, UserName = "otheruser" });
-            await _applicationDbContext.SaveChangesAsync();
+            await _applicationDbContext.Users.AddAsync(new ApplicationUser { Id = OtherUserId, Email = OtherUserEmail, UserName = "otheruser" }, TestContext.Current.CancellationToken);
+            await _applicationDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo updatedUserInfo = new()
             {
@@ -777,8 +777,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         {
             // Arrange
             SetupControllerContext(AdminUserEmail, AdminUserId, "adminuser");
-            await _applicationDbContext.Users.AddAsync(new ApplicationUser { Id = OtherUserId, Email = OtherUserEmail, UserName = "otheruser" });
-            await _applicationDbContext.SaveChangesAsync();
+            await _applicationDbContext.Users.AddAsync(new ApplicationUser { Id = OtherUserId, Email = OtherUserEmail, UserName = "otheruser" }, TestContext.Current.CancellationToken);
+            await _applicationDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo updatedUserInfo = new()
             {

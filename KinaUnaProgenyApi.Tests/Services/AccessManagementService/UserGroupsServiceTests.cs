@@ -360,7 +360,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             Assert.NotEqual(0, result.UserGroupId);
 
             // Verify the group was added to the database
-            UserGroup? savedGroup = await context.UserGroupsDb.FindAsync(result.UserGroupId);
+            UserGroup? savedGroup = await context.UserGroupsDb.FindAsync(new object?[] { result.UserGroupId }, TestContext.Current.CancellationToken);
             Assert.NotNull(savedGroup);
             Assert.Equal("New Group", savedGroup.Name);
         }
@@ -413,7 +413,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             Assert.Equal("Updated description", result.Description);
 
             // Verify the group was updated in the database
-            UserGroup? updatedGroup = await context.UserGroupsDb.FindAsync(1);
+            UserGroup? updatedGroup = await context.UserGroupsDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
             Assert.NotNull(updatedGroup);
             Assert.Equal("Updated Family Group", updatedGroup.Name);
             Assert.Equal("Updated description", updatedGroup.Description);
@@ -445,7 +445,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object, _mockKinaUnaCacheService.Object);
 
             // Ensure the group exists before deletion
-            bool groupExists = await context.UserGroupsDb.AnyAsync(g => g.UserGroupId == 1);
+            bool groupExists = await context.UserGroupsDb.AnyAsync(g => g.UserGroupId == 1, cancellationToken: TestContext.Current.CancellationToken);
             Assert.True(groupExists);
 
             // Act
@@ -455,11 +455,11 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             Assert.True(result);
 
             // Verify the group was removed from the database
-            groupExists = await context.UserGroupsDb.AnyAsync(g => g.UserGroupId == 1);
+            groupExists = await context.UserGroupsDb.AnyAsync(g => g.UserGroupId == 1, cancellationToken: TestContext.Current.CancellationToken);
             Assert.False(groupExists);
 
             // Verify the members were also removed
-            bool membersExist = await context.UserGroupMembersDb.AnyAsync(m => m.UserGroupId == 1);
+            bool membersExist = await context.UserGroupMembersDb.AnyAsync(m => m.UserGroupId == 1, cancellationToken: TestContext.Current.CancellationToken);
             Assert.False(membersExist);
         }
 
@@ -524,7 +524,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             Assert.NotEqual(0, result.UserGroupMemberId);
 
             // Verify the member was added to the database
-            UserGroupMember? savedMember = await context.UserGroupMembersDb.FindAsync(result.UserGroupMemberId);
+            UserGroupMember? savedMember = await context.UserGroupMembersDb.FindAsync(new object?[] { result.UserGroupMemberId }, TestContext.Current.CancellationToken);
             Assert.NotNull(savedMember);
             Assert.Equal("newuser@test.com", savedMember.Email);
         }
@@ -566,7 +566,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             Assert.Equal("updated@test.com", result.Email);
 
             // Verify the member was updated in the database
-            UserGroupMember? updatedMember = await context.UserGroupMembersDb.FindAsync(1);
+            UserGroupMember? updatedMember = await context.UserGroupMembersDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
             Assert.NotNull(updatedMember);
             Assert.Equal("updated@test.com", updatedMember.Email);
         }
@@ -589,7 +589,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object, _mockKinaUnaCacheService.Object);
 
             // Ensure the member exists before deletion
-            bool memberExists = await context.UserGroupMembersDb.AnyAsync(m => m.UserGroupMemberId == 1);
+            bool memberExists = await context.UserGroupMembersDb.AnyAsync(m => m.UserGroupMemberId == 1, cancellationToken: TestContext.Current.CancellationToken);
             Assert.True(memberExists);
 
             // Act
@@ -599,7 +599,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             Assert.True(result);
 
             // Verify the member was removed from the database
-            memberExists = await context.UserGroupMembersDb.AnyAsync(m => m.UserGroupMemberId == 1);
+            memberExists = await context.UserGroupMembersDb.AnyAsync(m => m.UserGroupMemberId == 1, cancellationToken: TestContext.Current.CancellationToken);
             Assert.False(memberExists);
         }
 
@@ -614,7 +614,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object, _mockKinaUnaCacheService.Object);
 
             // Verify initial state
-            List<UserGroupMember> members = await context.UserGroupMembersDb.Where(m => m.UserId == "user1").ToListAsync();
+            List<UserGroupMember> members = await context.UserGroupMembersDb.Where(m => m.UserId == "user1").ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
             Assert.Equal(2, members.Count);
             Assert.All(members, m => Assert.Equal("user1@test.com", m.Email));
 
@@ -622,7 +622,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             await service.ChangeUsersEmailForGroupMembers(userInfo, newEmail);
 
             // Assert
-            members = await context.UserGroupMembersDb.Where(m => m.UserId == "user1").ToListAsync();
+            members = await context.UserGroupMembersDb.Where(m => m.UserId == "user1").ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
             Assert.Equal(2, members.Count);
             Assert.All(members, m => Assert.Equal("user1-new@test.com", m.Email));
         }
@@ -637,7 +637,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             UserGroupsService service = new(context, _mockAccessManagementService.Object, _mockUserGroupAuditLogService.Object, _mockKinaUnaCacheService.Object);
 
             // Verify initial state
-            List<UserGroupMember> members = await context.UserGroupMembersDb.Where(m => m.Email.ToLower() == "newuser@test.com").ToListAsync();
+            List<UserGroupMember> members = await context.UserGroupMembersDb.Where(m => m.Email.ToLower() == "newuser@test.com").ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
             Assert.Single(members);
             Assert.Equal("", members[0].UserId);
 
@@ -645,7 +645,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             await service.UpdateUserGroupMembersForNewUser(userInfo);
 
             // Assert
-            members = await context.UserGroupMembersDb.Where(m => m.Email.ToLower() == "newuser@test.com").ToListAsync();
+            members = await context.UserGroupMembersDb.Where(m => m.Email.ToLower() == "newuser@test.com").ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
             Assert.Single(members);
             Assert.Equal("newuser", members[0].UserId);
         }

@@ -58,7 +58,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 CreatedTime = DateTime.UtcNow
             };
             context.TimeLineDb.Add(tlItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Mock<IAccessManagementService> accessMock = new();
             accessMock.Setup(x => x.HasItemPermission(It.IsAny<KinaUnaTypes.TimeLineType>(), 1, It.IsAny<UserInfo>(), PermissionLevel.View))
@@ -92,7 +92,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 CreatedTime = DateTime.UtcNow
             };
             context.TimeLineDb.Add(tlItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Mock<IAccessManagementService> accessMock = new();
             accessMock.Setup(x => x.HasItemPermission(It.IsAny<KinaUnaTypes.TimeLineType>(), 2, It.IsAny<UserInfo>(), PermissionLevel.View))
@@ -140,7 +140,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(added);
             Assert.True(added.TimeLineId > 0);
             // verify cached copy exists via direct cache read
-            string? cached = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitem" + added.TimeLineId);
+            string? cached = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "timelineitem" + added.TimeLineId, token: TestContext.Current.CancellationToken);
             Assert.False(string.IsNullOrEmpty(cached));
             TimeLineItem? deserialized = JsonConvert.DeserializeObject<TimeLineItem>(cached);
             Assert.Equal("10", deserialized!.ItemId);
@@ -162,7 +162,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 CreatedTime = DateTime.UtcNow
             };
             context.TimeLineDb.Add(existing);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Mock<IAccessManagementService> accessMock = new();
             Mock<ITimelineFilteringService> timelineFilteringMock = new();
@@ -202,7 +202,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 CreatedTime = DateTime.UtcNow.AddDays(-1)
             };
             context.TimeLineDb.Add(original);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Mock<IAccessManagementService> accessMock = new();
             accessMock.Setup(x => x.HasItemPermission(It.IsAny<KinaUnaTypes.TimeLineType>(), 30, It.IsAny<UserInfo>(), PermissionLevel.Edit))
@@ -229,7 +229,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
             Assert.Equal(newProgenyTime, result.ProgenyTime);
             // confirm DB was updated
-            TimeLineItem? dbItem = await context.TimeLineDb.FindAsync(original.TimeLineId);
+            TimeLineItem? dbItem = await context.TimeLineDb.FindAsync(new object?[] { original.TimeLineId }, TestContext.Current.CancellationToken);
             Assert.Equal(newProgenyTime, dbItem!.ProgenyTime);
         }
 
@@ -250,7 +250,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 CreatedTime = DateTime.UtcNow
             };
             context.TimeLineDb.Add(original);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Mock<IAccessManagementService> accessMock = new();
             accessMock.Setup(x => x.HasItemPermission(It.IsAny<KinaUnaTypes.TimeLineType>(), 40, It.IsAny<UserInfo>(), PermissionLevel.Edit))
@@ -292,7 +292,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 CreatedTime = DateTime.UtcNow
             };
             context.TimeLineDb.Add(toDelete);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Mock<IAccessManagementService> accessMock = new();
             accessMock.Setup(x => x.HasItemPermission(It.IsAny<KinaUnaTypes.TimeLineType>(), 50, It.IsAny<UserInfo>(), PermissionLevel.Admin))
@@ -316,7 +316,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             TimeLineItem? result = await service.DeleteTimeLineItem(input, user);
             Assert.NotNull(result);
 
-            TimeLineItem? dbItem = await context.TimeLineDb.FindAsync(toDelete.TimeLineId);
+            TimeLineItem? dbItem = await context.TimeLineDb.FindAsync(new object?[] { toDelete.TimeLineId }, TestContext.Current.CancellationToken);
             Assert.Null(dbItem);
         }
 
@@ -336,7 +336,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 CreatedTime = DateTime.UtcNow
             };
             context.TimeLineDb.Add(toDelete);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Mock<IAccessManagementService> accessMock = new();
             accessMock.Setup(x => x.HasItemPermission(It.IsAny<KinaUnaTypes.TimeLineType>(), 60, It.IsAny<UserInfo>(), PermissionLevel.Admin))
@@ -359,7 +359,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             TimeLineItem? result = await service.DeleteTimeLineItem(input, user);
             Assert.Null(result);
-            TimeLineItem? dbItem = await context.TimeLineDb.FindAsync(toDelete.TimeLineId);
+            TimeLineItem? dbItem = await context.TimeLineDb.FindAsync(new object?[] { toDelete.TimeLineId }, TestContext.Current.CancellationToken);
             Assert.NotNull(dbItem);
         }
 
@@ -379,7 +379,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 CreatedTime = DateTime.UtcNow
             };
             context.TimeLineDb.Add(item);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Mock<IAccessManagementService> accessMock = new();
             accessMock.Setup(x => x.HasItemPermission(It.IsAny<KinaUnaTypes.TimeLineType>(), 70, It.IsAny<UserInfo>(), PermissionLevel.View))
@@ -423,7 +423,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 CreatedTime = DateTime.UtcNow
             };
             context.TimeLineDb.AddRange(allowed, denied);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Mock<IAccessManagementService> accessMock = new();
             accessMock.Setup(x => x.HasItemPermission(It.IsAny<KinaUnaTypes.TimeLineType>(), 80, It.IsAny<UserInfo>(), PermissionLevel.View))
@@ -461,7 +461,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                     CreatedTime = DateTime.UtcNow.AddYears(-i)
                 });
             }
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Mock<IAccessManagementService> accessMock = new();
             accessMock.Setup(x => x.HasItemPermission(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<UserInfo>(), PermissionLevel.View))
@@ -509,7 +509,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 CreatedBy = "u",
                 CreatedTime = DateTime.UtcNow.AddDays(-1)
             });
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Mock<IAccessManagementService> accessMock = new();
             accessMock.Setup(x => x.HasItemPermission(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<UserInfo>(), PermissionLevel.View))

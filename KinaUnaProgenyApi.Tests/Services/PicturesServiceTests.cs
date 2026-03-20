@@ -93,7 +93,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Picture picture = CreateTestPicture();
 
             context.PicturesDb.Add(picture);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, 1, userInfo, PermissionLevel.View))

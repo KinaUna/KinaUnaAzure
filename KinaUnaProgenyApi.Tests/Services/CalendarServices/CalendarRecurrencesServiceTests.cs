@@ -185,7 +185,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 EndOption = 0
             };
             context.RecurrenceRulesDb.Add(rule);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService.Setup(x => x.HasItemPermission(
                 KinaUnaTypes.TimeLineType.Calendar, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -231,7 +231,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             };
             context.RecurrenceRulesDb.Add(rule);
             context.CalendarDb.Add(calendarItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService.Setup(x => x.HasItemPermission(
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo, PermissionLevel.View))
@@ -277,7 +277,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             };
             context.RecurrenceRulesDb.Add(rule);
             context.CalendarDb.Add(calendarItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService.Setup(x => x.HasItemPermission(
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo, PermissionLevel.View))
@@ -324,7 +324,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             };
             context.RecurrenceRulesDb.Add(rule);
             context.CalendarDb.Add(calendarItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService.Setup(x => x.HasItemPermission(
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo, PermissionLevel.View))
@@ -370,7 +370,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             };
             context.RecurrenceRulesDb.Add(rule);
             context.CalendarDb.Add(calendarItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService.Setup(x => x.HasItemPermission(
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo, PermissionLevel.View))
@@ -417,7 +417,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             };
             context.RecurrenceRulesDb.Add(rule);
             context.CalendarDb.Add(calendarItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService.Setup(x => x.HasItemPermission(
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo, PermissionLevel.View))
@@ -468,7 +468,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             };
             context.RecurrenceRulesDb.Add(rule);
             context.CalendarDb.Add(calendarItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService.Setup(x => x.HasItemPermission(
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo, PermissionLevel.View))
@@ -519,7 +519,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             };
             context.RecurrenceRulesDb.Add(rule);
             context.CalendarDb.Add(calendarItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService.Setup(x => x.HasItemPermission(
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo, PermissionLevel.View))
@@ -570,7 +570,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             };
             context.RecurrenceRulesDb.Add(rule);
             context.CalendarDb.Add(calendarItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService.Setup(x => x.HasItemPermission(
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo, PermissionLevel.View))
@@ -622,7 +622,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             };
             context.RecurrenceRulesDb.Add(rule);
             context.CalendarDb.Add(calendarItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService.Setup(x => x.HasItemPermission(
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo, PermissionLevel.View))
@@ -674,7 +674,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             };
             context.RecurrenceRulesDb.Add(rule);
             context.CalendarDb.Add(calendarItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService.Setup(x => x.HasItemPermission(
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo, PermissionLevel.View))
@@ -747,7 +747,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
 
             context.RecurrenceRulesDb.AddRange(dailyRule, weeklyRule);
             context.CalendarDb.AddRange(dailyItem, weeklyItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService.Setup(x => x.HasItemPermission(
                 KinaUnaTypes.TimeLineType.Calendar, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -821,7 +821,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             };
             context.RecurrenceRulesDb.Add(rule);
             context.CalendarDb.Add(calendarItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService.Setup(x => x.HasItemPermission(
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo, PermissionLevel.View))

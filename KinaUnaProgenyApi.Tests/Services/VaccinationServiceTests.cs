@@ -229,7 +229,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal(1, result.ProgenyId);
 
             // Verify it was added to the database
-            Vaccination? dbVaccination = await _progenyDbContext.VaccinationsDb.FindAsync(result.VaccinationId);
+            Vaccination? dbVaccination = await _progenyDbContext.VaccinationsDb.FindAsync(new object?[] { result.VaccinationId }, TestContext.Current.CancellationToken);
             Assert.NotNull(dbVaccination);
             Assert.Equal(result.VaccinationName, dbVaccination.VaccinationName);
 
@@ -371,7 +371,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal("Updated description", result.VaccinationDescription);
 
             // Verify database was updated
-            Vaccination? dbVaccination = await _progenyDbContext.VaccinationsDb.FindAsync(1);
+            Vaccination? dbVaccination = await _progenyDbContext.VaccinationsDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
             Assert.NotNull(dbVaccination);
             Assert.Equal("MMR Vaccine - Updated", dbVaccination.VaccinationName);
 
@@ -512,7 +512,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Vaccination))
                 .Returns(Task.CompletedTask);
 
-            int countBefore = await _progenyDbContext.VaccinationsDb.CountAsync();
+            int countBefore = await _progenyDbContext.VaccinationsDb.CountAsync(cancellationToken: TestContext.Current.CancellationToken);
 
             // Act
             Vaccination result = await _service.DeleteVaccination(vaccinationToDelete, _adminUser);
@@ -521,10 +521,10 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
             Assert.Equal(1, result.VaccinationId);
 
-            int countAfter = await _progenyDbContext.VaccinationsDb.CountAsync();
+            int countAfter = await _progenyDbContext.VaccinationsDb.CountAsync(cancellationToken: TestContext.Current.CancellationToken);
             Assert.Equal(countBefore - 1, countAfter);
 
-            Vaccination? deletedVaccination = await _progenyDbContext.VaccinationsDb.FindAsync(1);
+            Vaccination? deletedVaccination = await _progenyDbContext.VaccinationsDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
             Assert.Null(deletedVaccination);
 
             // Verify cache was updated
@@ -553,7 +553,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Null(result);
 
             // Verify vaccination still exists
-            Vaccination? vaccination = await _progenyDbContext.VaccinationsDb.FindAsync(1);
+            Vaccination? vaccination = await _progenyDbContext.VaccinationsDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
             Assert.NotNull(vaccination);
         }
 
@@ -604,7 +604,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
 
             // Verify it's removed from database
-            Vaccination? deletedVaccination = await _progenyDbContext.VaccinationsDb.FindAsync(2);
+            Vaccination? deletedVaccination = await _progenyDbContext.VaccinationsDb.FindAsync(new object?[] { 2 }, TestContext.Current.CancellationToken);
             Assert.Null(deletedVaccination);
         }
 

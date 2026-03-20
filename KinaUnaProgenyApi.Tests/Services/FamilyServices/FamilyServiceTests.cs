@@ -394,7 +394,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
                 Admins = "user1@example.com"
             };
 
-            await _progenyDbContext.UserInfoDb.SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == "user1@example.com".ToUpper());
+            await _progenyDbContext.UserInfoDb.SingleOrDefaultAsync(u => u.UserEmail.ToUpper() == "user1@example.com".ToUpper(), cancellationToken: TestContext.Current.CancellationToken);
 
             _mockFamilyAuditLogService
                 .Setup(x => x.AddFamilyCreatedAuditLogEntry(It.IsAny<Family>(), _testUser))

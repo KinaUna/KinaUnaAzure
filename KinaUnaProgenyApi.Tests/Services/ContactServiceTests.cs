@@ -618,7 +618,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             _progenyDbContext.ContactsDb.Add(contactWithSamePicture);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Arrange
             Contact updateValues = new()

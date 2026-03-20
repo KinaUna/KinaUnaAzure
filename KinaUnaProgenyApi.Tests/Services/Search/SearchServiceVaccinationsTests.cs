@@ -174,7 +174,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
 
             Vaccination vaccination = CreateTestVaccination(1, 1, "MMR Vaccine");
             progenyContext.VaccinationsDb.Add(vaccination);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -1004,7 +1004,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
 
             Vaccination vaccination = CreateTestVaccination(1, 1, "MMR Vaccine");
             progenyContext.VaccinationsDb.Add(vaccination);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 

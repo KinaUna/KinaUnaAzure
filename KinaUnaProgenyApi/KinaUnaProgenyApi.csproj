@@ -49,6 +49,7 @@
     <PackageReference Include="Microsoft.NET.StringTools" Version="18.4.0" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.NETCore.Platforms" Version="7.0.4" />
     <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.3" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.1" />
     <PackageReference Include="OpenIddict.Validation" Version="7.4.0" />
     <PackageReference Include="OpenIddict.Validation.AspNetCore" Version="7.4.0" />
     <PackageReference Include="OpenIddict.Validation.SystemNetHttp" Version="7.4.0" />

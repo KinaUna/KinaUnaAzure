@@ -97,7 +97,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Skill skill = CreateTestSkill();
 
             context.SkillsDb.Add(skill);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.View))

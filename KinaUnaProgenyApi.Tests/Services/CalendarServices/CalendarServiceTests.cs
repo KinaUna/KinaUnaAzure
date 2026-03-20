@@ -103,7 +103,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 UId = Guid.NewGuid().ToString()
             };
             context.CalendarDb.Add(calendarItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService.Setup(x => x.HasItemPermission(
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo, PermissionLevel.View))

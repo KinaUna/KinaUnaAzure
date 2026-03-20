@@ -74,8 +74,18 @@ namespace KinaUnaWeb.Models.ItemViewModels
 
             if (Picture.PictureTime != null && CurrentProgeny.BirthDay.HasValue)
             {
+                DateTime pictureTimeUtc;
+                if (Picture.PictureTime.Value.Kind != DateTimeKind.Utc)
+                {
+                    pictureTimeUtc = TimeZoneInfo.ConvertTimeToUtc(Picture.PictureTime.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
+                }
+                else
+                {
+                    pictureTimeUtc = Picture.PictureTime.Value;
+                }
+
                 PictureTime picTime = new(CurrentProgeny.BirthDay.Value,
-                    TimeZoneInfo.ConvertTimeToUtc(Picture.PictureTime.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)),
+                    pictureTimeUtc,
                     TimeZoneInfo.FindSystemTimeZoneById(CurrentProgeny.TimeZone));
                 PicTimeValid = true;
                 PicTime = Picture.PictureTime.Value.ToString("dd MMMM yyyy HH:mm"); // Todo: Replace format string with global constant or user defined value

@@ -72,7 +72,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.LocationsDb.Add(location);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, 1, userInfo, PermissionLevel.View))
@@ -1127,7 +1127,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await service.RemoveAddressItem(1);
 
             // Assert
-            Address? dbAddress = await context.AddressDb.FindAsync(1);
+            Address? dbAddress = await context.AddressDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
             Assert.Null(dbAddress);
         }
 

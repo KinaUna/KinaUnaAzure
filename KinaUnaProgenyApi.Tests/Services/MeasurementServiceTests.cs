@@ -79,7 +79,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Measurement measurement = CreateTestMeasurement();
 
             context.MeasurementsDb.Add(measurement);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 1, userInfo, PermissionLevel.View))

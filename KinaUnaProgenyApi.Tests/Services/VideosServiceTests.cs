@@ -74,7 +74,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.Add(video);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, 1, userInfo, PermissionLevel.View))
@@ -113,7 +113,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.Add(video);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, 1, userInfo, PermissionLevel.View))
@@ -166,7 +166,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.Add(video);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, 1, userInfo, PermissionLevel.View))
@@ -210,7 +210,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.Add(video);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, 1, userInfo, PermissionLevel.View))
@@ -251,7 +251,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.Add(video);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, 1, userInfo, PermissionLevel.View))
@@ -289,7 +289,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.Add(video);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, 1, userInfo, PermissionLevel.View))
@@ -337,7 +337,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.Add(video);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
@@ -368,7 +368,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.Add(video);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
@@ -381,7 +381,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal("https://example.com/video.mp4", result.VideoLink);
 
             // Verify it's cached
-            string? cachedValue = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "video1");
+            string? cachedValue = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "video1", token: TestContext.Current.CancellationToken);
             Assert.NotNull(cachedValue);
         }
 
@@ -421,7 +421,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.Add(video);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
@@ -433,7 +433,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal("Tag1, Tag2", result.Tags);
 
             // Verify the database was updated
-            Video? dbVideo = await context.VideoDb.FindAsync(1);
+            Video? dbVideo = await context.VideoDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
             Assert.Equal("Tag1, Tag2", dbVideo!.Tags);
         }
 
@@ -486,7 +486,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal("https://example.com/new-video.mp4", result.VideoLink);
             Assert.Equal("NewTag1, NewTag2", result.Tags);
 
-            Video? dbVideo = await context.VideoDb.FindAsync(result.VideoId);
+            Video? dbVideo = await context.VideoDb.FindAsync(new object?[] { result.VideoId }, TestContext.Current.CancellationToken);
             Assert.NotNull(dbVideo);
             Assert.Equal("https://example.com/new-video.mp4", dbVideo.VideoLink);
         }
@@ -581,7 +581,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.Add(video);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.Entry(video).State = EntityState.Detached;
 
             Video updatedVideo = new()
@@ -617,7 +617,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal("UpdatedTag", result.Tags);
             Assert.Equal("Updated Location", result.Location);
 
-            Video? dbVideo = await context.VideoDb.FindAsync(1);
+            Video? dbVideo = await context.VideoDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
             Assert.NotNull(dbVideo);
             Assert.Equal("https://example.com/updated.mp4", dbVideo.VideoLink);
         }
@@ -638,7 +638,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.Add(video);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Video updatedVideo = new()
             {
@@ -660,7 +660,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Null(result);
 
             // Verify original video unchanged
-            Video? dbVideo = await context.VideoDb.FindAsync(1);
+            Video? dbVideo = await context.VideoDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
             Assert.Equal("https://example.com/original.mp4", dbVideo!.VideoLink);
         }
 
@@ -712,7 +712,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.Add(video);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, 1, userInfo, PermissionLevel.Admin))
@@ -735,7 +735,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
             Assert.Equal(1, result.VideoId);
 
-            Video? dbVideo = await context.VideoDb.FindAsync(1);
+            Video? dbVideo = await context.VideoDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
             Assert.Null(dbVideo);
         }
 
@@ -755,7 +755,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.Add(video);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, 1, userInfo, PermissionLevel.Admin))
@@ -770,7 +770,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Null(result);
 
             // Verify video still exists
-            Video? dbVideo = await context.VideoDb.FindAsync(1);
+            Video? dbVideo = await context.VideoDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
             Assert.NotNull(dbVideo);
         }
 
@@ -833,7 +833,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.AddRange(video1, video2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -902,7 +902,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.Add(video);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
@@ -913,7 +913,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await service.RemoveVideoFromCache(1, 1);
 
             // Assert
-            string? cachedVideo = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "video1");
+            string? cachedVideo = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "video1", token: TestContext.Current.CancellationToken);
             Assert.Null(cachedVideo);
         }
 
@@ -937,7 +937,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.AddRange(videos);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -985,7 +985,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.AddRange(videos);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, 1, userInfo, PermissionLevel.View))
@@ -1068,7 +1068,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Video video = new() { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video.mp4" };
             context.VideoDb.Add(video);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, 1, userInfo, PermissionLevel.View))
@@ -1119,7 +1119,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.AddRange(videos);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -1172,7 +1172,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.AddRange(videos);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -1221,7 +1221,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.AddRange(videos);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -1268,7 +1268,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.AddRange(videos);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -1310,7 +1310,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Video video = new() { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video.mp4", Tags = "Family Vacation" };
             context.VideoDb.Add(video);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, 1, userInfo, PermissionLevel.View))
@@ -1352,7 +1352,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Video video = new() { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video.mp4", Tags = "Summer Family Vacation" };
             context.VideoDb.Add(video);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, 1, userInfo, PermissionLevel.View))
@@ -1400,7 +1400,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.AddRange(videos);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -1436,7 +1436,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.AddRange(videos);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -1472,7 +1472,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.AddRange(videos);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Video, 1, userInfo, PermissionLevel.View))
@@ -1520,7 +1520,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.AddRange(videos);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
@@ -1532,7 +1532,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal(2, result.Length);
 
             // Verify it's cached
-            string? cachedValue = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "videoslist1");
+            string? cachedValue = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "videoslist1", token: TestContext.Current.CancellationToken);
             Assert.NotNull(cachedValue);
         }
 
@@ -1568,7 +1568,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.VideoDb.AddRange(videos);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             VideosService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 

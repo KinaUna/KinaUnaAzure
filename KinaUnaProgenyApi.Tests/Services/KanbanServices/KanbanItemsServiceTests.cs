@@ -650,7 +650,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 Id = 1
             };
             _progenyDbContext.ProgenyDb.Add(progeny);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TimelineItemPermission itemPermission = new()
             {

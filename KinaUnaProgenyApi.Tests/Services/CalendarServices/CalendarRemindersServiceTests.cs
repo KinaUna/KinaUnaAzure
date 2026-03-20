@@ -57,7 +57,7 @@ public class CalendarRemindersServiceTests
         ];
 
         context.CalendarRemindersDb.AddRange(reminders);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         Mock<IEmailSender> emailSender = new();
         Mock<IPushMessageSender> pushMessageSender = new();
@@ -1135,7 +1135,7 @@ public class CalendarRemindersServiceTests
         };
         context.CalendarRemindersDb.Add(reminder);
 
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         Mock<IEmailSender> emailSender = new();
         emailSender.Setup(x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
@@ -1176,7 +1176,7 @@ public class CalendarRemindersServiceTests
 
         // Assert
         // Verify that the reminder was updated as notified
-        CalendarReminder? updatedReminder = await context.CalendarRemindersDb.FirstOrDefaultAsync(r => r.CalendarReminderId == 1);
+        CalendarReminder? updatedReminder = await context.CalendarRemindersDb.FirstOrDefaultAsync(r => r.CalendarReminderId == 1, cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(updatedReminder);
         Assert.True(updatedReminder.Notified);
         Assert.True(updatedReminder.NotifiedDate > DateTime.UtcNow.AddMinutes(-1)); // Updated recently
@@ -1240,7 +1240,7 @@ public class CalendarRemindersServiceTests
         };
         context.CalendarRemindersDb.Add(reminder);
 
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         Mock<IEmailSender> emailSender = new();
         Mock<IPushMessageSender> pushMessageSender = new();
@@ -1329,7 +1329,7 @@ public class CalendarRemindersServiceTests
         };
         context.CalendarRemindersDb.Add(reminder);
 
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         Mock<IEmailSender> emailSender = new();
         Mock<IPushMessageSender> pushMessageSender = new();

@@ -362,7 +362,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal(4, result.SleepRating);
 
             // Verify database was updated
-            Sleep? dbSleep = await _progenyDbContext.SleepDb.FindAsync(1);
+            Sleep? dbSleep = await _progenyDbContext.SleepDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
             Assert.NotNull(dbSleep);
             Assert.Equal("Updated notes", dbSleep.SleepNotes);
 

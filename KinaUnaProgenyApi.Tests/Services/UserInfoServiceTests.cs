@@ -139,7 +139,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo testUser = CreateTestUserInfo();
 
             context.UserInfoDb.Add(testUser);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockCache.Setup(c => c.GetAsync(
                 It.IsAny<string>(),

@@ -34,27 +34,27 @@ namespace KinaUnaProgenyApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<ProgenyDbContext>(options =>
-                options.UseSqlServer(Configuration["ProgenyDefaultConnection"],
-                    sqlServerOptionsAction: sqlOptions =>
+                options.UseNpgsql(Configuration["ProgenyDefaultConnection"],
+                    npgsqlOptionsAction: npgsqlOptions =>
                     {
-                        sqlOptions.MigrationsAssembly("KinaUna.OpenIddict");
-                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                        npgsqlOptions.MigrationsAssembly("KinaUna.OpenIddict");
+                        npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorCodesToAdd: null);
                     }));
 
             services.AddDbContext<MediaDbContext>(options =>
-                options.UseSqlServer(Configuration["MediaDefaultConnection"],
-                    sqlServerOptionsAction: sqlOptions =>
+                options.UseNpgsql(Configuration["MediaDefaultConnection"],
+                    npgsqlOptionsAction: npgsqlOptions =>
                     {
-                        sqlOptions.MigrationsAssembly("KinaUna.OpenIddict");
-                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                        npgsqlOptions.MigrationsAssembly("KinaUna.OpenIddict");
+                        npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorCodesToAdd: null);
                     }));
 
             services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(Configuration["DataProtectionConnection"],
-                    sqlServerOptionsAction: sqlOptions =>
+                options.UseNpgsql(Configuration["DataProtectionConnection"],
+                    npgsqlOptionsAction: npgsqlOptions =>
                     {
-                        sqlOptions.MigrationsAssembly("KinaUna.OpenIddict");
-                        sqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorNumbersToAdd: null);
+                        npgsqlOptions.MigrationsAssembly("KinaUna.OpenIddict");
+                        npgsqlOptions.EnableRetryOnFailure(maxRetryCount: 15, maxRetryDelay: TimeSpan.FromSeconds(30), errorCodesToAdd: null);
                     }));
 
             services.Configure<HostOptions>(options =>

@@ -191,7 +191,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.ContactsDb.Add(contact);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, _testUser, PermissionLevel.View))

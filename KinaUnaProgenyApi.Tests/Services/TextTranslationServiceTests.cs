@@ -29,7 +29,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(textTranslation3);
             context.Add(textTranslation4);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             
             TextTranslationService textTranslationService = new(context);
 
@@ -62,7 +62,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(textTranslation1);
             context.Add(textTranslation2);
             
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             
             TextTranslationService textTranslationService = new(context);
 
@@ -94,7 +94,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(textTranslation1);
             context.Add(textTranslation2);
             
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TextTranslationService textTranslationService = new(context);
 
@@ -125,7 +125,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(textTranslation3);
             context.Add(textTranslation4);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TextTranslationService textTranslationService = new(context);
 
@@ -158,7 +158,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(textTranslation3);
             context.Add(textTranslation4);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TextTranslationService textTranslationService = new(context);
 
@@ -187,7 +187,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(textTranslation1);
             context.Add(textTranslation2);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TextTranslationService textTranslationService = new(context);
 
@@ -219,7 +219,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(textTranslation1);
             context.Add(textTranslation2);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TextTranslationService textTranslationService = new(context);
 
@@ -248,14 +248,14 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(textTranslation1);
             context.Add(textTranslation2);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             
             TextTranslationService textTranslationService = new(context);
 
             TextTranslation textTranslationToAdd = new() { LanguageId = 1, Page = "Page2", Word = "Word2", Translation = "Translation2.1"};
 
             TextTranslation addedTextTranslation = await textTranslationService.AddTranslation(textTranslationToAdd);
-            TextTranslation? dbTextTranslation = await context.TextTranslations.AsNoTracking().SingleOrDefaultAsync(tt => tt.Id == addedTextTranslation.Id);
+            TextTranslation? dbTextTranslation = await context.TextTranslations.AsNoTracking().SingleOrDefaultAsync(tt => tt.Id == addedTextTranslation.Id, cancellationToken: TestContext.Current.CancellationToken);
             TextTranslation savedTextTranslation = await textTranslationService.GetTranslationById(addedTextTranslation.Id);
 
             Assert.NotNull(addedTextTranslation);
@@ -300,14 +300,14 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(textTranslation1);
             context.Add(textTranslation2);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TextTranslationService textTranslationService = new(context);
 
             TextTranslation textTranslationToAdd = new() { LanguageId = 1, Page = "Page2", Word = "Word2", Translation = "Translation2.1" };
 
             await textTranslationService.AddTranslation(textTranslationToAdd);
-            List<TextTranslation> allLanguageVersionsOfAddedTextTranslation = await context.TextTranslations.Where(tt => tt.Page == textTranslationToAdd.Page && tt.Word == textTranslationToAdd.Word).ToListAsync();
+            List<TextTranslation> allLanguageVersionsOfAddedTextTranslation = await context.TextTranslations.Where(tt => tt.Page == textTranslationToAdd.Page && tt.Word == textTranslationToAdd.Word).ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.NotEmpty(allLanguageVersionsOfAddedTextTranslation);
             Assert.Equal(3, allLanguageVersionsOfAddedTextTranslation.Count);
@@ -331,13 +331,13 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(textTranslation1);
             context.Add(textTranslation2);
             
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             TextTranslationService textTranslationService = new(context);
             
             TextTranslation textTranslationToUpdate = await textTranslationService.GetTranslationById(1);
             textTranslationToUpdate.Translation = "Translation1.1 Updated";
             TextTranslation updatedTextTranslation = await textTranslationService.UpdateTranslation(1, textTranslationToUpdate);
-            TextTranslation? dbTextTranslation = await context.TextTranslations.AsNoTracking().SingleOrDefaultAsync(tt => tt.Id == 1);
+            TextTranslation? dbTextTranslation = await context.TextTranslations.AsNoTracking().SingleOrDefaultAsync(tt => tt.Id == 1, cancellationToken: TestContext.Current.CancellationToken);
             TextTranslation savedTextTranslation = await textTranslationService.GetTranslationById(1);
 
             Assert.NotNull(updatedTextTranslation);
@@ -399,17 +399,17 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(textTranslation7);
             context.Add(textTranslation8);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TextTranslationService textTranslationService = new(context);
 
             TextTranslation textTranslationToDelete = await textTranslationService.GetTranslationById(1);
-            List<TextTranslation> textTranslationListBeforeDelete = await context.TextTranslations.Where(tt => tt.Page == textTranslationToDelete.Page && tt.Word == textTranslationToDelete.Word).ToListAsync();
+            List<TextTranslation> textTranslationListBeforeDelete = await context.TextTranslations.Where(tt => tt.Page == textTranslationToDelete.Page && tt.Word == textTranslationToDelete.Word).ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
             int allTextTranslationsCountBeforeDelete = context.TextTranslations.Count();
             await textTranslationService.DeleteTranslation(1);
-            List<TextTranslation> textTranslationListAfterDelete = await context.TextTranslations.Where(tt => tt.Page == textTranslationToDelete.Page && tt.Word == textTranslationToDelete.Word).ToListAsync();
+            List<TextTranslation> textTranslationListAfterDelete = await context.TextTranslations.Where(tt => tt.Page == textTranslationToDelete.Page && tt.Word == textTranslationToDelete.Word).ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
             int allTextTranslationsCountAfterDelete = context.TextTranslations.Count();
-            TextTranslation? deletedTextTranslation = await context.TextTranslations.SingleOrDefaultAsync(tt => tt.Id == 1);
+            TextTranslation? deletedTextTranslation = await context.TextTranslations.SingleOrDefaultAsync(tt => tt.Id == 1, cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Null(deletedTextTranslation);
             Assert.Equal(4, textTranslationListBeforeDelete.Count);
@@ -453,17 +453,17 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(textTranslation7);
             context.Add(textTranslation8);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TextTranslationService textTranslationService = new(context);
 
             TextTranslation textTranslationToDelete = await textTranslationService.GetTranslationById(1);
-            List<TextTranslation> textTranslationListBeforeDelete = await context.TextTranslations.Where(tt => tt.Page == textTranslationToDelete.Page && tt.Word == textTranslationToDelete.Word).ToListAsync();
+            List<TextTranslation> textTranslationListBeforeDelete = await context.TextTranslations.Where(tt => tt.Page == textTranslationToDelete.Page && tt.Word == textTranslationToDelete.Word).ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
             int allTextTranslationsCountBeforeDelete = context.TextTranslations.Count();
             await textTranslationService.DeleteSingleTranslation(1);
-            List<TextTranslation> textTranslationListAfterDelete = await context.TextTranslations.Where(tt => tt.Page == textTranslationToDelete.Page && tt.Word == textTranslationToDelete.Word).ToListAsync();
+            List<TextTranslation> textTranslationListAfterDelete = await context.TextTranslations.Where(tt => tt.Page == textTranslationToDelete.Page && tt.Word == textTranslationToDelete.Word).ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
             int allTextTranslationsCountAfterDelete = context.TextTranslations.Count();
-            TextTranslation? deletedTextTranslation = await context.TextTranslations.SingleOrDefaultAsync(tt => tt.Id == 1);
+            TextTranslation? deletedTextTranslation = await context.TextTranslations.SingleOrDefaultAsync(tt => tt.Id == 1, cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Null(deletedTextTranslation);
             Assert.Equal(4, textTranslationListBeforeDelete.Count);

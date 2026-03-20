@@ -134,7 +134,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.FriendsDb.Add(friend);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.View))

@@ -35,7 +35,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
             context.Add(notification1);
             context.Add(notification2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
@@ -85,7 +85,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
             context.Add(notification1);
             context.Add(notification2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
@@ -117,7 +117,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
             
             context.Add(notification1);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
@@ -139,7 +139,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             MobileNotification addedNotification = await notificationsService.AddMobileNotification(notificationToAdd);
-            MobileNotification? dbNotification = await context.MobileNotificationsDb.AsNoTracking().SingleOrDefaultAsync(mn => mn.NotificationId == addedNotification.NotificationId);
+            MobileNotification? dbNotification = await context.MobileNotificationsDb.AsNoTracking().SingleOrDefaultAsync(mn => mn.NotificationId == addedNotification.NotificationId, cancellationToken: TestContext.Current.CancellationToken);
             MobileNotification savedNotification = await notificationsService.GetMobileNotification(addedNotification.NotificationId);
 
             Assert.NotNull(addedNotification);
@@ -199,7 +199,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
             context.Add(notification1);
             context.Add(notification2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
@@ -209,7 +209,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             MobileNotification notificationToUpdate = await notificationsService.GetMobileNotification(1);
             notificationToUpdate.Read = true;
             MobileNotification updatedNotification = await notificationsService.UpdateMobileNotification(notificationToUpdate);
-            MobileNotification? dbNotification = await context.MobileNotificationsDb.AsNoTracking().SingleOrDefaultAsync(mn => mn.NotificationId == 1);
+            MobileNotification? dbNotification = await context.MobileNotificationsDb.AsNoTracking().SingleOrDefaultAsync(mn => mn.NotificationId == 1, cancellationToken: TestContext.Current.CancellationToken);
             MobileNotification savedNotification = await notificationsService.GetMobileNotification(1);
 
             Assert.NotNull(updatedNotification);
@@ -268,7 +268,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
             context.Add(notification1);
             context.Add(notification2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
@@ -279,7 +279,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             MobileNotification notificationToDelete = await notificationsService.GetMobileNotification(1);
 
             await notificationsService.DeleteMobileNotification(notificationToDelete);
-            MobileNotification? deletedNotification = await context.MobileNotificationsDb.SingleOrDefaultAsync(mn => mn.NotificationId == 1);
+            MobileNotification? deletedNotification = await context.MobileNotificationsDb.SingleOrDefaultAsync(mn => mn.NotificationId == 1, cancellationToken: TestContext.Current.CancellationToken);
             int notificationItemsCountAfterDelete = context.MobileNotificationsDb.Count();
 
             Assert.Null(deletedNotification);
@@ -320,7 +320,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
             context.Add(notification1);
             context.Add(notification2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
@@ -373,7 +373,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             context.Add(notification1);
             context.Add(notification2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             IOptions<MemoryDistributedCacheOptions> memoryCacheOptions = Options.Create(new MemoryDistributedCacheOptions());
             IDistributedCache memoryCache = new MemoryDistributedCache(memoryCacheOptions);
@@ -407,7 +407,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.Add(pushDevice1);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             PushDevices resultPushDevice1 = await notificationsService.GetPushDeviceById(1);
             
             Assert.NotNull(resultPushDevice1);
@@ -435,7 +435,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.Add(pushDevice1);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             PushDevices resultPushDevice2 = await notificationsService.GetPushDeviceById(2);
 
             Assert.Null(resultPushDevice2);
@@ -461,7 +461,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.Add(pushDevice1);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             PushDevices requestPushDevice1 = new()
             {
@@ -502,7 +502,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.Add(pushDevice1);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             PushDevices requestPushDevice1 = new()
             {
@@ -546,7 +546,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             context.Add(pushDevice1);
             context.Add(pushDevice2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             List<PushDevices> resultPushDevicesList1 = await notificationsService.GetPushDevicesListByUserId("PushDevice1");
 
@@ -587,7 +587,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             context.Add(pushDevice1);
             context.Add(pushDevice2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             List<PushDevices> resultPushDevicesList2 = await notificationsService.GetPushDevicesListByUserId("PushDevice2");
 
@@ -623,7 +623,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             context.Add(pushDevice1);
             context.Add(pushDevice2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             List<PushDevices> resultPushDevicesList1 = await notificationsService.GetAllPushDevices();
 
@@ -655,7 +655,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.Add(pushDevice1);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             PushDevices addPushDevice1 = new()
             {
@@ -709,7 +709,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             context.Add(pushDevice1);
             context.Add(pushDevice2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             int deviceBeforeRemove = context.PushDevices.Count();
             await notificationsService.RemovePushDevice(pushDevice1);
@@ -742,7 +742,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.Add(webNotification1);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             WebNotification resultWebNotification1 = await notificationsService.GetWebNotificationById(1);
 
@@ -777,7 +777,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.Add(webNotification1);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             WebNotification resultWebNotification1 = await notificationsService.GetWebNotificationById(2);
 
@@ -831,7 +831,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(webNotification1);
             context.Add(webNotification2);
             context.Add(webNotification3);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             List<WebNotification> resultWebNotificationsList1 = await notificationsService.GetUsersWebNotifications("To1");
 
@@ -887,7 +887,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(webNotification1);
             context.Add(webNotification2);
             context.Add(webNotification3);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             List<WebNotification> resultWebNotificationsList1 = await notificationsService.GetUsersWebNotifications("To3");
 
@@ -918,7 +918,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.Add(webNotification1);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             WebNotification webNotificationToAdd = new()
             {
@@ -977,7 +977,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
             context.Add(webNotification1);
             context.Add(webNotification2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             WebNotification webNotificationToUpdate = await notificationsService.GetWebNotificationById(1);
             webNotificationToUpdate.Title = "Title3";

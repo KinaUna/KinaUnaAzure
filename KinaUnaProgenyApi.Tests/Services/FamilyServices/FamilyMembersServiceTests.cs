@@ -922,7 +922,7 @@ namespace KinaUnaProgenyApi.Tests.Services.FamilyServices
 
             // Assert
             Assert.True(result);
-            FamilyMember deletedMember = (await _progenyDbContext.FamilyMembersDb.FindAsync(familyMemberId))!;
+            FamilyMember deletedMember = (await _progenyDbContext.FamilyMembersDb.FindAsync(new object?[] { familyMemberId }, TestContext.Current.CancellationToken))!;
             Assert.Null(deletedMember);
 
             _mockFamilyAuditLogService.Verify(

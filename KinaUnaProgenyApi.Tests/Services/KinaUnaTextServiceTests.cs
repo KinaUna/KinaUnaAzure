@@ -65,7 +65,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(text2);
             context.Add(text3);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             KinaUnaTextService kinaUnaTextService = new(context);
 

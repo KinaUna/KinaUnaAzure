@@ -93,7 +93,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             // Setup note in db
             Note note = new() { NoteId = itemId, CreatedBy = _testUser.UserId, ProgenyId = _progenyId };
             _progenyDbContext.NotesDb.Add(note);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             bool result = await _service.HasItemPermission(timelineType, itemId, _testUser, PermissionLevel.CreatorOnly);
@@ -117,7 +117,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             Note note = new() { NoteId = itemId, ProgenyId = _progenyId };
             _progenyDbContext.NotesDb.Add(note);
 
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             bool result = await _service.HasItemPermission(timelineType, itemId, _testUser, PermissionLevel.Private);
@@ -143,7 +143,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             };
 
             _progenyDbContext.TimelineItemPermissionsDb.Add(permission);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             bool result = await _service.HasItemPermission(timelineType, itemId, _testUser, PermissionLevel.View);
@@ -169,7 +169,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             };
 
             _progenyDbContext.TimelineItemPermissionsDb.Add(permission);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             bool result = await _service.HasItemPermission(timelineType, itemId, _testUser, PermissionLevel.View);
@@ -199,7 +199,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             };
 
             _progenyDbContext.TimelineItemPermissionsDb.Add(userPermission);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             TimelineItemPermission? result = await _service.GetItemPermissionForUser(timelineType, itemId, _progenyId, _familyId, _testUser);
@@ -249,7 +249,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
 
             _progenyDbContext.TimelineItemPermissionsDb.Add(inheritedPermission);
             _progenyDbContext.ProgenyPermissionsDb.Add(progenyPermission);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             TimelineItemPermission? result = await _service.GetItemPermissionForUser(timelineType, itemId, _progenyId, _familyId, _testUser);
@@ -284,7 +284,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
 
             _progenyDbContext.TimelineItemPermissionsDb.Add(groupPermission);
             _progenyDbContext.UserGroupMembersDb.Add(groupMembership);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             TimelineItemPermission? result = await _service.GetItemPermissionForUser(timelineType, itemId, _progenyId, _familyId, _testUser);
@@ -371,7 +371,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
 
             _progenyDbContext.ProgenyPermissionsDb.Add(groupPermission);
             _progenyDbContext.UserGroupMembersDb.Add(groupMembership);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             bool result = await _service.HasProgenyPermission(_progenyId, _testUser, PermissionLevel.View);

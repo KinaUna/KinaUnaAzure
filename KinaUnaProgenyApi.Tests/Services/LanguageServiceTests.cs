@@ -27,7 +27,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             context.Add(language1);
             context.Add(language2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             LanguageService languageService = new(context);
 
@@ -79,7 +79,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             context.Add(language1);
             context.Add(language2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             LanguageService languageService = new(context);
 
@@ -106,7 +106,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.Add(language1);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             LanguageService languageService = new(context);
 
@@ -129,7 +129,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.Add(language1);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             LanguageService languageService = new(context);
 
@@ -141,7 +141,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             KinaUnaLanguage addedLanguage = await languageService.AddLanguage(languageToAdd);
-            KinaUnaLanguage? dbLanguage = await context.Languages.AsNoTracking().SingleOrDefaultAsync(f => f.Id == addedLanguage.Id);
+            KinaUnaLanguage? dbLanguage = await context.Languages.AsNoTracking().SingleOrDefaultAsync(f => f.Id == addedLanguage.Id, cancellationToken: TestContext.Current.CancellationToken);
             KinaUnaLanguage savedLanguage = await languageService.GetLanguage(addedLanguage.Id);
 
             Assert.NotNull(addedLanguage);
@@ -186,7 +186,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
             context.Add(language1);
             context.Add(language2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             LanguageService languageService = new(context);
 
@@ -194,7 +194,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             languageToUpdate.Code = "C";
             languageToUpdate.Icon = "C";
             KinaUnaLanguage updatedLanguage = await languageService.UpdateLanguage(languageToUpdate);
-            KinaUnaLanguage? dbLanguage = await context.Languages.AsNoTracking().SingleOrDefaultAsync(f => f.Id == 1);
+            KinaUnaLanguage? dbLanguage = await context.Languages.AsNoTracking().SingleOrDefaultAsync(f => f.Id == 1, cancellationToken: TestContext.Current.CancellationToken);
             KinaUnaLanguage savedLanguage = await languageService.GetLanguage(1);
 
             Assert.NotNull(updatedLanguage);
@@ -242,7 +242,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
             context.Add(language1);
             context.Add(language2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             
             LanguageService languageService = new(context);
 
@@ -250,7 +250,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             KinaUnaLanguage languageToDelete = await languageService.GetLanguage(1);
 
             await languageService.DeleteLanguage(languageToDelete.Id);
-            KinaUnaLanguage? deletedLanguage = await context.Languages.SingleOrDefaultAsync(f => f.Id == 1);
+            KinaUnaLanguage? deletedLanguage = await context.Languages.SingleOrDefaultAsync(f => f.Id == 1, cancellationToken: TestContext.Current.CancellationToken);
             int languageItemsCountAfterDelete = context.Languages.Count();
 
             Assert.Null(deletedLanguage);

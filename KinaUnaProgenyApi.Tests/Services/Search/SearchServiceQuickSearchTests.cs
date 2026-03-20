@@ -266,7 +266,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 Context = ""
             };
             _progenyDbContext.CalendarDb.Add(calendarItem);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TimeLineItem timelineItem = new()
             {

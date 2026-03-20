@@ -1218,7 +1218,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 CreatedBy = "user1"
             };
             _progenyDbContext.LocationsDb.Add(familyLocation3);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             SearchRequest request = new()
             {
