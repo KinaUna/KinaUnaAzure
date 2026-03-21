@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace KinaUna.Data.Models.AccessManagement
 {
@@ -9,6 +10,7 @@ namespace KinaUna.Data.Models.AccessManagement
         /// The unique identifier for the timeline item permission.
         /// </summary>
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int TimelineItemPermissionId { get; set; }
 
         /// <summary>

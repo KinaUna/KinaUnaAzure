@@ -1177,7 +1177,7 @@ namespace KinaUnaProgenyApi.Services.AccessManagementService
 
             // Check if the permission exists.
             TimelineItemPermission existingPermission = await progenyDbContext.TimelineItemPermissionsDb.AsNoTracking().SingleOrDefaultAsync(tp =>
-                tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.Email.Length > 4 && tp.Email == timelineItemPermission.Email);
+                tp.TimelineType == timelineItemPermission.TimelineType && tp.ItemId == timelineItemPermission.ItemId && tp.Email.Length > 4 && tp.Email.ToUpper() == timelineItemPermission.Email.ToUpper());
 
             // If not found by email, try userId and groupId.
             if (existingPermission == null && !string.IsNullOrWhiteSpace(timelineItemPermission.UserId))

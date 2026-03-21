@@ -81,9 +81,17 @@ namespace KinaUnaWeb.Models.ItemViewModels
             }
             if (Video.VideoTime != null && CurrentProgeny.BirthDay.HasValue)
             {
+                DateTime videoTimeUtc;
+                if (Video.VideoTime.Value.Kind != DateTimeKind.Utc)
+                {
+                    videoTimeUtc = TimeZoneInfo.ConvertTimeToUtc(Video.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone));
+                }
+                else
+                {
+                    videoTimeUtc = Video.VideoTime.Value;
+                }
                 PictureTime picTime = new(CurrentProgeny.BirthDay.Value,
-                    TimeZoneInfo.ConvertTimeToUtc(Video.VideoTime.Value, TimeZoneInfo.FindSystemTimeZoneById(CurrentUser.Timezone)),
-                    TimeZoneInfo.FindSystemTimeZoneById(CurrentProgeny.TimeZone));
+                    videoTimeUtc, TimeZoneInfo.FindSystemTimeZoneById(CurrentProgeny.TimeZone));
                 VidTimeValid = true;
                 VidTime = Video.VideoTime.Value.ToString("dd MMMM yyyy HH:mm"); // Todo: Replace string format with global constant or user defined value
                 VidYearsDataList = picTime.CalcYears();
