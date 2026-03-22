@@ -51,6 +51,8 @@
     <PackageReference Include="OpenIddict.Validation.AspNetCore" Version="7.4.0" />
     <PackageReference Include="OpenIddict.Validation.SystemNetHttp" Version="7.4.0" />
     <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
+    <PackageReference Include="Serilog.Sinks.Seq" Version="9.0.0" />
     <PackageReference Include="System.CodeDom" Version="10.0.5" />
     <PackageReference Include="System.Composition" Version="10.0.5" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.5" />
