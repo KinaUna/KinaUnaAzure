@@ -22,16 +22,15 @@ The solution contains four application projects and three test projects:
 |---|---|
 | **Target Framework** | .NET 10 (`net10.0`) for all projects |
 | **Web Framework** | ASP.NET Core with Razor views and controllers |
-| **ORM** | Entity Framework Core with SQL Server |
+| **ORM** | Entity Framework Core with PostgreSQL |
 | **Authentication** | OpenIddict (OAuth 2.0 / OpenID Connect), Duende IdentityModel |
 | **Serialization** | `System.Text.Json` (preferred); `Newtonsoft.Json` in legacy areas |
 | **Caching** | `IDistributedCache` (distributed memory cache) and `IMemoryCache` |
 | **Real-time** | ASP.NET Core SignalR |
 | **Image Processing** | Magick.NET (`Magick.NET-Q8-AnyCPU`) |
 | **Hosting** | VPS Linux server with Coolify, Docker containers, reverse proxy (Traefik/Caddy) |
-| **Storage** | Azure Blob Storage (or compatible S3/Azurite alternative) |
-| **Monitoring** | Application Insights (optional) |
-| **Push Notifications** | Azure Notification Hubs (optional), VAPID web push |
+| **Storage** | Local file storage |
+| **Push Notifications** | VAPID web push |
 | **Client-side** | TypeScript (ES2020, strict mode), vanilla DOM manipulation, jQuery (legacy) |
 | **CSS** | Custom `site.css` with light/dark theme support via `prefers-color-scheme` media queries |
 | **Testing** | xUnit, Moq |
@@ -48,13 +47,13 @@ The application runs as **three Docker containers** deployed via [Coolify](https
 
 Each service has its own Dockerfile (`Dockerfile.auth`, `Dockerfile.api`, `Dockerfile.web`). A `docker-compose.yml` is provided for local development. In production, Coolify manages container orchestration and HTTPS termination via its built-in reverse proxy.
 
-Data is stored in **SQL Server** (three databases: one for identity/auth, one for progeny data, one for media data). **Azure Blob Storage** (or a compatible alternative) is used for images and file uploads.
+Data is stored in **PostgreSQL** (three databases: one for identity/auth, one for progeny data, one for media data). Images and file uploads are stored on the local file system.
 
 Configuration values (connection strings, client secrets, service URLs) are injected as **environment variables** — set in Coolify for production or in a `.env` file for local Docker Compose development. See `.env.example` for all required variables.
 
 ### Host Configuration
 
-The web and API projects use the `Startup` class pattern (`Program.cs` → `CreateHostBuilder` → `webBuilder.UseStartup<Startup>()`). The OpenIddict project uses `WebApplication.CreateBuilder`. Azure Key Vault support exists in the codebase but is no longer the primary configuration source; environment variables are used instead.
+The web and API projects use the `Startup` class pattern (`Program.cs` → `CreateHostBuilder` → `webBuilder.UseStartup<Startup>()`). The OpenIddict project uses `WebApplication.CreateBuilder`. Configuration is provided via environment variables.
 
 ### Data Access
 
@@ -103,16 +102,14 @@ TypeScript source files are in `KinaUnaWeb/Scripts/`, organized by feature subdi
 
 ## Services and Configuration
 
-Configuration values are provided via environment variables in production (set in Coolify) or via `appsettings.json`, `appsettings.Development.json`, and User Secrets for local development. Azure Key Vault support remains in the codebase for legacy/alternative deployments.
+Configuration values are provided via environment variables in production (set in Coolify) or via `appsettings.json`, `appsettings.Development.json`, and User Secrets for local development.
 
 ### Infrastructure
 
 - **VPS Linux Server** – Hosts all three Docker containers via Coolify
 - **Coolify** – Container orchestration, reverse proxy (HTTPS termination), environment variable management
-- **SQL Server** – Three databases (Identity, Progeny, Media)
-- **Azure Blob Storage** – Blob storage for images and files (or compatible S3/Azurite alternative)
-- **Azure Notification Hubs** – Push messaging (optional)
-- **Application Insights** – Logging and analytics (optional)
+- **PostgreSQL** – Three databases (Identity, Progeny, Media)
+- **Local file storage** – Images and file uploads stored on the server file system
 
 ### External Services
 - **Email** – Required for account confirmation and password reset emails

@@ -20,15 +20,14 @@ KinaUna is a family-oriented child-tracking web application deployed on a VPS Li
 
 - **Target Framework:** .NET 10 (`net10.0`) for all projects
 - **Web Framework:** ASP.NET Core with Razor views (not Blazor, not minimal APIs)
-- **ORM:** Entity Framework Core with SQL Server
+- **ORM:** Entity Framework Core with PostgreSQL
 - **Authentication:** OpenIddict (OAuth 2.0 / OpenID Connect), with `Duende.IdentityModel`
 - **Serialization:** `System.Text.Json` for new code; `Newtonsoft.Json` exists in some areas via `Microsoft.AspNetCore.Mvc.NewtonsoftJson`
 - **Caching:** `IDistributedCache` (distributed memory cache) and `IMemoryCache`
 - **Real-time:** ASP.NET Core SignalR (via `WebNotificationHub`)
 - **Hosting/Deployment:** VPS Linux server with Coolify, Docker containers (one per service), reverse proxy with HTTPS
-- **Storage:** Azure Blob Storage (or compatible S3/Azurite alternative)
-- **Monitoring:** Application Insights (optional)
-- **Push Notifications:** Azure Notification Hubs (optional), VAPID web push
+- **Storage:** Local file storage
+- **Push Notifications:** VAPID web push
 - **Client-side:** TypeScript (ES2020, strict mode), jQuery (legacy usage), no front-end framework (vanilla DOM manipulation)
 - **CSS:** Custom `site.css` with `prefers-color-scheme: dark` media queries (light/dark theme support)
 - **Image Processing:** Magick.NET (`Magick.NET-Q8-AnyCPU`)
@@ -39,7 +38,7 @@ KinaUna is a family-oriented child-tracking web application deployed on a VPS Li
 ### Host Configuration
 - Projects use the `Startup` class pattern (`Program.cs` → `CreateHostBuilder` → `webBuilder.UseStartup<Startup>()`), not minimal hosting / top-level statements.
 - Exception: `KinaUna.OpenIddict` uses the minimal hosting pattern (`WebApplication.CreateBuilder`).
-- In production, configuration is provided via environment variables set in Coolify (or the `.env` file for local Docker Compose). Azure Key Vault support exists in the codebase but is no longer the primary configuration source.
+- In production, configuration is provided via environment variables set in Coolify (or the `.env` file for local Docker Compose).
 
 ### Deployment
 - The application runs as three Docker containers (auth, api, web) orchestrated by Coolify on a VPS Linux server.
