@@ -61,10 +61,10 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 IsEnabled = true
             };
 
-            _testTasks = new List<KinaUnaBackgroundTask>
-            {
+            _testTasks =
+            [
                 _testTask,
-                new KinaUnaBackgroundTask
+                new()
                 {
                     TaskId = 2,
                     TaskName = "Second Task",
@@ -75,7 +75,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                     IsRunning = false,
                     IsEnabled = true
                 }
-            };
+            ];
 
             // Setup mocks
             _mockBackgroundTasksService = new Mock<IBackgroundTasksService>();
@@ -93,11 +93,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
         private void SetupControllerContext(string email, string userId)
         {
-            List<Claim> claims = new()
-            {
+            List<Claim> claims =
+            [
                 new(ClaimTypes.Email, email),
                 new("sub", userId)
-            };
+            ];
             ClaimsIdentity identity = new(claims, "TestAuthType");
             ClaimsPrincipal claimsPrincipal = new(identity);
 

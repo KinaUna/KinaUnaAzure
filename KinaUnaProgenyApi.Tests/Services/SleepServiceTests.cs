@@ -257,7 +257,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal(1, result.ProgenyId);
 
             // Verify it was added to the database
-            Sleep? dbSleep = await _progenyDbContext.SleepDb.FindAsync(result.SleepId);
+            Sleep? dbSleep = await _progenyDbContext.SleepDb.FindAsync([result.SleepId], TestContext.Current.CancellationToken);
             Assert.NotNull(dbSleep);
             Assert.Equal(result.SleepNotes, dbSleep.SleepNotes);
 
@@ -350,7 +350,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
             _mockAccessManagementService
                 .Setup(x => x.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Sleep, 1, 1, 0, It.IsAny<List<ItemPermissionDto>>(), _testUser))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             // Act
             Sleep result = await _service.UpdateSleep(updateValues, _testUser);
@@ -362,7 +362,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal(4, result.SleepRating);
 
             // Verify database was updated
-            Sleep? dbSleep = await _progenyDbContext.SleepDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
+            Sleep? dbSleep = await _progenyDbContext.SleepDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(dbSleep);
             Assert.Equal("Updated notes", dbSleep.SleepNotes);
 
@@ -433,7 +433,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
             _mockAccessManagementService
                 .Setup(x => x.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Sleep, 2, 1, 0, It.IsAny<List<ItemPermissionDto>>(), _testUser))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             // Act
             Sleep result = await _service.UpdateSleep(updateValues, _testUser);
@@ -462,9 +462,9 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, 1, _adminUser))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
-            int countBefore = await _progenyDbContext.SleepDb.CountAsync();
+            int countBefore = await _progenyDbContext.SleepDb.CountAsync(cancellationToken: TestContext.Current.CancellationToken);
 
             // Act
             Sleep result = await _service.DeleteSleep(sleepToDelete, _adminUser);
@@ -473,10 +473,10 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
             Assert.Equal(1, result.SleepId);
 
-            int countAfter = await _progenyDbContext.SleepDb.CountAsync();
+            int countAfter = await _progenyDbContext.SleepDb.CountAsync(cancellationToken: TestContext.Current.CancellationToken);
             Assert.Equal(countBefore - 1, countAfter);
 
-            Sleep? deletedSleep = await _progenyDbContext.SleepDb.FindAsync(1);
+            Sleep? deletedSleep = await _progenyDbContext.SleepDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.Null(deletedSleep);
 
             // Verify cache was updated
@@ -503,7 +503,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Null(result);
 
             // Verify sleep still exists
-            Sleep? sleep = await _progenyDbContext.SleepDb.FindAsync(1);
+            Sleep? sleep = await _progenyDbContext.SleepDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(sleep);
         }
 
@@ -542,7 +542,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, 2, _adminUser))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             // Act
             Sleep result = await _service.DeleteSleep(sleepToDelete, _adminUser);
@@ -551,7 +551,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
 
             // Verify it's removed from database
-            Sleep? deletedSleep = await _progenyDbContext.SleepDb.FindAsync(2);
+            Sleep? deletedSleep = await _progenyDbContext.SleepDb.FindAsync([2], TestContext.Current.CancellationToken);
             Assert.Null(deletedSleep);
         }
 

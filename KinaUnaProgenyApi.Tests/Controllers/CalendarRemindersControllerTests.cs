@@ -116,7 +116,7 @@ public class CalendarRemindersControllerTests
             .ReturnsAsync(_adminUser);
 
         _mockCalendarRemindersService.Setup(x => x.GetAllCalendarReminders())
-            .ReturnsAsync(new List<CalendarReminder>());
+            .ReturnsAsync([]);
 
         // Act
         IActionResult result = await _controller.GetAllCalendarReminders();
@@ -541,7 +541,7 @@ public class CalendarRemindersControllerTests
             FilterNotified = true
         };
 
-        CustomResult<List<CalendarReminder>> successResult = CustomResult<List<CalendarReminder>>.Success(new List<CalendarReminder>());
+        CustomResult<List<CalendarReminder>> successResult = CustomResult<List<CalendarReminder>>.Success([]);
         _mockCalendarRemindersService.Setup(x => x.GetCalendarRemindersForUser(request, _testUser))
             .ReturnsAsync(successResult);
 
@@ -670,7 +670,7 @@ public class CalendarRemindersControllerTests
             FilterNotified = false
         };
 
-        CustomResult<List<CalendarReminder>> successResult = CustomResult<List<CalendarReminder>>.Success(new List<CalendarReminder>());
+        CustomResult<List<CalendarReminder>> successResult = CustomResult<List<CalendarReminder>>.Success([]);
         _mockCalendarRemindersService.Setup(x => x.GetUsersCalendarRemindersForEvent(999, TestUserId, _testUser))
             .ReturnsAsync(successResult);
 

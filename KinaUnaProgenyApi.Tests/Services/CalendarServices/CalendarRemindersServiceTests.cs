@@ -113,7 +113,7 @@ public class CalendarRemindersServiceTests
         };
 
         context.CalendarRemindersDb.Add(reminder);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         Mock<IEmailSender> emailSender = new();
         Mock<IPushMessageSender> pushMessageSender = new();
@@ -172,7 +172,7 @@ public class CalendarRemindersServiceTests
         };
 
         context.CalendarRemindersDb.Add(reminder);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         Mock<IEmailSender> emailSender = new();
         Mock<IPushMessageSender> pushMessageSender = new();
@@ -208,7 +208,7 @@ public class CalendarRemindersServiceTests
         };
 
         context.CalendarRemindersDb.Add(reminder);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         Mock<IEmailSender> emailSender = new();
         Mock<IPushMessageSender> pushMessageSender = new();
@@ -256,7 +256,7 @@ public class CalendarRemindersServiceTests
         Assert.Equal(userInfo.UserId, result.Value.UserId);
 
         // Verify it was added to database
-        CalendarReminder? savedReminder = await context.CalendarRemindersDb.FirstOrDefaultAsync(r => r.EventId == 1);
+        CalendarReminder? savedReminder = await context.CalendarRemindersDb.FirstOrDefaultAsync(r => r.EventId == 1, cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(savedReminder);
     }
 
@@ -343,7 +343,7 @@ public class CalendarRemindersServiceTests
         };
 
         context.CalendarRemindersDb.Add(reminder);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         Mock<IEmailSender> emailSender = new();
         Mock<IPushMessageSender> pushMessageSender = new();
@@ -380,7 +380,7 @@ public class CalendarRemindersServiceTests
         };
 
         context.CalendarRemindersDb.Add(reminder);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         Mock<IEmailSender> emailSender = new();
         Mock<IPushMessageSender> pushMessageSender = new();
@@ -413,7 +413,7 @@ public class CalendarRemindersServiceTests
         Assert.Equal(newNotifiedDate, result.Value.NotifiedDate);
 
         // Verify it was updated in database
-        CalendarReminder? savedReminder = await context.CalendarRemindersDb.FirstOrDefaultAsync(r => r.CalendarReminderId == 1);
+        CalendarReminder? savedReminder = await context.CalendarRemindersDb.FirstOrDefaultAsync(r => r.CalendarReminderId == 1, cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(savedReminder);
         Assert.Equal(30, savedReminder.NotifyTimeOffsetType);
         Assert.True(savedReminder.Notified);
@@ -470,7 +470,7 @@ public class CalendarRemindersServiceTests
         };
 
         context.CalendarRemindersDb.Add(reminder);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         Mock<IEmailSender> emailSender = new();
         Mock<IPushMessageSender> pushMessageSender = new();
@@ -507,7 +507,7 @@ public class CalendarRemindersServiceTests
         };
 
         context.CalendarRemindersDb.Add(reminder);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         Mock<IEmailSender> emailSender = new();
         Mock<IPushMessageSender> pushMessageSender = new();
@@ -551,7 +551,7 @@ public class CalendarRemindersServiceTests
         };
 
         context.CalendarRemindersDb.Add(reminder);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         Mock<IEmailSender> emailSender = new();
         Mock<IPushMessageSender> pushMessageSender = new();
@@ -566,7 +566,7 @@ public class CalendarRemindersServiceTests
         Assert.True(result.IsSuccess);
 
         // Verify it was removed from database
-        CalendarReminder? savedReminder = await context.CalendarRemindersDb.FirstOrDefaultAsync(r => r.CalendarReminderId == 1);
+        CalendarReminder? savedReminder = await context.CalendarRemindersDb.FirstOrDefaultAsync(r => r.CalendarReminderId == 1, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Null(savedReminder);
     }
 
@@ -621,7 +621,7 @@ public class CalendarRemindersServiceTests
         };
 
         context.CalendarRemindersDb.Add(reminder);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         Mock<IEmailSender> emailSender = new();
         Mock<IPushMessageSender> pushMessageSender = new();
@@ -657,7 +657,7 @@ public class CalendarRemindersServiceTests
         };
 
         context.CalendarRemindersDb.Add(reminder);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         Mock<IEmailSender> emailSender = new();
         Mock<IPushMessageSender> pushMessageSender = new();
@@ -672,7 +672,7 @@ public class CalendarRemindersServiceTests
         Assert.True(result.IsSuccess);
 
         // Verify it was removed from database
-        CalendarReminder? savedReminder = await context.CalendarRemindersDb.FirstOrDefaultAsync(r => r.CalendarReminderId == 1);
+        CalendarReminder? savedReminder = await context.CalendarRemindersDb.FirstOrDefaultAsync(r => r.CalendarReminderId == 1, cancellationToken: TestContext.Current.CancellationToken);
         Assert.Null(savedReminder);
     }
 
@@ -693,7 +693,7 @@ public class CalendarRemindersServiceTests
         ];
 
         context.CalendarRemindersDb.AddRange(reminders);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         Mock<IEmailSender> emailSender = new();
         Mock<IPushMessageSender> pushMessageSender = new();
@@ -732,7 +732,7 @@ public class CalendarRemindersServiceTests
         ];
 
         context.CalendarRemindersDb.AddRange(reminders);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         Mock<IEmailSender> emailSender = new();
         Mock<IPushMessageSender> pushMessageSender = new();
@@ -770,7 +770,7 @@ public class CalendarRemindersServiceTests
         ];
 
         context.CalendarRemindersDb.AddRange(reminders);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         Mock<IEmailSender> emailSender = new();
         Mock<IPushMessageSender> pushMessageSender = new();
@@ -807,7 +807,7 @@ public class CalendarRemindersServiceTests
         ];
 
         context.CalendarRemindersDb.AddRange(reminders);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         Mock<IEmailSender> emailSender = new();
         Mock<IPushMessageSender> pushMessageSender = new();
@@ -845,7 +845,7 @@ public class CalendarRemindersServiceTests
         ];
 
         context.CalendarRemindersDb.AddRange(reminders);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         Mock<IEmailSender> emailSender = new();
         Mock<IPushMessageSender> pushMessageSender = new();
@@ -900,7 +900,7 @@ public class CalendarRemindersServiceTests
         ];
 
         context.CalendarRemindersDb.AddRange(reminders);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         Mock<IEmailSender> emailSender = new();
         Mock<IPushMessageSender> pushMessageSender = new();
@@ -933,7 +933,7 @@ public class CalendarRemindersServiceTests
         ];
 
         context.CalendarRemindersDb.AddRange(reminders);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         Mock<IEmailSender> emailSender = new();
         Mock<IPushMessageSender> pushMessageSender = new();
@@ -998,7 +998,7 @@ public class CalendarRemindersServiceTests
         ];
         context.CalendarRemindersDb.AddRange(reminders);
 
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         Mock<IEmailSender> emailSender = new();
         emailSender.Setup(x => x.SendEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
@@ -1017,7 +1017,7 @@ public class CalendarRemindersServiceTests
 
         // Assert
         // Verify reminder was marked as notified
-        CalendarReminder? updatedReminder = await context.CalendarRemindersDb.FirstOrDefaultAsync(r => r.CalendarReminderId == 1);
+        CalendarReminder? updatedReminder = await context.CalendarRemindersDb.FirstOrDefaultAsync(r => r.CalendarReminderId == 1, cancellationToken: TestContext.Current.CancellationToken);
         Assert.NotNull(updatedReminder);
         Assert.True(updatedReminder.Notified);
 
@@ -1057,7 +1057,7 @@ public class CalendarRemindersServiceTests
         ];
         context.CalendarRemindersDb.AddRange(reminders);
 
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
         Mock<IEmailSender> emailSender = new();
         Mock<IPushMessageSender> pushMessageSender = new();
@@ -1342,7 +1342,7 @@ public class CalendarRemindersServiceTests
                 It.IsAny<DateTime>(),
                 It.IsAny<bool>(),
                 It.IsAny<UserInfo>()))
-            .ReturnsAsync(new List<CalendarItem>());
+            .ReturnsAsync([]);
 
         CalendarRemindersService service = new(context, emailSender.Object, pushMessageSender.Object, calendarRecurrencesService.Object);
 

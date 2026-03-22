@@ -769,7 +769,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 IsDeleted = false
             };
             _progenyDbContext.KanbanItemsDb.Add(itemWithoutUId);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             KanbanItem updatedItem = new()
             {
@@ -914,7 +914,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
         public async Task DeleteKanbanItem_WhenUserHasAccess_SoftDeletesItem()
         {
             // Arrange
-            KanbanItem? itemToDelete = await _progenyDbContext.KanbanItemsDb.FindAsync(1);
+            KanbanItem? itemToDelete = await _progenyDbContext.KanbanItemsDb.FindAsync([1], TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, 1, _adminUser, PermissionLevel.Admin))
@@ -927,7 +927,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
             Assert.NotNull(result);
             Assert.Equal(1, result.KanbanItemId);
 
-            KanbanItem? deletedItem = await _progenyDbContext.KanbanItemsDb.FindAsync(1);
+            KanbanItem? deletedItem = await _progenyDbContext.KanbanItemsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(deletedItem);
             Assert.True(deletedItem.IsDeleted);
         }
@@ -936,7 +936,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
         public async Task DeleteKanbanItem_WhenHardDelete_PermanentlyDeletesItem()
         {
             // Arrange
-            KanbanItem? itemToDelete = await _progenyDbContext.KanbanItemsDb.FindAsync(1);
+            KanbanItem? itemToDelete = await _progenyDbContext.KanbanItemsDb.FindAsync([1], TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, 1, _adminUser, PermissionLevel.Admin))
@@ -949,7 +949,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
             Assert.NotNull(result);
             Assert.Equal(1, result.KanbanItemId);
 
-            KanbanItem? deletedItem = await _progenyDbContext.KanbanItemsDb.FindAsync(1);
+            KanbanItem? deletedItem = await _progenyDbContext.KanbanItemsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.Null(deletedItem);
         }
 
@@ -957,14 +957,14 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
         public async Task DeleteKanbanItem_WhenUserHasNoAccess_ReturnsNull()
         {
             // Arrange
-            KanbanItem? itemToDelete = await _progenyDbContext.KanbanItemsDb.FindAsync(1);
+            KanbanItem? itemToDelete = await _progenyDbContext.KanbanItemsDb.FindAsync([1], TestContext.Current.CancellationToken);
 
             Progeny progeny = new()
             {
                 Id = 1,
             };
             _progenyDbContext.ProgenyDb.Add(progeny);
-            await  _progenyDbContext.SaveChangesAsync();
+            await  _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, 1, _otherUser, PermissionLevel.Admin))
@@ -976,7 +976,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
             // Assert
             Assert.Null(result);
 
-            KanbanItem? item = await _progenyDbContext.KanbanItemsDb.FindAsync(1);
+            KanbanItem? item = await _progenyDbContext.KanbanItemsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(item);
             Assert.False(item.IsDeleted);
         }

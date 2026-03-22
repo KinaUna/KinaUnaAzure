@@ -95,7 +95,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.FriendsDb.Add(friend);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.View))
@@ -188,7 +188,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.FriendsDb.Add(friend);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.View))
@@ -229,7 +229,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Name = "New Friend",
                 Description = "Test Description",
                 PictureLink = Constants.ProfilePictureUrl,
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockAccessManagementService
@@ -250,7 +250,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotEqual(0, result.FriendId);
             Assert.Equal("New Friend", result.Name);
 
-            Friend? dbFriend = await context.FriendsDb.FindAsync(result.FriendId);
+            Friend? dbFriend = await context.FriendsDb.FindAsync([result.FriendId], TestContext.Current.CancellationToken);
             Assert.NotNull(dbFriend);
             Assert.Equal("New Friend", dbFriend.Name);
 
@@ -308,7 +308,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.FriendsDb.Add(friend);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.Entry(friend).State = EntityState.Detached;
 
             Friend updatedFriend = new()
@@ -317,7 +317,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyId = 1,
                 Name = "Updated Name",
                 PictureLink = "updated.jpg",
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockAccessManagementService
@@ -326,7 +326,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockAccessManagementService
                 .Setup(x => x.UpdateItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
@@ -337,7 +337,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
             Assert.Equal("Updated Name", result.Name);
 
-            Friend? dbFriend = await context.FriendsDb.FindAsync(1);
+            Friend? dbFriend = await context.FriendsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(dbFriend);
             Assert.Equal("Updated Name", dbFriend.Name);
 
@@ -361,7 +361,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.FriendsDb.Add(friend);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Friend updatedFriend = new()
             {
@@ -430,7 +430,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.FriendsDb.Add(friend);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.Entry(friend).State = EntityState.Detached;
 
             Friend updatedFriend = new()
@@ -439,7 +439,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyId = 1,
                 Name = "Test Friend",
                 PictureLink = "new-picture.jpg",
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockAccessManagementService
@@ -448,7 +448,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockAccessManagementService
                 .Setup(x => x.UpdateItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             _mockImageStore
                 .Setup(x => x.DeleteImage("old-picture.jpg", BlobContainers.Friends))
@@ -490,7 +490,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.FriendsDb.AddRange(friend1, friend2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.Entry(friend1).State = EntityState.Detached;
 
             Friend updatedFriend = new()
@@ -499,7 +499,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyId = 1,
                 Name = "Friend 1",
                 PictureLink = "new-picture.jpg",
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockAccessManagementService
@@ -508,7 +508,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockAccessManagementService
                 .Setup(x => x.UpdateItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
@@ -542,7 +542,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.FriendsDb.Add(friend);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.Admin))
@@ -550,7 +550,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             _mockImageStore
                 .Setup(x => x.DeleteImage("test-picture.jpg", BlobContainers.Friends))
@@ -565,7 +565,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
             Assert.Equal(1, result.FriendId);
 
-            Friend? dbFriend = await context.FriendsDb.FindAsync(1);
+            Friend? dbFriend = await context.FriendsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.Null(dbFriend);
 
             _mockKinaUnaCacheService.Verify(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Friend), Times.Once);
@@ -588,7 +588,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.FriendsDb.Add(friend);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.Admin))
@@ -601,7 +601,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             // Assert
             Assert.Null(result);
-            Friend? dbFriend = await context.FriendsDb.FindAsync(1);
+            Friend? dbFriend = await context.FriendsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(dbFriend);
         }
 
@@ -660,7 +660,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.FriendsDb.AddRange(friend1, friend2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.Admin))
@@ -668,7 +668,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             FriendService service = new(context, cache, _mockImageStore.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
@@ -693,15 +693,15 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo userInfo = CreateTestUserInfo();
             SetupDefaultCacheMocks();
 
-            List<Friend> friends = new()
-            {
-                new Friend { FriendId = 1, ProgenyId = 1, Name = "Friend 1" },
-                new Friend { FriendId = 2, ProgenyId = 1, Name = "Friend 2" },
-                new Friend { FriendId = 3, ProgenyId = 1, Name = "Friend 3" }
-            };
+            List<Friend> friends =
+            [
+                new() { FriendId = 1, ProgenyId = 1, Name = "Friend 1" },
+                new() { FriendId = 2, ProgenyId = 1, Name = "Friend 2" },
+                new() { FriendId = 3, ProgenyId = 1, Name = "Friend 3" }
+            ];
 
             context.FriendsDb.AddRange(friends);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -727,15 +727,15 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo userInfo = CreateTestUserInfo();
             SetupDefaultCacheMocks();
 
-            List<Friend> friends = new()
-            {
-                new Friend { FriendId = 1, ProgenyId = 1, Name = "Friend 1" },
-                new Friend { FriendId = 2, ProgenyId = 1, Name = "Friend 2" },
-                new Friend { FriendId = 3, ProgenyId = 1, Name = "Friend 3" }
-            };
+            List<Friend> friends =
+            [
+                new() { FriendId = 1, ProgenyId = 1, Name = "Friend 1" },
+                new() { FriendId = 2, ProgenyId = 1, Name = "Friend 2" },
+                new() { FriendId = 3, ProgenyId = 1, Name = "Friend 3" }
+            ];
 
             context.FriendsDb.AddRange(friends);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.View))
@@ -788,10 +788,10 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            Friend[] cachedFriends = new[]
-            {
-                new Friend { FriendId = 1, ProgenyId = 1, Name = "Cached Friend" }
-            };
+            Friend[] cachedFriends =
+            [
+                new() { FriendId = 1, ProgenyId = 1, Name = "Cached Friend" }
+            ];
 
             FriendsListCacheEntry cacheEntry = new()
             {
@@ -840,15 +840,15 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo userInfo = CreateTestUserInfo();
             SetupDefaultCacheMocks();
 
-            List<Friend> friends = new()
-            {
-                new Friend { FriendId = 1, ProgenyId = 1, Name = "Friend 1", Tags = "school, sports" },
-                new Friend { FriendId = 2, ProgenyId = 1, Name = "Friend 2", Tags = "family, school" },
-                new Friend { FriendId = 3, ProgenyId = 1, Name = "Friend 3", Tags = "sports, music" }
-            };
+            List<Friend> friends =
+            [
+                new() { FriendId = 1, ProgenyId = 1, Name = "Friend 1", Tags = "school, sports" },
+                new() { FriendId = 2, ProgenyId = 1, Name = "Friend 2", Tags = "family, school" },
+                new() { FriendId = 3, ProgenyId = 1, Name = "Friend 3", Tags = "sports, music" }
+            ];
 
             context.FriendsDb.AddRange(friends);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -875,14 +875,14 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo userInfo = CreateTestUserInfo();
             SetupDefaultCacheMocks();
 
-            List<Friend> friends = new()
-            {
-                new Friend { FriendId = 1, ProgenyId = 1, Name = "Friend 1", Tags = "school" },
-                new Friend { FriendId = 2, ProgenyId = 1, Name = "Friend 2", Tags = "sports" }
-            };
+            List<Friend> friends =
+            [
+                new() { FriendId = 1, ProgenyId = 1, Name = "Friend 1", Tags = "school" },
+                new() { FriendId = 2, ProgenyId = 1, Name = "Friend 2", Tags = "sports" }
+            ];
 
             context.FriendsDb.AddRange(friends);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -909,7 +909,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Friend friend = new() { FriendId = 1, ProgenyId = 1, Name = "Friend 1", Tags = "School, Sports" };
             context.FriendsDb.Add(friend);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.View))
@@ -938,15 +938,15 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo userInfo = CreateTestUserInfo();
             SetupDefaultCacheMocks();
 
-            List<Friend> friends = new()
-            {
-                new Friend { FriendId = 1, ProgenyId = 1, Name = "Friend 1", Context = "school activities" },
-                new Friend { FriendId = 2, ProgenyId = 1, Name = "Friend 2", Context = "family events" },
-                new Friend { FriendId = 3, ProgenyId = 1, Name = "Friend 3", Context = "school sports" }
-            };
+            List<Friend> friends =
+            [
+                new() { FriendId = 1, ProgenyId = 1, Name = "Friend 1", Context = "school activities" },
+                new() { FriendId = 2, ProgenyId = 1, Name = "Friend 2", Context = "family events" },
+                new() { FriendId = 3, ProgenyId = 1, Name = "Friend 3", Context = "school sports" }
+            ];
 
             context.FriendsDb.AddRange(friends);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -973,14 +973,14 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo userInfo = CreateTestUserInfo();
             SetupDefaultCacheMocks();
 
-            List<Friend> friends = new()
-            {
-                new Friend { FriendId = 1, ProgenyId = 1, Name = "Friend 1", Context = "school" },
-                new Friend { FriendId = 2, ProgenyId = 1, Name = "Friend 2", Context = "sports" }
-            };
+            List<Friend> friends =
+            [
+                new() { FriendId = 1, ProgenyId = 1, Name = "Friend 1", Context = "school" },
+                new() { FriendId = 2, ProgenyId = 1, Name = "Friend 2", Context = "sports" }
+            ];
 
             context.FriendsDb.AddRange(friends);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -1007,7 +1007,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Friend friend = new() { FriendId = 1, ProgenyId = 1, Name = "Friend 1", Context = "School Activities" };
             context.FriendsDb.Add(friend);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.View))
@@ -1034,7 +1034,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Friend friend = new() { FriendId = 1, ProgenyId = 1, Name = "Friend 1", Context = "After school activities" };
             context.FriendsDb.Add(friend);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Friend, 1, userInfo, PermissionLevel.View))

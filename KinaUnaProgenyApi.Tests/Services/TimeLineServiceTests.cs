@@ -229,7 +229,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
             Assert.Equal(newProgenyTime, result.ProgenyTime);
             // confirm DB was updated
-            TimeLineItem? dbItem = await context.TimeLineDb.FindAsync(new object?[] { original.TimeLineId }, TestContext.Current.CancellationToken);
+            TimeLineItem? dbItem = await context.TimeLineDb.FindAsync([original.TimeLineId], TestContext.Current.CancellationToken);
             Assert.Equal(newProgenyTime, dbItem!.ProgenyTime);
         }
 
@@ -316,7 +316,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             TimeLineItem? result = await service.DeleteTimeLineItem(input, user);
             Assert.NotNull(result);
 
-            TimeLineItem? dbItem = await context.TimeLineDb.FindAsync(new object?[] { toDelete.TimeLineId }, TestContext.Current.CancellationToken);
+            TimeLineItem? dbItem = await context.TimeLineDb.FindAsync([toDelete.TimeLineId], TestContext.Current.CancellationToken);
             Assert.Null(dbItem);
         }
 
@@ -359,7 +359,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             TimeLineItem? result = await service.DeleteTimeLineItem(input, user);
             Assert.Null(result);
-            TimeLineItem? dbItem = await context.TimeLineDb.FindAsync(new object?[] { toDelete.TimeLineId }, TestContext.Current.CancellationToken);
+            TimeLineItem? dbItem = await context.TimeLineDb.FindAsync([toDelete.TimeLineId], TestContext.Current.CancellationToken);
             Assert.NotNull(dbItem);
         }
 
@@ -478,8 +478,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             OnThisDayRequest req = new()
             {
-                Progenies = new List<int> { 3 },
-                Families = new List<int>(),
+                Progenies = [3],
+                Families = [],
                 NumberOfItems = 2,
                 Skip = 0,
                 SortOrder = 1 // descending
@@ -520,8 +520,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Mock<ICalendarService> calendarMock = new();
             // Return a calendar item with StartTime so it will be converted to a TimeLineItem
             calendarMock.Setup(x => x.GetRecurringCalendarItemsLatestPosts(4, 0, It.IsAny<UserInfo>()))
-                        .ReturnsAsync(new List<CalendarItem>
-                        {
+                        .ReturnsAsync([
                             new()
                             {
                                 EventId = 999,
@@ -531,15 +530,15 @@ namespace KinaUnaProgenyApi.Tests.Services
                                 Context = "Recurring",
                                 Location = "Home"
                             }
-                        });
+                        ]);
             calendarMock.Setup(x => x.GetCalendarItem(It.IsAny<int>(), It.IsAny<UserInfo>())).ReturnsAsync(new CalendarItem());
             TimelineService service = new(context, timelineFilteringMock.Object, cache, calendarMock.Object, accessMock.Object);
             UserInfo user = CreateTestUser();
 
             TimelineRequest req = new()
             {
-                Progenies = new List<int> { 4 },
-                Families = new List<int>(),
+                Progenies = [4],
+                Families = [],
                 NumberOfItems = 10,
                 Skip = 0,
                 SortOrder = 1

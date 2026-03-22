@@ -137,7 +137,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             List<Skill> skillsList =
             [
                 _testSkill,
-                new Skill { SkillId = TestSkillId + 1, ProgenyId = TestProgenyId, Name = "Skill 2" }
+                new() { SkillId = TestSkillId + 1, ProgenyId = TestProgenyId, Name = "Skill 2" }
             ];
 
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))

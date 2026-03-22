@@ -826,7 +826,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 CreatedTime = DateTime.UtcNow.AddDays(-5)
             };
             _progenyDbContext.SkillsDb.Add(skillWithoutObservation);
-            _progenyDbContext.SaveChanges();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             SearchRequest request = new()
             {

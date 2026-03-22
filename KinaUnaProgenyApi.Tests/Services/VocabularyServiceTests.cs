@@ -206,7 +206,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Date = DateTime.UtcNow,
                 Author = "testuser@test.com",
                 CreatedBy = "testuser@test.com",
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockUserInfoService
@@ -238,7 +238,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotEqual(default(DateTime), result.CreatedTime);
             Assert.NotEqual(default(DateTime), result.DateAdded);
 
-            VocabularyItem? dbVocabularyItem = await context.VocabularyDb.FindAsync(new object?[] { result.WordId }, TestContext.Current.CancellationToken);
+            VocabularyItem? dbVocabularyItem = await context.VocabularyDb.FindAsync([result.WordId], TestContext.Current.CancellationToken);
             Assert.NotNull(dbVocabularyItem);
             Assert.Equal("New Word", dbVocabularyItem.Word);
         }
@@ -291,7 +291,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Word = "New Word",
                 Description = "New Description",
                 CreatedBy = "testuser@test.com",
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockUserInfoService
@@ -359,7 +359,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Description = "Updated Description",
                 Language = "Spanish",
                 ModifiedBy = "testuser@test.com",
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockUserInfoService
@@ -372,7 +372,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockAccessManagementService
                 .Setup(x => x.UpdateItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             _mockKinaUnaCacheService
                 .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Vocabulary))
@@ -389,7 +389,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal("Updated Description", result.Description);
             Assert.Equal("Spanish", result.Language);
 
-            VocabularyItem? dbVocabularyItem = await context.VocabularyDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
+            VocabularyItem? dbVocabularyItem = await context.VocabularyDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(dbVocabularyItem);
             Assert.Equal("Updated Word", dbVocabularyItem.Word);
             Assert.Equal("Updated Description", dbVocabularyItem.Description);
@@ -440,7 +440,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Null(result);
 
             // Verify original vocabulary item unchanged
-            VocabularyItem? dbVocabularyItem = await context.VocabularyDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
+            VocabularyItem? dbVocabularyItem = await context.VocabularyDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.Equal("Original Word", dbVocabularyItem!.Word);
         }
 
@@ -505,7 +505,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyId = 1,
                 Word = "Updated Word",
                 ModifiedBy = "testuser@test.com",
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockUserInfoService
@@ -518,7 +518,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockAccessManagementService
                 .Setup(x => x.UpdateItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             _mockKinaUnaCacheService
                 .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Vocabulary))
@@ -572,7 +572,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, 1, userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             _mockKinaUnaCacheService
                 .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Vocabulary))
@@ -587,7 +587,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
             Assert.Equal(1, result.WordId);
 
-            VocabularyItem? dbVocabularyItem = await context.VocabularyDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
+            VocabularyItem? dbVocabularyItem = await context.VocabularyDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.Null(dbVocabularyItem);
         }
 
@@ -627,7 +627,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Null(result);
 
             // Verify vocabulary item still exists
-            VocabularyItem? dbVocabularyItem = await context.VocabularyDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
+            VocabularyItem? dbVocabularyItem = await context.VocabularyDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(dbVocabularyItem);
         }
 
@@ -708,7 +708,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, 1, userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             _mockKinaUnaCacheService
                 .Setup(x => x.GetVocabularyItemsListCache(userInfo.UserId, 1))
@@ -754,12 +754,12 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            List<VocabularyItem> vocabularyItems = new()
-            {
-                new VocabularyItem { WordId = 1, ProgenyId = 1, Word = "Word 1", Description = "Description 1" },
-                new VocabularyItem { WordId = 2, ProgenyId = 1, Word = "Word 2", Description = "Description 2" },
-                new VocabularyItem { WordId = 3, ProgenyId = 1, Word = "Word 3", Description = "Description 3" }
-            };
+            List<VocabularyItem> vocabularyItems =
+            [
+                new() { WordId = 1, ProgenyId = 1, Word = "Word 1", Description = "Description 1" },
+                new() { WordId = 2, ProgenyId = 1, Word = "Word 2", Description = "Description 2" },
+                new() { WordId = 3, ProgenyId = 1, Word = "Word 3", Description = "Description 3" }
+            ];
 
             context.VocabularyDb.AddRange(vocabularyItems);
             await context.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -802,12 +802,12 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            List<VocabularyItem> vocabularyItems = new()
-            {
-                new VocabularyItem { WordId = 1, ProgenyId = 1, Word = "Word 1" },
-                new VocabularyItem { WordId = 2, ProgenyId = 1, Word = "Word 2" },
-                new VocabularyItem { WordId = 3, ProgenyId = 1, Word = "Word 3" }
-            };
+            List<VocabularyItem> vocabularyItems =
+            [
+                new() { WordId = 1, ProgenyId = 1, Word = "Word 1" },
+                new() { WordId = 2, ProgenyId = 1, Word = "Word 2" },
+                new() { WordId = 3, ProgenyId = 1, Word = "Word 3" }
+            ];
 
             context.VocabularyDb.AddRange(vocabularyItems);
             await context.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -936,12 +936,12 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            List<VocabularyItem> vocabularyItems = new()
-            {
-                new VocabularyItem { WordId = 1, ProgenyId = 1, Word = "Word 1" },
-                new VocabularyItem { WordId = 2, ProgenyId = 2, Word = "Word 2" },
-                new VocabularyItem { WordId = 3, ProgenyId = 1, Word = "Word 3" }
-            };
+            List<VocabularyItem> vocabularyItems =
+            [
+                new() { WordId = 1, ProgenyId = 1, Word = "Word 1" },
+                new() { WordId = 2, ProgenyId = 2, Word = "Word 2" },
+                new() { WordId = 3, ProgenyId = 1, Word = "Word 3" }
+            ];
 
             context.VocabularyDb.AddRange(vocabularyItems);
             await context.SaveChangesAsync(TestContext.Current.CancellationToken);

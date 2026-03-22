@@ -124,7 +124,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.NotesDb.Add(note);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Note, 1, userInfo, PermissionLevel.View))
@@ -179,7 +179,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.NotesDb.Add(note);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Note, 1, userInfo, PermissionLevel.View))
@@ -222,7 +222,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Content = "New Content",
                 Category = "New Category",
                 Owner = "testuser@test.com",
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockAccessManagementService
@@ -245,7 +245,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal("New Content", result.Content);
             Assert.NotEqual(default(DateTime), result.CreatedTime);
 
-            Note? dbNote = await context.NotesDb.FindAsync(result.NoteId);
+            Note? dbNote = await context.NotesDb.FindAsync([result.NoteId], TestContext.Current.CancellationToken);
             Assert.NotNull(dbNote);
             Assert.Equal("New Note", dbNote.Title);
 
@@ -297,7 +297,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 ProgenyId = 1,
                 Title = "New Note",
                 Content = "New Content",
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockAccessManagementService
@@ -343,7 +343,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.NotesDb.Add(note);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.Entry(note).State = EntityState.Detached;
 
             Note updatedNote = new()
@@ -353,7 +353,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Title = "Updated Title",
                 Content = "Updated Content",
                 Category = "Updated Category",
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockAccessManagementService
@@ -362,7 +362,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockAccessManagementService
                 .Setup(x => x.UpdateItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             NoteService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
@@ -375,7 +375,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal("Updated Content", result.Content);
             Assert.Equal("Updated Category", result.Category);
 
-            Note? dbNote = await context.NotesDb.FindAsync(1);
+            Note? dbNote = await context.NotesDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(dbNote);
             Assert.Equal("Updated Title", dbNote.Title);
             Assert.Equal("Updated Content", dbNote.Content);
@@ -401,7 +401,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.NotesDb.Add(note);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Note updatedNote = new()
             {
@@ -424,7 +424,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Null(result);
 
             // Verify original note unchanged
-            Note? dbNote = await context.NotesDb.FindAsync(1);
+            Note? dbNote = await context.NotesDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.Equal("Original Title", dbNote!.Title);
         }
 
@@ -480,7 +480,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.NotesDb.Add(note);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Note, 1, userInfo, PermissionLevel.Admin))
@@ -488,7 +488,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             NoteService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
@@ -499,7 +499,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
             Assert.Equal(1, result.NoteId);
 
-            Note? dbNote = await context.NotesDb.FindAsync(1);
+            Note? dbNote = await context.NotesDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.Null(dbNote);
 
             _mockKinaUnaCacheService.Verify(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Note), Times.Once);
@@ -523,7 +523,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.NotesDb.Add(note);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Note, 1, userInfo, PermissionLevel.Admin))
@@ -538,7 +538,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Null(result);
 
             // Verify note still exists
-            Note? dbNote = await context.NotesDb.FindAsync(1);
+            Note? dbNote = await context.NotesDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(dbNote);
         }
 
@@ -595,7 +595,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.NotesDb.AddRange(note1, note2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Note, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -611,7 +611,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             NoteService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
@@ -642,15 +642,15 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo userInfo = CreateTestUserInfo();
             SetupDefaultMocks();
 
-            List<Note> notes = new()
-            {
-                new Note { NoteId = 1, ProgenyId = 1, Title = "Note 1", Content = "Content 1" },
-                new Note { NoteId = 2, ProgenyId = 1, Title = "Note 2", Content = "Content 2" },
-                new Note { NoteId = 3, ProgenyId = 1, Title = "Note 3", Content = "Content 3" }
-            };
+            List<Note> notes =
+            [
+                new() { NoteId = 1, ProgenyId = 1, Title = "Note 1", Content = "Content 1" },
+                new() { NoteId = 2, ProgenyId = 1, Title = "Note 2", Content = "Content 2" },
+                new() { NoteId = 3, ProgenyId = 1, Title = "Note 3", Content = "Content 3" }
+            ];
 
             context.NotesDb.AddRange(notes);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Note, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -681,15 +681,15 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo userInfo = CreateTestUserInfo();
             SetupDefaultMocks();
 
-            List<Note> notes = new()
-            {
-                new Note { NoteId = 1, ProgenyId = 1, Title = "Note 1" },
-                new Note { NoteId = 2, ProgenyId = 1, Title = "Note 2" },
-                new Note { NoteId = 3, ProgenyId = 1, Title = "Note 3" }
-            };
+            List<Note> notes =
+            [
+                new() { NoteId = 1, ProgenyId = 1, Title = "Note 1" },
+                new() { NoteId = 2, ProgenyId = 1, Title = "Note 2" },
+                new() { NoteId = 3, ProgenyId = 1, Title = "Note 3" }
+            ];
 
             context.NotesDb.AddRange(notes);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Note, 1, userInfo, PermissionLevel.View))
@@ -749,7 +749,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Note note = new() { NoteId = 1, ProgenyId = 1, Title = "Note 1" };
             context.NotesDb.Add(note);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Note, 1, userInfo, PermissionLevel.View))
@@ -761,7 +761,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             NotesListCacheEntry cacheEntry = new()
             {
-                NotesList = new[] { note },
+                NotesList = [note],
                 UpdateTime = DateTime.UtcNow
             };
 
@@ -811,15 +811,15 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo userInfo = CreateTestUserInfo();
             SetupDefaultMocks();
 
-            List<Note> notes = new()
-            {
-                new Note { NoteId = 1, ProgenyId = 1, Title = "Note 1" },
-                new Note { NoteId = 2, ProgenyId = 2, Title = "Note 2" },
-                new Note { NoteId = 3, ProgenyId = 1, Title = "Note 3" }
-            };
+            List<Note> notes =
+            [
+                new() { NoteId = 1, ProgenyId = 1, Title = "Note 1" },
+                new() { NoteId = 2, ProgenyId = 2, Title = "Note 2" },
+                new() { NoteId = 3, ProgenyId = 1, Title = "Note 3" }
+            ];
 
             context.NotesDb.AddRange(notes);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Note, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -853,15 +853,15 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo userInfo = CreateTestUserInfo();
             SetupDefaultMocks();
 
-            List<Note> notes = new()
-            {
-                new Note { NoteId = 1, ProgenyId = 1, Title = "Note 1", Category = "School Notes" },
-                new Note { NoteId = 2, ProgenyId = 1, Title = "Note 2", Category = "Personal" },
-                new Note { NoteId = 3, ProgenyId = 1, Title = "Note 3", Category = "School Activities" }
-            };
+            List<Note> notes =
+            [
+                new() { NoteId = 1, ProgenyId = 1, Title = "Note 1", Category = "School Notes" },
+                new() { NoteId = 2, ProgenyId = 1, Title = "Note 2", Category = "Personal" },
+                new() { NoteId = 3, ProgenyId = 1, Title = "Note 3", Category = "School Activities" }
+            ];
 
             context.NotesDb.AddRange(notes);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Note, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -892,14 +892,14 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo userInfo = CreateTestUserInfo();
             SetupDefaultMocks();
 
-            List<Note> notes = new()
-            {
-                new Note { NoteId = 1, ProgenyId = 1, Title = "Note 1", Category = "School" },
-                new Note { NoteId = 2, ProgenyId = 1, Title = "Note 2", Category = "Personal" }
-            };
+            List<Note> notes =
+            [
+                new() { NoteId = 1, ProgenyId = 1, Title = "Note 1", Category = "School" },
+                new() { NoteId = 2, ProgenyId = 1, Title = "Note 2", Category = "Personal" }
+            ];
 
             context.NotesDb.AddRange(notes);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Note, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -928,14 +928,14 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo userInfo = CreateTestUserInfo();
             SetupDefaultMocks();
 
-            List<Note> notes = new()
-            {
-                new Note { NoteId = 1, ProgenyId = 1, Title = "Note 1", Category = "School" },
-                new Note { NoteId = 2, ProgenyId = 1, Title = "Note 2", Category = "Personal" }
-            };
+            List<Note> notes =
+            [
+                new() { NoteId = 1, ProgenyId = 1, Title = "Note 1", Category = "School" },
+                new() { NoteId = 2, ProgenyId = 1, Title = "Note 2", Category = "Personal" }
+            ];
 
             context.NotesDb.AddRange(notes);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Note, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -966,7 +966,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Note note = new() { NoteId = 1, ProgenyId = 1, Title = "Note 1", Category = "School Activities" };
             context.NotesDb.Add(note);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Note, 1, userInfo, PermissionLevel.View))
@@ -997,7 +997,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Note note = new() { NoteId = 1, ProgenyId = 1, Title = "Note 1", Category = "After School Activities" };
             context.NotesDb.Add(note);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Note, 1, userInfo, PermissionLevel.View))
@@ -1026,15 +1026,15 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo userInfo = CreateTestUserInfo();
             SetupDefaultMocks();
 
-            List<Note> notes = new()
-            {
-                new Note { NoteId = 1, ProgenyId = 1, Title = "Note 1", Category = "School" },
-                new Note { NoteId = 2, ProgenyId = 1, Title = "Note 2", Category = null },
-                new Note { NoteId = 3, ProgenyId = 1, Title = "Note 3", Category = "Personal" }
-            };
+            List<Note> notes =
+            [
+                new() { NoteId = 1, ProgenyId = 1, Title = "Note 1", Category = "School" },
+                new() { NoteId = 2, ProgenyId = 1, Title = "Note 2", Category = null },
+                new() { NoteId = 3, ProgenyId = 1, Title = "Note 3", Category = "Personal" }
+            ];
 
             context.NotesDb.AddRange(notes);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Note, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -1064,14 +1064,14 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo userInfo = CreateTestUserInfo();
             SetupDefaultMocks();
 
-            List<Note> notes = new()
-            {
-                new Note { NoteId = 1, ProgenyId = 1, Title = "Note 1", Category = "Work" },
-                new Note { NoteId = 2, ProgenyId = 1, Title = "Note 2", Category = "Personal" }
-            };
+            List<Note> notes =
+            [
+                new() { NoteId = 1, ProgenyId = 1, Title = "Note 1", Category = "Work" },
+                new() { NoteId = 2, ProgenyId = 1, Title = "Note 2", Category = "Personal" }
+            ];
 
             context.NotesDb.AddRange(notes);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Note, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -1100,15 +1100,15 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo userInfo = CreateTestUserInfo();
             SetupDefaultMocks();
 
-            List<Note> notes = new()
-            {
-                new Note { NoteId = 1, ProgenyId = 1, Title = "Note 1", Category = "School" },
-                new Note { NoteId = 2, ProgenyId = 1, Title = "Note 2", Category = "School" },
-                new Note { NoteId = 3, ProgenyId = 1, Title = "Note 3", Category = "School" }
-            };
+            List<Note> notes =
+            [
+                new() { NoteId = 1, ProgenyId = 1, Title = "Note 1", Category = "School" },
+                new() { NoteId = 2, ProgenyId = 1, Title = "Note 2", Category = "School" },
+                new() { NoteId = 3, ProgenyId = 1, Title = "Note 3", Category = "School" }
+            ];
 
             context.NotesDb.AddRange(notes);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Note, 1, userInfo, PermissionLevel.View))

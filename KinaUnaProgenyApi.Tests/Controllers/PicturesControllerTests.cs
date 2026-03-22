@@ -156,7 +156,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             List<Picture> pictures =
             [
                 _testPicture,
-                new Picture { PictureId = 101, ProgenyId = TestProgenyId, PictureTime = DateTime.UtcNow.AddDays(-1), Tags = "tag1" }
+                new() { PictureId = 101, ProgenyId = TestProgenyId, PictureTime = DateTime.UtcNow.AddDays(-1), Tags = "tag1" }
             ];
 
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))

@@ -28,7 +28,7 @@ internal class Program
     private const string PostgresProgeny = "";
     private const string PostgresMedia = "";
 
-    private static async Task Main(string[] args)
+    private static async Task Main()
     {
         Console.WriteLine("=== KinaUna Data Migration: SQL Server → PostgreSQL ===");
         Console.WriteLine();

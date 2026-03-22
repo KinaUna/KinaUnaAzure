@@ -341,7 +341,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             _progenyDbContext.UserGroupsDb.Add(userGroup);
             
             _progenyDbContext.ProgenyPermissionsDb.Add(permission);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             bool result = await _service.HasProgenyPermission(_progenyId, _testUser, PermissionLevel.View);
@@ -429,7 +429,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             _progenyDbContext.UserGroupsDb.Add(userGroup);
 
             _progenyDbContext.FamilyPermissionsDb.Add(permission);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             bool result = await _service.HasFamilyPermission(_familyId, _testUser, PermissionLevel.View);
@@ -459,7 +459,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
 
             _progenyDbContext.FamilyPermissionsDb.Add(groupPermission);
             _progenyDbContext.UserGroupMembersDb.Add(groupMembership);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             bool result = await _service.HasFamilyPermission(_familyId, _testUser, PermissionLevel.View);
@@ -532,7 +532,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
 
             _progenyDbContext.ProgenyPermissionsDb.Add(adminPermission);
             _progenyDbContext.TimelineItemPermissionsDb.Add(existingPermission);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             TimelineItemPermission? result = await _service.GrantItemPermission(newPermission, _adminUser);
@@ -580,7 +580,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             };
 
             _progenyDbContext.ProgenyPermissionsDb.Add(adminPermission);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Mock audit log service
             _mockPermissionAuditLogService.Setup(s => s.AddTimelineItemPermissionAuditLogEntry(
@@ -597,7 +597,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             Assert.Equal(_adminUser.UserId, result.CreatedBy);
             Assert.Equal(PermissionLevel.Edit, result.PermissionLevel);
 
-            TimelineItemPermission? saved = await _progenyDbContext.TimelineItemPermissionsDb.FirstOrDefaultAsync(t => t.ItemId == itemId && t.UserId == _otherUser.UserId);
+            TimelineItemPermission? saved = await _progenyDbContext.TimelineItemPermissionsDb.FirstOrDefaultAsync(t => t.ItemId == itemId && t.UserId == _otherUser.UserId, cancellationToken: TestContext.Current.CancellationToken);
             Assert.NotNull(saved);
         }
 
@@ -643,7 +643,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             };
 
             _progenyDbContext.ProgenyPermissionsDb.Add(adminPermission);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             ProgenyPermission? result = await _service.GrantProgenyPermission(newPermission, _adminUser);
@@ -693,7 +693,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
                 GroupId = 2
             };
 
-            Progeny progeny = new Progeny()
+            Progeny progeny = new()
             {
                 Id = _progenyId,
                 Name = "Test Progeny",
@@ -702,7 +702,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             _progenyDbContext.ProgenyDb.Add(progeny);
 
             _progenyDbContext.ProgenyPermissionsDb.Add(adminPermission);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Mock audit log service
             _mockPermissionAuditLogService.Setup(s => s.AddProgenyPermissionAuditLogEntry(
@@ -778,7 +778,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             };
 
             _progenyDbContext.TimelineItemPermissionsDb.Add(existingPermission);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // No admin permissions setup for user
 
@@ -848,7 +848,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
 
             _progenyDbContext.ProgenyPermissionsDb.Add(adminPermission);
             _progenyDbContext.TimelineItemPermissionsDb.Add(existingPermission);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Mock audit log service
             _mockPermissionAuditLogService.Setup(s => s.AddTimelineItemPermissionAuditLogEntry(
@@ -869,7 +869,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             Assert.Equal(PermissionLevel.Edit, result.PermissionLevel);
             Assert.Equal(_adminUser.UserId, result.ModifiedBy);
 
-            TimelineItemPermission? saved = await _progenyDbContext.TimelineItemPermissionsDb.FirstOrDefaultAsync(t => t.TimelineItemPermissionId == existingPermission.TimelineItemPermissionId);
+            TimelineItemPermission? saved = await _progenyDbContext.TimelineItemPermissionsDb.FirstOrDefaultAsync(t => t.TimelineItemPermissionId == existingPermission.TimelineItemPermissionId, cancellationToken: TestContext.Current.CancellationToken);
             Assert.NotNull(saved);
             Assert.Equal(PermissionLevel.Edit, saved.PermissionLevel);
             Assert.Equal(_adminUser.UserId, saved.ModifiedBy);
@@ -919,7 +919,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             _progenyDbContext.ProgenyPermissionsDb.Add(groupPermission2);
             _progenyDbContext.UserGroupMembersDb.Add(groupMembership2);
 
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             List<int>? result = await _service.ProgeniesUserCanAccess(_testUser, PermissionLevel.View);
@@ -970,7 +970,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             _progenyDbContext.UserGroupMembersDb.Add(groupMembership1);
             _progenyDbContext.FamilyPermissionsDb.Add(groupPermission2);
             _progenyDbContext.UserGroupMembersDb.Add(groupMembership2);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             List<int>? result = await _service.FamiliesUserCanAccess(_testUser, PermissionLevel.View);
@@ -1004,13 +1004,13 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             _progenyDbContext.ProgenyPermissionsDb.Add(progenyPermission);
             _progenyDbContext.FamilyPermissionsDb.Add(familyPermission);
             _progenyDbContext.TimelineItemPermissionsDb.Add(timelineItemPermission);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             await _service.ChangeUsersEmailForPermissions(_testUser, newEmail);
 
             // Assert
-            TimelineItemPermission? t = await _progenyDbContext.TimelineItemPermissionsDb.FirstOrDefaultAsync(x => x.UserId == _testUser.UserId);
+            TimelineItemPermission? t = await _progenyDbContext.TimelineItemPermissionsDb.FirstOrDefaultAsync(x => x.UserId == _testUser.UserId, cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(newEmail, t?.Email);
         }
@@ -1032,13 +1032,13 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             _progenyDbContext.ProgenyPermissionsDb.Add(progenyPermission);
             _progenyDbContext.FamilyPermissionsDb.Add(familyPermission);
             _progenyDbContext.TimelineItemPermissionsDb.Add(timelineItemPermission);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             await _service.UpdatePermissionsForNewUser(_testUser);
 
             // Assert
-            TimelineItemPermission? t = await _progenyDbContext.TimelineItemPermissionsDb.FirstOrDefaultAsync(x => x.Email == _testUser.UserEmail);
+            TimelineItemPermission? t = await _progenyDbContext.TimelineItemPermissionsDb.FirstOrDefaultAsync(x => x.Email == _testUser.UserEmail, cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Equal(_testUser.UserId, t?.UserId);
         }

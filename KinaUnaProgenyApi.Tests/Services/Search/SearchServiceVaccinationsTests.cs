@@ -208,7 +208,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
 
             Vaccination vaccination = CreateTestVaccination(1, 1, "MMR Vaccine");
             progenyContext.VaccinationsDb.Add(vaccination);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -250,7 +250,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
 
             Vaccination vaccination = CreateTestVaccination(1, 1, "MMR Vaccine", "Description", "Notes");
             progenyContext.VaccinationsDb.Add(vaccination);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -293,7 +293,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
 
             Vaccination vaccination = CreateTestVaccination(1, 1, "Vaccine", "Measles Mumps Rubella", "Notes");
             progenyContext.VaccinationsDb.Add(vaccination);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -336,7 +336,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
 
             Vaccination vaccination = CreateTestVaccination(1, 1, "Vaccine", "Description", "Given at pediatrician office");
             progenyContext.VaccinationsDb.Add(vaccination);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -383,7 +383,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
 
             Vaccination vaccination = CreateTestVaccination(1, 1, "MMR Vaccine", "Description", "Notes");
             progenyContext.VaccinationsDb.Add(vaccination);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -435,7 +435,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             ];
 
             progenyContext.VaccinationsDb.AddRange(vaccinations);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -487,7 +487,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             ];
 
             progenyContext.VaccinationsDb.AddRange(vaccinations);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -534,7 +534,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             ];
 
             progenyContext.VaccinationsDb.AddRange(vaccinations);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -591,7 +591,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             ];
 
             progenyContext.VaccinationsDb.AddRange(vaccinations);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -641,7 +641,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             ];
 
             progenyContext.VaccinationsDb.AddRange(vaccinations);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -696,7 +696,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             }
 
             progenyContext.VaccinationsDb.AddRange(vaccinations);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -743,7 +743,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
 
             Vaccination vaccination = CreateTestVaccination(1, 1, "MMR Vaccine");
             progenyContext.VaccinationsDb.Add(vaccination);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
             TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.Edit };
@@ -794,7 +794,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             ];
 
             progenyContext.VaccinationsDb.AddRange(vaccinations);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -841,7 +841,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             }
 
             progenyContext.VaccinationsDb.AddRange(vaccinations);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -887,7 +887,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             }
 
             progenyContext.VaccinationsDb.AddRange(vaccinations);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -932,7 +932,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
 
             Vaccination vaccination = CreateTestVaccination(1, 1, "MMR Vaccine");
             progenyContext.VaccinationsDb.Add(vaccination);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -962,7 +962,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
 
             Vaccination vaccination = CreateTestVaccination(1, 1, "MMR Vaccine");
             progenyContext.VaccinationsDb.Add(vaccination);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 

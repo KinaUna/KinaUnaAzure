@@ -176,7 +176,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
 
             Video video = CreateTestVideo(1, 1, "birthday party", "Home");
             mediaContext.VideoDb.Add(video);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -252,7 +252,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
 
             Video video = CreateTestVideo(1, 1, "birthday party celebration", "Home");
             mediaContext.VideoDb.Add(video);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -295,7 +295,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
 
             Video video = CreateTestVideo(1, 1, "family", "Central Park");
             mediaContext.VideoDb.Add(video);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -350,7 +350,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 CreatedTime = DateTime.UtcNow
             };
             mediaContext.VideoDb.Add(video);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -400,7 +400,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 CreatedTime = DateTime.UtcNow
             };
             mediaContext.VideoDb.Add(video);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -450,7 +450,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 CreatedTime = DateTime.UtcNow
             };
             mediaContext.VideoDb.Add(video);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -488,7 +488,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
 
             Video video = CreateTestVideo(1, 1, "Birthday Party", "Central Park");
             mediaContext.VideoDb.Add(video);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -530,7 +530,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
 
             Video video = CreateTestVideo(1, 1, "family", "CENTRAL PARK");
             mediaContext.VideoDb.Add(video);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -582,7 +582,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             ];
 
             mediaContext.VideoDb.AddRange(videos);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -634,7 +634,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             ];
 
             mediaContext.VideoDb.AddRange(videos);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -681,7 +681,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             ];
 
             mediaContext.VideoDb.AddRange(videos);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -738,7 +738,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             ];
 
             mediaContext.VideoDb.AddRange(videos);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -788,7 +788,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             ];
 
             mediaContext.VideoDb.AddRange(videos);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -838,7 +838,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             ];
 
             mediaContext.VideoDb.AddRange(videos);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -894,7 +894,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             }
 
             mediaContext.VideoDb.AddRange(videos);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -941,7 +941,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
 
             Video video = CreateTestVideo(1, 1, "birthday", "Home");
             mediaContext.VideoDb.Add(video);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
             TimelineItemPermission permission = new() { PermissionLevel = PermissionLevel.Edit };
@@ -992,7 +992,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             ];
 
             mediaContext.VideoDb.AddRange(videos);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -1039,7 +1039,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             }
 
             mediaContext.VideoDb.AddRange(videos);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -1085,7 +1085,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             }
 
             mediaContext.VideoDb.AddRange(videos);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -1130,7 +1130,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
 
             Video video = CreateTestVideo(1, 1, "birthday", "Home");
             mediaContext.VideoDb.Add(video);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -1160,7 +1160,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
 
             Video video = CreateTestVideo(1, 1, "birthday", "Home");
             mediaContext.VideoDb.Add(video);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -1202,7 +1202,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
 
             Video video = CreateTestVideo(1, 1, "birthday", "Home");
             mediaContext.VideoDb.Add(video);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 
@@ -1241,7 +1241,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             }
 
             mediaContext.VideoDb.AddRange(videos);
-            await mediaContext.SaveChangesAsync();
+            await mediaContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             UserInfo userInfo = CreateTestUserInfo();
 

@@ -13,10 +13,7 @@
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONENABLED": "true",
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONVAULT": "https://KinaUnaKeyVault.vault.azure.net",
-        "VaultUri1": "https://kinauna.vault.azure.net/"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
     "http": {
@@ -25,8 +22,7 @@
       "launchBrowser": true,
       "applicationUrl": "http://localhost:5018",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "VaultUri1": "https://kinauna.vault.azure.net/"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
     "https": {
@@ -35,8 +31,7 @@
       "launchBrowser": true,
       "applicationUrl": "https://localhost:44397;http://localhost:5018",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "VaultUri1": "https://kinauna.vault.azure.net/"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     }
   }

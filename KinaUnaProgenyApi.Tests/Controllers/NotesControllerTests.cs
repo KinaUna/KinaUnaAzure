@@ -164,8 +164,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             // Arrange
             List<Note> notesList =
             [
-                new Note { NoteId = 1, Content = "Content1", ProgenyId = TestProgenyId },
-                new Note { NoteId = 2, Content = "Content2", ProgenyId = TestProgenyId }
+                new() { NoteId = 1, Content = "Content1", ProgenyId = TestProgenyId },
+                new() { NoteId = 2, Content = "Content2", ProgenyId = TestProgenyId }
             ];
 
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
@@ -772,9 +772,9 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             // Arrange
             List<Note> allNotes =
             [
-                new Note { NoteId = 1, ProgenyId = TestProgenyId, Title = "Note 1", CreatedDate = DateTime.UtcNow.AddDays(-3) },
-                new Note { NoteId = 2, ProgenyId = TestProgenyId, Title = "Note 2", CreatedDate = DateTime.UtcNow.AddDays(-2) },
-                new Note { NoteId = 3, ProgenyId = TestProgenyId, Title = "Note 3", CreatedDate = DateTime.UtcNow.AddDays(-1) }
+                new() { NoteId = 1, ProgenyId = TestProgenyId, Title = "Note 1", CreatedDate = DateTime.UtcNow.AddDays(-3) },
+                new() { NoteId = 2, ProgenyId = TestProgenyId, Title = "Note 2", CreatedDate = DateTime.UtcNow.AddDays(-2) },
+                new() { NoteId = 3, ProgenyId = TestProgenyId, Title = "Note 3", CreatedDate = DateTime.UtcNow.AddDays(-1) }
             ];
 
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
@@ -800,9 +800,9 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             // Arrange
             List<Note> allNotes =
             [
-                new Note { NoteId = 1, ProgenyId = TestProgenyId, Title = "Note 1", CreatedDate = DateTime.UtcNow.AddDays(-3) },
-                new Note { NoteId = 2, ProgenyId = TestProgenyId, Title = "Note 2", CreatedDate = DateTime.UtcNow.AddDays(-2) },
-                new Note { NoteId = 3, ProgenyId = TestProgenyId, Title = "Note 3", CreatedDate = DateTime.UtcNow.AddDays(-1) }
+                new() { NoteId = 1, ProgenyId = TestProgenyId, Title = "Note 1", CreatedDate = DateTime.UtcNow.AddDays(-3) },
+                new() { NoteId = 2, ProgenyId = TestProgenyId, Title = "Note 2", CreatedDate = DateTime.UtcNow.AddDays(-2) },
+                new() { NoteId = 3, ProgenyId = TestProgenyId, Title = "Note 3", CreatedDate = DateTime.UtcNow.AddDays(-1) }
             ];
 
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
@@ -827,9 +827,9 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             // Arrange
             List<Note> allNotes =
             [
-                new Note { NoteId = 1, ProgenyId = TestProgenyId, Title = "Note 1", CreatedDate = DateTime.UtcNow.AddDays(-3) },
-                new Note { NoteId = 2, ProgenyId = TestProgenyId, Title = "Note 2", CreatedDate = DateTime.UtcNow.AddDays(-2) },
-                new Note { NoteId = 3, ProgenyId = TestProgenyId, Title = "Note 3", CreatedDate = DateTime.UtcNow.AddDays(-1) }
+                new() { NoteId = 1, ProgenyId = TestProgenyId, Title = "Note 1", CreatedDate = DateTime.UtcNow.AddDays(-3) },
+                new() { NoteId = 2, ProgenyId = TestProgenyId, Title = "Note 2", CreatedDate = DateTime.UtcNow.AddDays(-2) },
+                new() { NoteId = 3, ProgenyId = TestProgenyId, Title = "Note 3", CreatedDate = DateTime.UtcNow.AddDays(-1) }
             ];
 
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
@@ -894,8 +894,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             // Arrange
             List<Note> allNotes =
             [
-                new Note { NoteId = 1, ProgenyId = TestProgenyId, Content = "Content1", CreatedDate = DateTime.UtcNow.AddDays(-2) },
-                new Note { NoteId = 2, ProgenyId = TestProgenyId, Content = "Content2", CreatedDate = DateTime.UtcNow.AddDays(-1) }
+                new() { NoteId = 1, ProgenyId = TestProgenyId, Content = "Content1", CreatedDate = DateTime.UtcNow.AddDays(-2) },
+                new() { NoteId = 2, ProgenyId = TestProgenyId, Content = "Content2", CreatedDate = DateTime.UtcNow.AddDays(-1) }
             ];
 
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))

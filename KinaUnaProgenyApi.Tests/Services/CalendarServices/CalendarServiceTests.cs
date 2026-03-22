@@ -76,7 +76,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                     It.IsAny<DateTime>(),
                     It.IsAny<bool>(),
                     It.IsAny<UserInfo>()))
-                .ReturnsAsync(new List<CalendarItem>());
+                .ReturnsAsync([]);
 
             _mockKinaUnaCacheService.Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(
                     It.IsAny<int>(),
@@ -157,7 +157,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 UId = Guid.NewGuid().ToString()
             };
             context.CalendarDb.Add(calendarItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService.Setup(x => x.HasItemPermission(
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo, PermissionLevel.View))
@@ -356,7 +356,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             // Assert
             Assert.NotNull(result);
             Assert.NotEqual(0, result.RecurrenceRuleId);
-            RecurrenceRule? savedRule = await context.RecurrenceRulesDb.FindAsync(result.RecurrenceRuleId);
+            RecurrenceRule? savedRule = await context.RecurrenceRulesDb.FindAsync([result.RecurrenceRuleId], TestContext.Current.CancellationToken);
             Assert.NotNull(savedRule);
             Assert.Equal(2, savedRule.Frequency);
         }
@@ -380,7 +380,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 UId = Guid.NewGuid().ToString()
             };
             context.CalendarDb.Add(existingItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.ChangeTracker.Clear();
 
             CalendarItem updatedItem = new()
@@ -400,7 +400,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             _mockAccessManagementService.Setup(x => x.UpdateItemPermissions(
                 It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(),
                 It.IsAny<List<ItemPermissionDto>>(), userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             _mockKinaUnaCacheService.Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Calendar))
                 .Returns(Task.CompletedTask);
@@ -463,7 +463,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 UId = Guid.NewGuid().ToString()
             };
             context.CalendarDb.Add(existingItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.ChangeTracker.Clear();
 
             CalendarItem updatedItem = new()
@@ -488,7 +488,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             _mockAccessManagementService.Setup(x => x.UpdateItemPermissions(
                 It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(),
                 It.IsAny<List<ItemPermissionDto>>(), userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             _mockKinaUnaCacheService.Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Calendar))
                 .Returns(Task.CompletedTask);
@@ -527,7 +527,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             };
             context.RecurrenceRulesDb.Add(recurrenceRule);
             context.CalendarDb.Add(existingItem);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.ChangeTracker.Clear();
 
             CalendarItem updatedItem = new()
@@ -547,7 +547,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             _mockAccessManagementService.Setup(x => x.UpdateItemPermissions(
                 It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(),
                 It.IsAny<List<ItemPermissionDto>>(), userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             _mockKinaUnaCacheService.Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Calendar))
                 .Returns(Task.CompletedTask);
@@ -587,7 +587,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             };
             context.CalendarDb.Add(existingItem);
             context.CalendarRemindersDb.Add(reminder);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.ChangeTracker.Clear();
 
             DateTime newStartTime = originalStartTime.AddHours(1);
@@ -609,7 +609,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             _mockAccessManagementService.Setup(x => x.UpdateItemPermissions(
                 It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(),
                 It.IsAny<List<ItemPermissionDto>>(), userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             _mockKinaUnaCacheService.Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Calendar))
                 .Returns(Task.CompletedTask);
@@ -621,7 +621,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
 
             // Assert
             Assert.NotNull(result);
-            CalendarReminder updatedReminder = await context.CalendarRemindersDb.FirstAsync();
+            CalendarReminder updatedReminder = await context.CalendarRemindersDb.FirstAsync(cancellationToken: TestContext.Current.CancellationToken);
             Assert.Equal(newStartTime.AddMinutes(-30), updatedReminder.NotifyTime);
         }
 
@@ -644,7 +644,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 UId = Guid.NewGuid().ToString()
             };
             context.CalendarDb.Add(itemToDelete);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService.Setup(x => x.HasItemPermission(
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo, PermissionLevel.Admin))
@@ -652,7 +652,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
 
             _mockAccessManagementService.Setup(x => x.GetTimelineItemPermissionsList(
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             _mockKinaUnaCacheService.Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Calendar))
                 .Returns(Task.CompletedTask);
@@ -719,7 +719,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             };
             context.RecurrenceRulesDb.Add(recurrenceRule);
             context.CalendarDb.Add(itemToDelete);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService.Setup(x => x.HasItemPermission(
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo, PermissionLevel.Admin))
@@ -727,7 +727,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
 
             _mockAccessManagementService.Setup(x => x.GetTimelineItemPermissionsList(
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             _mockKinaUnaCacheService.Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Calendar))
                 .Returns(Task.CompletedTask);
@@ -761,7 +761,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             context.CalendarDb.Add(itemToDelete);
             context.CalendarRemindersDb.Add(reminder1);
             context.CalendarRemindersDb.Add(reminder2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService.Setup(x => x.HasItemPermission(
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo, PermissionLevel.Admin))
@@ -769,7 +769,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
 
             _mockAccessManagementService.Setup(x => x.GetTimelineItemPermissionsList(
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             _mockKinaUnaCacheService.Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Calendar))
                 .Returns(Task.CompletedTask);
@@ -798,7 +798,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             CalendarItem item2 = new() { EventId = 2, ProgenyId = 1, FamilyId = 0, Title = "Event 2", UId = Guid.NewGuid().ToString() };
             CalendarItem item3 = new() { EventId = 3, ProgenyId = 2, FamilyId = 0, Title = "Event 3", UId = Guid.NewGuid().ToString() };
             context.CalendarDb.AddRange(item1, item2, item3);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService.Setup(x => x.HasItemPermission(
                 KinaUnaTypes.TimeLineType.Calendar, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -856,7 +856,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             CalendarItem item2 = new() { EventId = 2, ProgenyId = 1, FamilyId = 0, StartTime = now, Title = "Current Event", UId = Guid.NewGuid().ToString() };
             CalendarItem item3 = new() { EventId = 3, ProgenyId = 1, FamilyId = 0, StartTime = now.AddDays(2), Title = "Future Event", UId = Guid.NewGuid().ToString() };
             context.CalendarDb.AddRange(item1, item2, item3);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService.Setup(x => x.HasItemPermission(
                 KinaUnaTypes.TimeLineType.Calendar, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -877,7 +877,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
 
             _mockCalendarRecurrencesService.Setup(x => x.GetRecurringEventsForProgenyOrFamily(
                 1, 0, It.IsAny<DateTime>(), It.IsAny<DateTime>(), false, userInfo))
-                .ReturnsAsync(new List<CalendarItem>());
+                .ReturnsAsync([]);
 
             CalendarService service = new(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
@@ -899,7 +899,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             DateTime now = DateTime.UtcNow;
             CalendarItem item1 = new() { EventId = 1, ProgenyId = 1, FamilyId = 0, StartTime = now, Title = "Regular Event", UId = Guid.NewGuid().ToString() };
             context.CalendarDb.Add(item1);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             CalendarItem recurringItem = new() { EventId = 2, ProgenyId = 1, FamilyId = 0, StartTime = now.AddDays(1), Title = "Recurring Event", UId = Guid.NewGuid().ToString() };
 
@@ -922,7 +922,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
 
             _mockCalendarRecurrencesService.Setup(x => x.GetRecurringEventsForProgenyOrFamily(
                 1, 0, It.IsAny<DateTime>(), It.IsAny<DateTime>(), false, userInfo))
-                .ReturnsAsync(new List<CalendarItem> { recurringItem });
+                .ReturnsAsync([recurringItem]);
 
             CalendarService service = new(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
@@ -945,7 +945,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             CalendarItem item1 = new() { EventId = 1, ProgenyId = 1, FamilyId = 0, Title = "Accessible Event", UId = Guid.NewGuid().ToString() };
             CalendarItem item2 = new() { EventId = 2, ProgenyId = 1, FamilyId = 0, Title = "Restricted Event", UId = Guid.NewGuid().ToString() };
             context.CalendarDb.AddRange(item1, item2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService.Setup(x => x.HasItemPermission(
                 KinaUnaTypes.TimeLineType.Calendar, 1, userInfo, PermissionLevel.View))
@@ -997,7 +997,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 Frequency = 2
             };
             context.RecurrenceRulesDb.Add(recurrenceRule);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             List<CalendarItem> recurringEvents =
             [
@@ -1077,7 +1077,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
                 Frequency = 2
             };
             context.RecurrenceRulesDb.Add(recurrenceRule);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             List<CalendarItem> recurringEvents =
             [
@@ -1150,7 +1150,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             CalendarItem item2 = new() { EventId = 2, ProgenyId = 1, FamilyId = 0, Context = "Holiday", Title = "Event 2", UId = Guid.NewGuid().ToString() };
             CalendarItem item3 = new() { EventId = 3, ProgenyId = 1, FamilyId = 0, Context = "Birthday Party", Title = "Event 3", UId = Guid.NewGuid().ToString() };
             context.CalendarDb.AddRange(item1, item2, item3);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService.Setup(x => x.HasItemPermission(
                 KinaUnaTypes.TimeLineType.Calendar, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -1180,7 +1180,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             CalendarItem item1 = new() { EventId = 1, ProgenyId = 1, FamilyId = 0, Context = "Birthday", Title = "Event 1", UId = Guid.NewGuid().ToString() };
             CalendarItem item2 = new() { EventId = 2, ProgenyId = 1, FamilyId = 0, Context = "Holiday", Title = "Event 2", UId = Guid.NewGuid().ToString() };
             context.CalendarDb.AddRange(item1, item2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService.Setup(x => x.HasItemPermission(
                 KinaUnaTypes.TimeLineType.Calendar, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -1213,7 +1213,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             CalendarItem item2 = new() { EventId = 2, ProgenyId = 1, FamilyId = 0, Title = "Event 2", UId = "" };
             CalendarItem item3 = new() { EventId = 3, ProgenyId = 1, FamilyId = 0, Title = "Event 3", UId = "existing-uid" };
             context.CalendarDb.AddRange(item1, item2, item3);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             CalendarService service = new(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
@@ -1221,7 +1221,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             await service.CheckCalendarItemsForUId();
 
             // Assert
-            List<CalendarItem> items = await context.CalendarDb.ToListAsync();
+            List<CalendarItem> items = await context.CalendarDb.ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
             Assert.All(items, item => Assert.False(string.IsNullOrWhiteSpace(item.UId)));
         }
 
@@ -1233,7 +1233,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             string existingUId = "existing-uid";
             CalendarItem item = new() { EventId = 1, ProgenyId = 1, FamilyId = 0, Title = "Event", UId = existingUId };
             context.CalendarDb.Add(item);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             CalendarService service = new(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
@@ -1241,7 +1241,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             await service.CheckCalendarItemsForUId();
 
             // Assert
-            CalendarItem updatedItem = await context.CalendarDb.FirstAsync();
+            CalendarItem updatedItem = await context.CalendarDb.FirstAsync(cancellationToken: TestContext.Current.CancellationToken);
             Assert.Equal(existingUId, updatedItem.UId);
         }
 
@@ -1253,7 +1253,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             CalendarItem item1 = new() { EventId = 1, ProgenyId = 1, FamilyId = 0, Title = "Event 1", UId = "uid-1" };
             CalendarItem item2 = new() { EventId = 2, ProgenyId = 1, FamilyId = 0, Title = "Event 2", UId = "uid-2" };
             context.CalendarDb.AddRange(item1, item2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             CalendarService service = new(context, _memoryCache, _mockCalendarRecurrencesService.Object, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
@@ -1261,7 +1261,7 @@ namespace KinaUnaProgenyApi.Tests.Services.CalendarServices
             await service.CheckCalendarItemsForUId();
 
             // Assert
-            List<CalendarItem> items = await context.CalendarDb.ToListAsync();
+            List<CalendarItem> items = await context.CalendarDb.ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
             Assert.Equal("uid-1", items[0].UId);
             Assert.Equal("uid-2", items[1].UId);
         }

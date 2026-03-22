@@ -249,7 +249,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
         {
             // Arrange
             int boardId = 1;
-            KanbanBoard cachedBoard = (await _progenyDbContext.KanbanBoardsDb.FindAsync(new object?[] { boardId }, TestContext.Current.CancellationToken))!;
+            KanbanBoard cachedBoard = (await _progenyDbContext.KanbanBoardsDb.FindAsync([boardId], TestContext.Current.CancellationToken))!;
             string cachedJson = JsonSerializer.Serialize(cachedBoard, JsonSerializerOptions.Web);
             byte[] cachedBytes = Encoding.UTF8.GetBytes(cachedJson);
 
@@ -295,7 +295,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 Description = "New Description",
                 Columns = "[{\"id\":1,\"name\":\"To Do\"}]",
                 ModifiedBy = "user1",
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockAccessManagementService
@@ -337,7 +337,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 Description = "New Description",
                 Columns = "[{\"id\":1,\"name\":\"To Do\"}]",
                 ModifiedBy = "user1",
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockAccessManagementService
@@ -396,7 +396,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 Description = "New Description",
                 Columns = "",
                 ModifiedBy = "user1",
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockAccessManagementService
@@ -434,7 +434,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 ModifiedTime = DateTime.UtcNow,
                 Tags = "newtag",
                 Context = "newcontext",
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockAccessManagementService
@@ -442,7 +442,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 .ReturnsAsync(true);
             _mockAccessManagementService
                 .Setup(x => x.UpdateItemPermissions(KinaUnaTypes.TimeLineType.KanbanBoard, 1, 1, 0, It.IsAny<List<ItemPermissionDto>>(), _testUser))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             // Act
             KanbanBoard result = await _service.UpdateKanbanBoard(updatedBoard, _testUser);
@@ -551,7 +551,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 UId = null
             };
             _progenyDbContext.KanbanBoardsDb.Add(boardWithoutUId);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             KanbanBoard updatedBoard = new()
             {
@@ -563,7 +563,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 Columns = "[{\"id\":1,\"name\":\"Updated\"}]",
                 ModifiedBy = "user1",
                 ModifiedTime = DateTime.UtcNow,
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockAccessManagementService
@@ -571,7 +571,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
                 .ReturnsAsync(true);
             _mockAccessManagementService
                 .Setup(x => x.UpdateItemPermissions(KinaUnaTypes.TimeLineType.KanbanBoard, 5, 1, 0, It.IsAny<List<ItemPermissionDto>>(), _testUser))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             // Act
             KanbanBoard result = await _service.UpdateKanbanBoard(updatedBoard, _testUser);
@@ -590,14 +590,14 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
         public async Task DeleteKanbanBoard_WhenUserHasAccess_SoftDeletesBoard()
         {
             // Arrange
-            KanbanBoard? boardToDelete = await _progenyDbContext.KanbanBoardsDb.FindAsync(1);
+            KanbanBoard? boardToDelete = await _progenyDbContext.KanbanBoardsDb.FindAsync([1], TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, 1, _adminUser, PermissionLevel.Admin))
                 .ReturnsAsync(true);
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.KanbanBoard, 1, _adminUser))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             // Act
             KanbanBoard result = await _service.DeleteKanbanBoard(boardToDelete, _adminUser, hardDelete: false);
@@ -606,14 +606,14 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
             Assert.NotNull(result);
             Assert.Equal(1, result.KanbanBoardId);
 
-            KanbanBoard? deletedBoard = await _progenyDbContext.KanbanBoardsDb.FindAsync(1);
+            KanbanBoard? deletedBoard = await _progenyDbContext.KanbanBoardsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(deletedBoard);
             Assert.True(deletedBoard.IsDeleted);
 
             // Check associated items are soft deleted
             List<KanbanItem> items = await _progenyDbContext.KanbanItemsDb
                 .Where(ki => ki.KanbanBoardId == 1)
-                .ToListAsync();
+                .ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
             Assert.All(items, item => Assert.True(item.IsDeleted));
 
             _mockKinaUnaCacheService.Verify(
@@ -625,14 +625,14 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
         public async Task DeleteKanbanBoard_WhenHardDelete_PermanentlyDeletesBoard()
         {
             // Arrange
-            KanbanBoard? boardToDelete = await _progenyDbContext.KanbanBoardsDb.FindAsync(1);
+            KanbanBoard? boardToDelete = await _progenyDbContext.KanbanBoardsDb.FindAsync([1], TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, 1, _adminUser, PermissionLevel.Admin))
                 .ReturnsAsync(true);
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.KanbanBoard, 1, _adminUser))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             // Act
             KanbanBoard result = await _service.DeleteKanbanBoard(boardToDelete, _adminUser, hardDelete: true);
@@ -641,13 +641,13 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
             Assert.NotNull(result);
             Assert.Equal(1, result.KanbanBoardId);
 
-            KanbanBoard? deletedBoard = await _progenyDbContext.KanbanBoardsDb.FindAsync(1);
+            KanbanBoard? deletedBoard = await _progenyDbContext.KanbanBoardsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.Null(deletedBoard);
 
             // Check associated items are hard deleted
             List<KanbanItem> items = await _progenyDbContext.KanbanItemsDb
                 .Where(ki => ki.KanbanBoardId == 1)
-                .ToListAsync();
+                .ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
             Assert.Empty(items);
         }
 
@@ -655,7 +655,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
         public async Task DeleteKanbanBoard_WhenUserHasNoAccess_ReturnsEmptyBoard()
         {
             // Arrange
-            KanbanBoard? boardToDelete = await _progenyDbContext.KanbanBoardsDb.FindAsync(1);
+            KanbanBoard? boardToDelete = await _progenyDbContext.KanbanBoardsDb.FindAsync([1], TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, 1, _otherUser, PermissionLevel.Admin))
@@ -668,7 +668,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
             Assert.NotNull(result);
             Assert.Equal(0, result.KanbanBoardId);
 
-            KanbanBoard? board = await _progenyDbContext.KanbanBoardsDb.FindAsync(1);
+            KanbanBoard? board = await _progenyDbContext.KanbanBoardsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(board);
             Assert.False(board.IsDeleted);
         }
@@ -699,14 +699,14 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
         public async Task DeleteKanbanBoard_WhenNoAssociatedItems_DeletesSuccessfully()
         {
             // Arrange
-            KanbanBoard? boardToDelete = await _progenyDbContext.KanbanBoardsDb.FindAsync(2);
+            KanbanBoard? boardToDelete = await _progenyDbContext.KanbanBoardsDb.FindAsync([2], TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.KanbanBoard, 2, _adminUser, PermissionLevel.Admin))
                 .ReturnsAsync(true);
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.KanbanBoard, 2, _adminUser))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             // Act
             KanbanBoard result = await _service.DeleteKanbanBoard(boardToDelete, _adminUser);
@@ -726,7 +726,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
             // Arrange
             KanbanBoardsRequest request = new()
             {
-                ProgenyIds = new List<int> { 1 },
+                ProgenyIds = [1],
                 IncludeDeleted = false
             };
 
@@ -762,7 +762,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
             // Arrange
             KanbanBoardsRequest request = new()
             {
-                FamilyIds = new List<int> { 1 },
+                FamilyIds = [1],
                 IncludeDeleted = false
             };
 
@@ -793,7 +793,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
             // Arrange
             KanbanBoardsRequest request = new()
             {
-                ProgenyIds = new List<int> { 1 },
+                ProgenyIds = [1],
                 IncludeDeleted = true
             };
 
@@ -824,7 +824,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
             // Arrange
             KanbanBoardsRequest request = new()
             {
-                ProgenyIds = new List<int> { 1 },
+                ProgenyIds = [1],
                 IncludeDeleted = false
             };
 
@@ -846,7 +846,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
             // Arrange
             KanbanBoardsRequest request = new()
             {
-                ProgenyIds = new List<int> { 1 },
+                ProgenyIds = [1],
                 IncludeDeleted = false,
                 TagFilter = "tag1"
             };
@@ -878,7 +878,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
             // Arrange
             KanbanBoardsRequest request = new()
             {
-                ProgenyIds = new List<int> { 1 },
+                ProgenyIds = [1],
                 IncludeDeleted = false,
                 ContextFilter = "context1"
             };
@@ -910,7 +910,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
             // Arrange
             KanbanBoardsRequest request = new()
             {
-                ProgenyIds = new List<int> { 1 },
+                ProgenyIds = [1],
                 IncludeDeleted = false,
                 TagFilter = "tag1,tag3"
             };
@@ -941,13 +941,13 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
             // Arrange
             KanbanBoardsRequest request = new()
             {
-                ProgenyIds = new List<int> { 1 },
+                ProgenyIds = [1],
                 IncludeDeleted = false
             };
 
             KanbanBoard[] cachedBoards = await _progenyDbContext.KanbanBoardsDb
                 .Where(k => k.ProgenyId == 1 && !k.IsDeleted)
-                .ToArrayAsync();
+                .ToArrayAsync(cancellationToken: TestContext.Current.CancellationToken);
 
             KanbanBoardsListCacheEntry cacheEntry = new()
             {
@@ -988,12 +988,12 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
         public void CreateKanbanBoardsResponse_WhenValidRequest_ReturnsCorrectResponse()
         {
             // Arrange
-            List<KanbanBoard> boards = new()
-            {
-                new KanbanBoard { KanbanBoardId = 1, Title = "Board 1", ModifiedTime = DateTime.UtcNow.AddDays(-1), CreatedTime = DateTime.UtcNow.AddDays(-10) },
-                new KanbanBoard { KanbanBoardId = 2, Title = "Board 2", ModifiedTime = DateTime.UtcNow, CreatedTime = DateTime.UtcNow.AddDays(-5) },
-                new KanbanBoard { KanbanBoardId = 3, Title = "Board 3", ModifiedTime = DateTime.UtcNow.AddDays(-2), CreatedTime = DateTime.UtcNow.AddDays(-15) }
-            };
+            List<KanbanBoard> boards =
+            [
+                new() { KanbanBoardId = 1, Title = "Board 1", ModifiedTime = DateTime.UtcNow.AddDays(-1), CreatedTime = DateTime.UtcNow.AddDays(-10) },
+                new() { KanbanBoardId = 2, Title = "Board 2", ModifiedTime = DateTime.UtcNow, CreatedTime = DateTime.UtcNow.AddDays(-5) },
+                new() { KanbanBoardId = 3, Title = "Board 3", ModifiedTime = DateTime.UtcNow.AddDays(-2), CreatedTime = DateTime.UtcNow.AddDays(-15) }
+            ];
 
             KanbanBoardsRequest request = new()
             {
@@ -1017,12 +1017,12 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
         public void CreateKanbanBoardsResponse_WhenSkipProvided_ReturnsCorrectPage()
         {
             // Arrange
-            List<KanbanBoard> boards = new()
-            {
-                new KanbanBoard { KanbanBoardId = 1, Title = "Board 1", ModifiedTime = DateTime.UtcNow.AddDays(-1), CreatedTime = DateTime.UtcNow.AddDays(-10) },
-                new KanbanBoard { KanbanBoardId = 2, Title = "Board 2", ModifiedTime = DateTime.UtcNow, CreatedTime = DateTime.UtcNow.AddDays(-5) },
-                new KanbanBoard { KanbanBoardId = 3, Title = "Board 3", ModifiedTime = DateTime.UtcNow.AddDays(-2), CreatedTime = DateTime.UtcNow.AddDays(-15) }
-            };
+            List<KanbanBoard> boards =
+            [
+                new() { KanbanBoardId = 1, Title = "Board 1", ModifiedTime = DateTime.UtcNow.AddDays(-1), CreatedTime = DateTime.UtcNow.AddDays(-10) },
+                new() { KanbanBoardId = 2, Title = "Board 2", ModifiedTime = DateTime.UtcNow, CreatedTime = DateTime.UtcNow.AddDays(-5) },
+                new() { KanbanBoardId = 3, Title = "Board 3", ModifiedTime = DateTime.UtcNow.AddDays(-2), CreatedTime = DateTime.UtcNow.AddDays(-15) }
+            ];
 
             KanbanBoardsRequest request = new()
             {
@@ -1044,11 +1044,11 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
         public void CreateKanbanBoardsResponse_WhenNumberOfItemsIsZero_ReturnsAllItems()
         {
             // Arrange
-            List<KanbanBoard> boards = new()
-            {
-                new KanbanBoard { KanbanBoardId = 1, Title = "Board 1", ModifiedTime = DateTime.UtcNow, CreatedTime = DateTime.UtcNow },
-                new KanbanBoard { KanbanBoardId = 2, Title = "Board 2", ModifiedTime = DateTime.UtcNow, CreatedTime = DateTime.UtcNow }
-            };
+            List<KanbanBoard> boards =
+            [
+                new() { KanbanBoardId = 1, Title = "Board 1", ModifiedTime = DateTime.UtcNow, CreatedTime = DateTime.UtcNow },
+                new() { KanbanBoardId = 2, Title = "Board 2", ModifiedTime = DateTime.UtcNow, CreatedTime = DateTime.UtcNow }
+            ];
 
             KanbanBoardsRequest request = new()
             {
@@ -1070,7 +1070,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
         public void CreateKanbanBoardsResponse_WhenEmptyList_ReturnsEmptyResponse()
         {
             // Arrange
-            List<KanbanBoard> boards = new();
+            List<KanbanBoard> boards = [];
             KanbanBoardsRequest request = new()
             {
                 Skip = 0,
@@ -1091,12 +1091,12 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
         public void CreateKanbanBoardsResponse_SortsCorrectly()
         {
             // Arrange
-            List<KanbanBoard> boards = new()
-            {
-                new KanbanBoard { KanbanBoardId = 1, Title = "Board 1", ModifiedTime = DateTime.UtcNow.AddDays(-5), CreatedTime = DateTime.UtcNow.AddDays(-10) },
-                new KanbanBoard { KanbanBoardId = 2, Title = "Board 2", ModifiedTime = DateTime.UtcNow, CreatedTime = DateTime.UtcNow.AddDays(-5) },
-                new KanbanBoard { KanbanBoardId = 3, Title = "Board 3", ModifiedTime = DateTime.UtcNow.AddDays(-2), CreatedTime = DateTime.UtcNow.AddDays(-15) }
-            };
+            List<KanbanBoard> boards =
+            [
+                new() { KanbanBoardId = 1, Title = "Board 1", ModifiedTime = DateTime.UtcNow.AddDays(-5), CreatedTime = DateTime.UtcNow.AddDays(-10) },
+                new() { KanbanBoardId = 2, Title = "Board 2", ModifiedTime = DateTime.UtcNow, CreatedTime = DateTime.UtcNow.AddDays(-5) },
+                new() { KanbanBoardId = 3, Title = "Board 3", ModifiedTime = DateTime.UtcNow.AddDays(-2), CreatedTime = DateTime.UtcNow.AddDays(-15) }
+            ];
 
             KanbanBoardsRequest request = new()
             {
@@ -1242,7 +1242,7 @@ namespace KinaUnaProgenyApi.Tests.Services.KanbanServices
             // Arrange
             KanbanBoard[] cachedBoards = await _progenyDbContext.KanbanBoardsDb
                 .Where(k => k.ProgenyId == 1 && !k.IsDeleted)
-                .ToArrayAsync();
+                .ToArrayAsync(cancellationToken: TestContext.Current.CancellationToken);
 
             KanbanBoardsListCacheEntry cacheEntry = new()
             {

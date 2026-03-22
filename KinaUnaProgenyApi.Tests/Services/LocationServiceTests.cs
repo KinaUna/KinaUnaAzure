@@ -111,7 +111,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.LocationsDb.Add(location);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, 1, userInfo, PermissionLevel.View))
@@ -164,7 +164,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.LocationsDb.Add(location);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, 1, userInfo, PermissionLevel.View))
@@ -230,7 +230,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotEqual(0, result.LocationId);
             Assert.Equal("New Location", result.Name);
 
-            Location? dbLocation = await context.LocationsDb.FindAsync(result.LocationId);
+            Location? dbLocation = await context.LocationsDb.FindAsync([result.LocationId], TestContext.Current.CancellationToken);
             Assert.NotNull(dbLocation);
             Assert.Equal("New Location", dbLocation.Name);
         }
@@ -376,7 +376,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.LocationsDb.Add(location);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.Entry(location).State = EntityState.Detached;
 
             Location updatedLocation = new()
@@ -410,7 +410,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
             Assert.Equal("Updated Name", result.Name);
 
-            Location? dbLocation = await context.LocationsDb.FindAsync(1);
+            Location? dbLocation = await context.LocationsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(dbLocation);
             Assert.Equal("Updated Name", dbLocation.Name);
         }
@@ -482,7 +482,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.LocationsDb.Add(location);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Location updatedLocation = new()
             {
@@ -555,7 +555,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.LocationsDb.Add(location);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, 1, userInfo, PermissionLevel.Admin))
@@ -578,7 +578,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
             Assert.Equal(1, result.LocationId);
 
-            Location? dbLocation = await context.LocationsDb.FindAsync(1);
+            Location? dbLocation = await context.LocationsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.Null(dbLocation);
         }
 
@@ -599,7 +599,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.LocationsDb.Add(location);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, 1, userInfo, PermissionLevel.Admin))
@@ -612,7 +612,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             // Assert
             Assert.Null(result);
-            Location? dbLocation = await context.LocationsDb.FindAsync(1);
+            Location? dbLocation = await context.LocationsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(dbLocation);
         }
 
@@ -665,7 +665,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             ];
 
             context.LocationsDb.AddRange(locations);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -705,7 +705,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             ];
 
             context.LocationsDb.AddRange(locations);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, 1, userInfo, PermissionLevel.View))
@@ -775,7 +775,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Location location = new() { LocationId = 1, ProgenyId = 1, FamilyId = 0, Name = "Location 1" };
             context.LocationsDb.Add(location);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, 1, userInfo, PermissionLevel.View))
@@ -822,7 +822,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             ];
 
             context.LocationsDb.AddRange(locations);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -863,7 +863,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             ];
 
             context.LocationsDb.AddRange(locations);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -897,7 +897,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Location location = new() { LocationId = 1, ProgenyId = 1, FamilyId = 0, Name = "Location 1", Tags = "Park, Beach" };
             context.LocationsDb.Add(location);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Location, 1, userInfo, PermissionLevel.View))
@@ -943,7 +943,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.AddressDb.Add(address);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
@@ -987,7 +987,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.AddressDb.Add(address);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
@@ -1031,7 +1031,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotEqual(0, result.AddressId);
             Assert.Equal("456 Oak Ave", result.AddressLine1);
 
-            Address? dbAddress = await context.AddressDb.FindAsync(result.AddressId);
+            Address? dbAddress = await context.AddressDb.FindAsync([result.AddressId], TestContext.Current.CancellationToken);
             Assert.NotNull(dbAddress);
             Assert.Equal("456 Oak Ave", dbAddress.AddressLine1);
         }
@@ -1055,7 +1055,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.AddressDb.Add(address);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.Entry(address).State = EntityState.Detached;
 
             Address updatedAddress = new()
@@ -1074,7 +1074,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
             Assert.Equal("Updated Address", result.AddressLine1);
 
-            Address? dbAddress = await context.AddressDb.FindAsync(1);
+            Address? dbAddress = await context.AddressDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(dbAddress);
             Assert.Equal("Updated Address", dbAddress.AddressLine1);
         }
@@ -1119,7 +1119,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.AddressDb.Add(address);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             LocationService service = new(context, cache, _mockAccessManagementService.Object, _mockKinaUnaCacheService.Object);
 
@@ -1127,7 +1127,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await service.RemoveAddressItem(1);
 
             // Assert
-            Address? dbAddress = await context.AddressDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
+            Address? dbAddress = await context.AddressDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.Null(dbAddress);
         }
 

@@ -132,7 +132,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.ContactsDb.Add(contact1);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, _testUser, PermissionLevel.View))
@@ -246,7 +246,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.ContactsDb.Add(contact);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, _testUser, PermissionLevel.View))
@@ -301,7 +301,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.ContactsDb.Add(contact);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, _testUser, PermissionLevel.View))
@@ -356,7 +356,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.ContactsDb.Add(contact);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, _testUser, PermissionLevel.View))
@@ -411,7 +411,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.ContactsDb.Add(contact);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, _testUser, PermissionLevel.View))
@@ -466,7 +466,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.ContactsDb.Add(contact);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, _testUser, PermissionLevel.View))
@@ -539,7 +539,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.ContactsDb.AddRange(contact1, contact2);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, _testUser, PermissionLevel.View))
@@ -597,7 +597,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.ContactsDb.Add(contact);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, _testUser, PermissionLevel.View))
@@ -664,7 +664,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.ContactsDb.AddRange(contact1, contact2);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(It.IsAny<int>(), _testUser, PermissionLevel.View))
@@ -718,7 +718,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.ContactsDb.Add(contact);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasFamilyPermission(1, _testUser, PermissionLevel.View))
@@ -776,7 +776,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 };
                 progenyContext.ContactsDb.Add(contact);
             }
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, _testUser, PermissionLevel.View))
@@ -835,7 +835,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 };
                 progenyContext.ContactsDb.Add(contact);
             }
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, _testUser, PermissionLevel.View))
@@ -911,7 +911,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.ContactsDb.AddRange(contact1, contact2);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, _testUser, PermissionLevel.View))
@@ -987,7 +987,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.ContactsDb.AddRange(contact1, contact2);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, _testUser, PermissionLevel.View))
@@ -1044,7 +1044,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.ContactsDb.Add(contact);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, _testUser, PermissionLevel.View))
@@ -1100,7 +1100,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 };
                 progenyContext.ContactsDb.Add(contact);
             }
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, _testUser, PermissionLevel.View))
@@ -1178,7 +1178,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.ContactsDb.AddRange(progenyContact, familyContact);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, _testUser, PermissionLevel.View))
@@ -1233,7 +1233,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
             };
 
             progenyContext.ContactsDb.Add(contact);
-            await progenyContext.SaveChangesAsync();
+            await progenyContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, _testUser, PermissionLevel.View))

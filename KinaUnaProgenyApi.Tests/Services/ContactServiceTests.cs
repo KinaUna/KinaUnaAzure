@@ -410,7 +410,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 FamilyId = 0,
                 DisplayName = "Test Contact",
                 CreatedBy = "user1",
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockAccessManagementService
@@ -656,7 +656,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 DisplayName = "Updated Contact",
                 FirstName = "John",
                 LastName = "Doe",
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockAccessManagementService
@@ -698,7 +698,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, 1, _adminUser))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             _mockImageStore
                 .Setup(x => x.DeleteImage("contact1.jpg", BlobContainers.Contacts))
@@ -709,7 +709,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             // Assert
             Assert.NotNull(result);
-            Contact deletedContact = (await _progenyDbContext.ContactsDb.FindAsync(1))!;
+            Contact deletedContact = (await _progenyDbContext.ContactsDb.FindAsync([1], TestContext.Current.CancellationToken))!;
             Assert.Null(deletedContact);
             _mockImageStore.Verify(x => x.DeleteImage("contact1.jpg", BlobContainers.Contacts), Times.Once);
 
@@ -737,7 +737,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             // Assert
             Assert.Null(result);
-            Contact contact = (await _progenyDbContext.ContactsDb.FindAsync(1))!;
+            Contact contact = (await _progenyDbContext.ContactsDb.FindAsync([1], TestContext.Current.CancellationToken))!;
             Assert.NotNull(contact); // Contact still exists
         }
 
@@ -768,9 +768,9 @@ namespace KinaUnaProgenyApi.Tests.Services
         {
             // Arrange
             // First, update contact2 to use the same picture as contact1
-            Contact contact2 = (await _progenyDbContext.ContactsDb.FindAsync(2))!;
+            Contact contact2 = (await _progenyDbContext.ContactsDb.FindAsync([2], TestContext.Current.CancellationToken))!;
             contact2.PictureLink = "contact1.jpg";
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Contact contactToDelete = new()
             {
@@ -785,7 +785,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, 1, _adminUser))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             // Act
             Contact result = await _service.DeleteContact(contactToDelete, _adminUser);
@@ -869,8 +869,8 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Contact[] cachedContacts =
             [
-                (await _progenyDbContext.ContactsDb.FindAsync(1))!,
-                (await _progenyDbContext.ContactsDb.FindAsync(2))!
+                (await _progenyDbContext.ContactsDb.FindAsync([1], TestContext.Current.CancellationToken))!,
+                (await _progenyDbContext.ContactsDb.FindAsync([2], TestContext.Current.CancellationToken))!
             ];
 
             ContactsListCacheEntry cacheEntry = new()

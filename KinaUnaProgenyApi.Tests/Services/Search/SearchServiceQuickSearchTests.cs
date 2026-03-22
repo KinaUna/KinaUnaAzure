@@ -310,7 +310,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 Context = ""
             };
             _progenyDbContext.CalendarDb.Add(calendarItem);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TimeLineItem timelineItem = new()
             {
@@ -353,7 +353,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 Context = ""
             };
             _progenyDbContext.CalendarDb.Add(calendarItem);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TimeLineItem timelineItem = new()
             {
@@ -406,7 +406,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 Tags = ""
             };
             _progenyDbContext.ContactsDb.Add(contact);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TimeLineItem timelineItem = new()
             {
@@ -455,7 +455,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 Tags = ""
             };
             _progenyDbContext.ContactsDb.Add(contact);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TimeLineItem timelineItem = new()
             {
@@ -503,7 +503,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 Tags = ""
             };
             _progenyDbContext.FriendsDb.Add(friend);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TimeLineItem timelineItem = new()
             {
@@ -549,7 +549,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 Category = ""
             };
             _progenyDbContext.NotesDb.Add(note);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TimeLineItem timelineItem = new()
             {
@@ -594,7 +594,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 Location = ""
             };
             _mediaDbContext.PicturesDb.Add(picture);
-            await _mediaDbContext.SaveChangesAsync();
+            await _mediaDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TimeLineItem timelineItem = new()
             {
@@ -635,7 +635,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 Location = "Miami Beach"
             };
             _mediaDbContext.PicturesDb.Add(picture);
-            await _mediaDbContext.SaveChangesAsync();
+            await _mediaDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TimeLineItem timelineItem = new()
             {
@@ -680,7 +680,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 Location = ""
             };
             _mediaDbContext.VideoDb.Add(video);
-            await _mediaDbContext.SaveChangesAsync();
+            await _mediaDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TimeLineItem timelineItem = new()
             {
@@ -726,7 +726,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 Category = ""
             };
             _progenyDbContext.SkillsDb.Add(skill);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TimeLineItem timelineItem = new()
             {
@@ -772,7 +772,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 Notes = ""
             };
             _progenyDbContext.VaccinationsDb.Add(vaccination);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TimeLineItem timelineItem = new()
             {
@@ -818,7 +818,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 SoundsLike = ""
             };
             _progenyDbContext.VocabularyDb.Add(vocabulary);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TimeLineItem timelineItem = new()
             {
@@ -871,7 +871,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 Tags = ""
             };
             _progenyDbContext.LocationsDb.Add(location);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TimeLineItem timelineItem = new()
             {
@@ -993,7 +993,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 Context = ""
             };
             _progenyDbContext.CalendarDb.AddRange(calendarItem1, calendarItem2);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             List<TimeLineItem> timelineItems =
             [
@@ -1059,7 +1059,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 Context = ""
             };
             _progenyDbContext.CalendarDb.AddRange(calendarItem1, calendarItem2);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             List<TimeLineItem> timelineItems =
             [
@@ -1122,7 +1122,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                     Context = ""
                 });
             }
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             List<TimeLineItem> timelineItems = [];
             for (int i = 1; i <= 5; i++)
@@ -1171,7 +1171,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                     Context = ""
                 });
             }
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             List<TimeLineItem> timelineItems = [];
             for (int i = 1; i <= 5; i++)
@@ -1221,7 +1221,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                     Context = ""
                 });
             }
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             List<TimeLineItem> timelineItems = [];
             for (int i = 1; i <= 5; i++)
@@ -1273,7 +1273,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 Context = ""
             };
             _progenyDbContext.CalendarDb.Add(calendarItem);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TimeLineItem timelineItem = new()
             {
@@ -1332,7 +1332,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 Context = ""
             };
             _progenyDbContext.CalendarDb.AddRange(calendarItem1, calendarItem2);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockTimelineService
                 .Setup(x => x.GetTimeLineList(progenyId1, 0, _testUser))
@@ -1395,7 +1395,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 Context = ""
             };
             _progenyDbContext.CalendarDb.AddRange(calendarItem1, calendarItem2);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockTimelineService
                 .Setup(x => x.GetTimeLineList(TestProgenyId, 0, _testUser))
@@ -1452,7 +1452,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 Context = null
             };
             _progenyDbContext.CalendarDb.Add(calendarItem);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TimeLineItem timelineItem = new()
             {
@@ -1533,7 +1533,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 Context = ""
             };
             _progenyDbContext.TodoItemsDb.Add(todoItem);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TimeLineItem timelineItem = new()
             {
@@ -1580,7 +1580,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
                 Context = ""
             };
             _progenyDbContext.CalendarDb.Add(calendarItem);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             TimeLineItem timelineItem = new()
             {

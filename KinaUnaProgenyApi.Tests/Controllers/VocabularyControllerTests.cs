@@ -742,7 +742,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task GetVocabularyListPage_Should_Handle_Pagination()
         {
             // Arrange
-            List<VocabularyItem> allItems = new();
+            List<VocabularyItem> allItems = [];
             for (int i = 0; i < 20; i++)
             {
                 allItems.Add(new VocabularyItem

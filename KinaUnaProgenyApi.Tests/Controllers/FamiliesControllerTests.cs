@@ -85,10 +85,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
         private void SetupControllerContext(string email)
         {
-            List<Claim> claims = new()
-            {
-                new(ClaimTypes.Email, email)
-            };
+            List<Claim> claims = [new(ClaimTypes.Email, email)];
             ClaimsIdentity identity = new(claims, "TestAuthType");
             ClaimsPrincipal claimsPrincipal = new(identity);
 
@@ -172,11 +169,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task GetCurrentUsersFamilies_Should_Return_Ok_With_Families_List()
         {
             // Arrange
-            List<Family> families = new()
-            {
+            List<Family> families =
+            [
                 _testFamily,
-                new Family { FamilyId = TestFamilyId + 1, Name = "Another Family" }
-            };
+                new() { FamilyId = TestFamilyId + 1, Name = "Another Family" }
+            ];
 
             _mockUserInfoService.Setup(x => x.GetUserInfoByEmail(TestUserEmail))
                 .ReturnsAsync(_testUser);
@@ -202,7 +199,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockUserInfoService.Setup(x => x.GetUserInfoByEmail(TestUserEmail))
                 .ReturnsAsync(_testUser);
             _mockFamiliesService.Setup(x => x.GetUsersFamiliesByUserId(_testUser.UserId, _testUser))
-                .ReturnsAsync(new List<Family>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult result = await _controller.GetCurrentUsersFamilies();
@@ -221,7 +218,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockUserInfoService.Setup(x => x.GetUserInfoByEmail(Constants.DefaultUserEmail))
                 .ReturnsAsync(_testUser);
             _mockFamiliesService.Setup(x => x.GetUsersFamiliesByUserId(_testUser.UserId, _testUser))
-                .ReturnsAsync(new List<Family>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult result = await _controller.GetCurrentUsersFamilies();
@@ -462,16 +459,16 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task GetFamilyMembersForFamily_Should_Return_Ok_With_Members_List()
         {
             // Arrange
-            List<FamilyMember> members = new()
-            {
+            List<FamilyMember> members =
+            [
                 _testFamilyMember,
-                new FamilyMember
+                new()
                 {
                     FamilyMemberId = TestFamilyMemberId + 1,
                     FamilyId = TestFamilyId,
                     MemberType = FamilyMemberType.Child
                 }
-            };
+            ];
 
             _mockUserInfoService.Setup(x => x.GetUserInfoByEmail(TestUserEmail))
                 .ReturnsAsync(_testUser);
@@ -497,7 +494,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockUserInfoService.Setup(x => x.GetUserInfoByEmail(TestUserEmail))
                 .ReturnsAsync(_testUser);
             _mockFamilyMembersService.Setup(x => x.GetFamilyMembersForFamily(TestFamilyId, _testUser))
-                .ReturnsAsync(new List<FamilyMember>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult result = await _controller.GetFamilyMembersForFamily(TestFamilyId);
@@ -517,7 +514,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockUserInfoService.Setup(x => x.GetUserInfoByEmail(Constants.DefaultUserEmail))
                 .ReturnsAsync(_testUser);
             _mockFamilyMembersService.Setup(x => x.GetFamilyMembersForFamily(TestFamilyId, _testUser))
-                .ReturnsAsync(new List<FamilyMember>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult result = await _controller.GetFamilyMembersForFamily(TestFamilyId);
@@ -827,11 +824,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task GetFamiliesForProgeny_Should_Return_Ok_With_Families_List()
         {
             // Arrange
-            List<Family> families = new()
-            {
+            List<Family> families =
+            [
                 _testFamily,
-                new Family { FamilyId = TestFamilyId + 1, Name = "Second Family" }
-            };
+                new() { FamilyId = TestFamilyId + 1, Name = "Second Family" }
+            ];
 
             _mockUserInfoService.Setup(x => x.GetUserInfoByEmail(TestUserEmail))
                 .ReturnsAsync(_testUser);
@@ -857,7 +854,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockUserInfoService.Setup(x => x.GetUserInfoByEmail(TestUserEmail))
                 .ReturnsAsync(_testUser);
             _mockFamiliesService.Setup(x => x.GetFamiliesForProgeny(TestProgenyId, _testUser))
-                .ReturnsAsync(new List<Family>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult result = await _controller.GetFamiliesForProgeny(TestProgenyId);
@@ -877,7 +874,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockUserInfoService.Setup(x => x.GetUserInfoByEmail(Constants.DefaultUserEmail))
                 .ReturnsAsync(_testUser);
             _mockFamiliesService.Setup(x => x.GetFamiliesForProgeny(TestProgenyId, _testUser))
-                .ReturnsAsync(new List<Family>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult result = await _controller.GetFamiliesForProgeny(TestProgenyId);

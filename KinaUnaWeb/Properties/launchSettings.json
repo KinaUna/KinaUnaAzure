@@ -12,9 +12,7 @@
       "commandName": "IISExpress",
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONENABLED": "true",
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONVAULT": "https://KinaUnaKeyVault.vault.azure.net"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
     "KinaUnaWeb": {
@@ -22,8 +20,7 @@
       "launchBrowser": true,
       "environmentVariables": {
         "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONENABLED": "true",
-        "ASPNETCORE_ENVIRONMENT": "Development",
-        "ASPNETCORE_HOSTINGSTARTUP__KEYVAULT__CONFIGURATIONVAULT": "https://KinaUnaKeyVault.vault.azure.net"
+        "ASPNETCORE_ENVIRONMENT": "Development"
       },
       "applicationUrl": "https://Nuuk2015.kinauna.io:44324/"
     }

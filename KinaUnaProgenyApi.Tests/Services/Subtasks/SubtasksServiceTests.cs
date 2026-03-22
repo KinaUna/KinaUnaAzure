@@ -199,7 +199,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
                 .ReturnsAsync(true);
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.TodoItem, 100, _testUser))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
             _mockKinaUnaCacheService
                 .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.TodoItem))
                 .Returns(Task.CompletedTask);
@@ -245,7 +245,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
                 .ReturnsAsync(true);
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.TodoItem, 200, _adminUser))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
             _mockKinaUnaCacheService
                 .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(0, 1, KinaUnaTypes.TimeLineType.TodoItem))
                 .Returns(Task.CompletedTask);
@@ -341,7 +341,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
                 .ReturnsAsync(true);
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.TodoItem, 100, _testUser))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
             _mockKinaUnaCacheService
                 .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.TodoItem))
                 .Returns(Task.CompletedTask);
@@ -721,7 +721,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
         public async Task UpdateSubtask_WhenStatusUnchanged_PreservesCompletedDate()
         {
             // Arrange
-            await _progenyDbContext.TodoItemsDb.FindAsync(new object?[] { 4 }, TestContext.Current.CancellationToken);
+            await _progenyDbContext.TodoItemsDb.FindAsync([4], TestContext.Current.CancellationToken);
 
             TodoItem updateValues = new()
             {
@@ -765,7 +765,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
                 .ReturnsAsync(true);
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.TodoItem, 1, _adminUser))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
             _mockKinaUnaCacheService
                 .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.TodoItem))
                 .Returns(Task.CompletedTask);
@@ -776,7 +776,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             // Assert
             Assert.True(result);
 
-            TodoItem? deletedSubtask = await _progenyDbContext.TodoItemsDb.FindAsync(1);
+            TodoItem? deletedSubtask = await _progenyDbContext.TodoItemsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(deletedSubtask);
             Assert.True(deletedSubtask.IsDeleted);
             Assert.Equal("admin1", deletedSubtask.ModifiedBy);
@@ -798,7 +798,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
                 .ReturnsAsync(true);
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.TodoItem, 2, _adminUser))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
             _mockKinaUnaCacheService
                 .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.TodoItem))
                 .Returns(Task.CompletedTask);
@@ -809,7 +809,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             // Assert
             Assert.True(result);
 
-            TodoItem? deletedSubtask = await _progenyDbContext.TodoItemsDb.FindAsync(2);
+            TodoItem? deletedSubtask = await _progenyDbContext.TodoItemsDb.FindAsync([2], TestContext.Current.CancellationToken);
             Assert.Null(deletedSubtask);
         }
 
@@ -849,7 +849,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             // Assert
             Assert.False(result);
 
-            TodoItem? subtask = await _progenyDbContext.TodoItemsDb.FindAsync(1);
+            TodoItem? subtask = await _progenyDbContext.TodoItemsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(subtask);
             Assert.False(subtask.IsDeleted);
         }
@@ -885,7 +885,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             // Arrange
             List<TodoItem> subtasks = await _progenyDbContext.TodoItemsDb
                 .Where(t => t.ParentTodoItemId == 100 && !t.IsDeleted)
-                .ToListAsync();
+                .ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
 
             SubtasksRequest request = new()
             {
@@ -922,7 +922,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             // Arrange
             List<TodoItem> subtasks = await _progenyDbContext.TodoItemsDb
                 .Where(t => t.ParentTodoItemId == 100 && !t.IsDeleted)
-                .ToListAsync();
+                .ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
 
             DateTime startDate = DateTime.UtcNow.AddDays(-3);
             SubtasksRequest request = new()
@@ -949,7 +949,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             // Arrange
             List<TodoItem> subtasks = await _progenyDbContext.TodoItemsDb
                 .Where(t => t.ParentTodoItemId == 100 && !t.IsDeleted)
-                .ToListAsync();
+                .ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
             DateTime endDate = DateTime.UtcNow.AddDays(4);
             SubtasksRequest request = new()
             {
@@ -975,7 +975,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             // Arrange
             List<TodoItem> subtasks = await _progenyDbContext.TodoItemsDb
                 .Where(t => t.ParentTodoItemId == 100 && !t.IsDeleted)
-                .ToListAsync();
+                .ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
 
             SubtasksRequest request = new()
             {
@@ -999,7 +999,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             // Arrange
             List<TodoItem> subtasks = await _progenyDbContext.TodoItemsDb
                 .Where(t => t.ParentTodoItemId == 100 && !t.IsDeleted)
-                .ToListAsync();
+                .ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
 
             SubtasksRequest request = new()
             {
@@ -1023,7 +1023,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             // Arrange
             List<TodoItem> subtasks = await _progenyDbContext.TodoItemsDb
                 .Where(t => t.ParentTodoItemId == 100 && !t.IsDeleted)
-                .ToListAsync();
+                .ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
 
             SubtasksRequest request = new()
             {
@@ -1047,7 +1047,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             // Arrange
             List<TodoItem> subtasks = await _progenyDbContext.TodoItemsDb
                 .Where(t => t.ParentTodoItemId == 100 && !t.IsDeleted)
-                .ToListAsync();
+                .ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
 
             SubtasksRequest request = new()
             {
@@ -1071,7 +1071,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             // Arrange
             List<TodoItem> subtasks = await _progenyDbContext.TodoItemsDb
                 .Where(t => t.ParentTodoItemId == 100 && !t.IsDeleted)
-                .ToListAsync();
+                .ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
 
             SubtasksRequest request = new()
             {
@@ -1097,7 +1097,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             // Arrange
             List<TodoItem> subtasks = await _progenyDbContext.TodoItemsDb
                 .Where(t => t.ParentTodoItemId == 100 && !t.IsDeleted)
-                .ToListAsync();
+                .ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
 
             SubtasksRequest request = new()
             {
@@ -1121,7 +1121,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             // Arrange
             List<TodoItem> subtasks = await _progenyDbContext.TodoItemsDb
                 .Where(t => t.ParentTodoItemId == 100 && !t.IsDeleted)
-                .ToListAsync();
+                .ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
 
             SubtasksRequest request = new()
             {
@@ -1144,7 +1144,7 @@ namespace KinaUnaProgenyApi.Tests.Services.Subtasks
             // Arrange
             List<TodoItem> subtasks = await _progenyDbContext.TodoItemsDb
                 .Where(t => t.ParentTodoItemId == 100 && !t.IsDeleted)
-                .ToListAsync();
+                .ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
 
             SubtasksRequest request = new()
             {

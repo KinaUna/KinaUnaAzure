@@ -360,7 +360,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             Assert.NotEqual(0, result.UserGroupId);
 
             // Verify the group was added to the database
-            UserGroup? savedGroup = await context.UserGroupsDb.FindAsync(new object?[] { result.UserGroupId }, TestContext.Current.CancellationToken);
+            UserGroup? savedGroup = await context.UserGroupsDb.FindAsync([result.UserGroupId], TestContext.Current.CancellationToken);
             Assert.NotNull(savedGroup);
             Assert.Equal("New Group", savedGroup.Name);
         }
@@ -413,7 +413,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             Assert.Equal("Updated description", result.Description);
 
             // Verify the group was updated in the database
-            UserGroup? updatedGroup = await context.UserGroupsDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
+            UserGroup? updatedGroup = await context.UserGroupsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(updatedGroup);
             Assert.Equal("Updated Family Group", updatedGroup.Name);
             Assert.Equal("Updated description", updatedGroup.Description);
@@ -524,7 +524,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             Assert.NotEqual(0, result.UserGroupMemberId);
 
             // Verify the member was added to the database
-            UserGroupMember? savedMember = await context.UserGroupMembersDb.FindAsync(new object?[] { result.UserGroupMemberId }, TestContext.Current.CancellationToken);
+            UserGroupMember? savedMember = await context.UserGroupMembersDb.FindAsync([result.UserGroupMemberId], TestContext.Current.CancellationToken);
             Assert.NotNull(savedMember);
             Assert.Equal("newuser@test.com", savedMember.Email);
         }
@@ -566,7 +566,7 @@ namespace KinaUnaProgenyApi.Tests.Services.AccessManagementService
             Assert.Equal("updated@test.com", result.Email);
 
             // Verify the member was updated in the database
-            UserGroupMember? updatedMember = await context.UserGroupMembersDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
+            UserGroupMember? updatedMember = await context.UserGroupMembersDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(updatedMember);
             Assert.Equal("updated@test.com", updatedMember.Email);
         }

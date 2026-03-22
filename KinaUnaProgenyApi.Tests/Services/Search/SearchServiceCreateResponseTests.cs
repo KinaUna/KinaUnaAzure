@@ -518,16 +518,16 @@ namespace KinaUnaProgenyApi.Tests.Services.Search
 
         private class TestItem
         {
-            public int Id { get; set; }
-            public string Name { get; set; } = string.Empty;
-            public DateTime Date { get; set; }
+            public int Id { get; init; }
+            public string Name { get; init; } = string.Empty;
+            public DateTime Date { get; init; }
         }
 
         private class TestItemWithMultipleDates
         {
-            public int Id { get; set; }
-            public DateTime CreatedDate { get; set; }
-            public DateTime ModifiedDate { get; set; }
+            public int Id { get; init; }
+            public DateTime CreatedDate { get; init; }
+            public DateTime ModifiedDate { get; init; }
         }
 
         #endregion

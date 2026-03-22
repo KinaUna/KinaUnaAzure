@@ -162,7 +162,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockProgenyService.Setup(x => x.GetProgeny(TestProgenyId, _testUser))
                 .ReturnsAsync(_testProgeny);
 
-            List<CalendarItem> expectedItems = new() { _testCalendarItem };
+            List<CalendarItem> expectedItems = [_testCalendarItem];
             _mockCalendarService.Setup(x => x.GetCalendarList(TestProgenyId, 0, _testUser, request.StartDate, request.EndDate))
                 .ReturnsAsync(expectedItems);
 
@@ -202,7 +202,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockFamiliesService.Setup(x => x.GetFamilyById(TestFamilyId, _testUser))
                 .ReturnsAsync(_testFamily);
 
-            List<CalendarItem> expectedItems = new() { familyCalendarItem };
+            List<CalendarItem> expectedItems = [familyCalendarItem];
             _mockCalendarService.Setup(x => x.GetCalendarList(0, TestFamilyId, _testUser, request.StartDate, request.EndDate))
                 .ReturnsAsync(expectedItems);
 
@@ -246,10 +246,10 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(_testFamily);
 
             _mockCalendarService.Setup(x => x.GetCalendarList(TestProgenyId, 0, _testUser, request.StartDate, request.EndDate))
-                .ReturnsAsync(new List<CalendarItem> { _testCalendarItem });
+                .ReturnsAsync([_testCalendarItem]);
 
             _mockCalendarService.Setup(x => x.GetCalendarList(0, TestFamilyId, _testUser, request.StartDate, request.EndDate))
-                .ReturnsAsync(new List<CalendarItem> { familyCalendarItem });
+                .ReturnsAsync([familyCalendarItem]);
 
             // Act
             IActionResult? result = await _controller.Progenies(request);

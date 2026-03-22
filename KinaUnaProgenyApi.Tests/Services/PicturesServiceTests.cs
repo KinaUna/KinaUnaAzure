@@ -131,7 +131,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Picture picture = CreateTestPicture();
 
             context.PicturesDb.Add(picture);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, 1, userInfo, PermissionLevel.View))
@@ -188,7 +188,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Picture picture = CreateTestPicture();
 
             context.PicturesDb.Add(picture);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, 1, userInfo, PermissionLevel.View))
@@ -245,7 +245,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             // Assert
             Assert.NotNull(result);
             Assert.NotEqual(0, result.PictureId);
-            Picture? dbPicture = await context.PicturesDb.FindAsync(result.PictureId);
+            Picture? dbPicture = await context.PicturesDb.FindAsync([result.PictureId], TestContext.Current.CancellationToken);
             Assert.NotNull(dbPicture);
             mockAccessManagementService.Verify(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Add), Times.Once);
             mockAccessManagementService.Verify(x => x.AddItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(),
@@ -300,7 +300,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Picture picture = CreateTestPicture();
 
             context.PicturesDb.Add(picture);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             picture.Tags = "UpdatedTag";
 
@@ -311,7 +311,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             mockAccessManagementService
                 .Setup(x => x.UpdateItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(),
                     It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             PicturesService service = new(context, progenyContext, cache, mockImageStore.Object, mockAccessManagementService.Object, mockKinaUnaCacheService.Object);
 
@@ -340,7 +340,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Picture picture = CreateTestPicture();
 
             context.PicturesDb.Add(picture);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             picture.Tags = "UpdatedTag";
 
@@ -405,14 +405,14 @@ namespace KinaUnaProgenyApi.Tests.Services
             Picture picture = CreateTestPicture();
 
             context.PicturesDb.Add(picture);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, 1, userInfo, PermissionLevel.Admin))
                 .ReturnsAsync(true);
             mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<UserInfo>()))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
             mockImageStore
                 .Setup(x => x.DeleteImage(It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync("deleted");
@@ -424,7 +424,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             // Assert
             Assert.NotNull(result);
-            Picture? dbPicture = await context.PicturesDb.FindAsync(1);
+            Picture? dbPicture = await context.PicturesDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.Null(dbPicture);
             mockAccessManagementService.Verify(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, 1, userInfo, PermissionLevel.Admin), Times.Once);
             mockImageStore.Verify(x => x.DeleteImage(It.IsAny<string>(), It.IsAny<string>()), Times.AtLeastOnce);
@@ -444,7 +444,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Picture picture = CreateTestPicture();
 
             context.PicturesDb.Add(picture);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, 1, userInfo, PermissionLevel.Admin))
@@ -457,7 +457,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             // Assert
             Assert.Null(result);
-            Picture? dbPicture = await context.PicturesDb.FindAsync(1);
+            Picture? dbPicture = await context.PicturesDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(dbPicture);
             mockAccessManagementService.Verify(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, 1, userInfo, PermissionLevel.Admin), Times.Once);
             mockImageStore.Verify(x => x.DeleteImage(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
@@ -478,7 +478,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Picture picture2 = CreateTestPicture(2, 1, "shared-image.jpg");
 
             context.PicturesDb.AddRange(picture1, picture2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, 1, userInfo, PermissionLevel.Admin))
@@ -486,7 +486,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<UserInfo>()))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             mockImageStore
                 .Setup(x => x.DeleteImage(It.IsAny<string>(), It.IsAny<string>()))
@@ -519,7 +519,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Picture picture = CreateTestPicture();
 
             context.PicturesDb.Add(picture);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockImageStore
                 .Setup(x => x.DeleteImage(It.IsAny<string>(), It.IsAny<string>()))
@@ -532,7 +532,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             // Assert
             Assert.NotNull(result);
-            Picture? dbPicture = await context.PicturesDb.FindAsync(1);
+            Picture? dbPicture = await context.PicturesDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.Null(dbPicture);
             mockAccessManagementService.Verify(x => x.HasItemPermission(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<UserInfo>(), It.IsAny<PermissionLevel>()), Times.Never);
             mockImageStore.Verify(x => x.DeleteImage(It.IsAny<string>(), It.IsAny<string>()), Times.AtLeastOnce);
@@ -556,7 +556,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Picture picture = CreateTestPicture(1, 1, "unique-link.jpg");
 
             context.PicturesDb.Add(picture);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, 1, userInfo, PermissionLevel.View))
@@ -591,7 +591,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Picture picture = CreateTestPicture(1, 1, "unique-link.jpg");
 
             context.PicturesDb.Add(picture);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, 1, userInfo, PermissionLevel.View))
@@ -624,7 +624,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Picture picture = CreateTestPicture();
 
             context.PicturesDb.Add(picture);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             PicturesService service = new(context, progenyContext, cache, mockImageStore.Object, mockAccessManagementService.Object, mockKinaUnaCacheService.Object);
 
@@ -633,7 +633,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             // Assert
             Assert.NotNull(result);
-            string? cachedPicture = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "picture1");
+            string? cachedPicture = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "picture1", token: TestContext.Current.CancellationToken);
             Assert.NotNull(cachedPicture);
         }
 
@@ -671,7 +671,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             picture.Tags = "Tag1, Tag2,";
 
             context.PicturesDb.Add(picture);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             PicturesService service = new(context, progenyContext, cache, mockImageStore.Object, mockAccessManagementService.Object, mockKinaUnaCacheService.Object);
 
@@ -700,7 +700,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Picture picture = CreateTestPicture();
 
             context.PicturesDb.Add(picture);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             PicturesService service = new(context, progenyContext, cache, mockImageStore.Object, mockAccessManagementService.Object, mockKinaUnaCacheService.Object);
             await service.SetPictureInCache(1);
@@ -709,7 +709,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await service.RemovePictureFromCache(1, 1);
 
             // Assert
-            string? cachedPicture = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "picture1");
+            string? cachedPicture = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "picture1", token: TestContext.Current.CancellationToken);
             Assert.Null(cachedPicture);
         }
 
@@ -732,7 +732,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Picture picture2 = CreateTestPicture(2);
 
             context.PicturesDb.AddRange(picture1, picture2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -768,7 +768,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Picture picture2 = CreateTestPicture(2);
 
             context.PicturesDb.AddRange(picture1, picture2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, 1, userInfo, PermissionLevel.View))
@@ -834,7 +834,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Picture picture2 = CreateTestPicture(2);
 
             context.PicturesDb.AddRange(picture1, picture2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             PicturesService service = new(context, progenyContext, cache, mockImageStore.Object, mockAccessManagementService.Object, mockKinaUnaCacheService.Object);
 
@@ -844,7 +844,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             // Assert
             Assert.NotNull(result);
             Assert.Equal(2, result.Length);
-            string? cachedList = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "pictureslist1");
+            string? cachedList = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "pictureslist1", token: TestContext.Current.CancellationToken);
             Assert.NotNull(cachedList);
         }
 
@@ -869,7 +869,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             picture2.Tags = "Tag3, Tag4";
 
             context.PicturesDb.AddRange(picture1, picture2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -905,7 +905,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Picture picture2 = CreateTestPicture(2);
 
             context.PicturesDb.AddRange(picture1, picture2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -948,7 +948,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             picture2.Longtitude = "-73.9855";
 
             context.PicturesDb.AddRange(picture1, picture2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -963,7 +963,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             PicturesLocationsRequest request = new()
             {
                 ProgenyId = 1,
-                Progenies = new List<int> { 1 },
+                Progenies = [1],
                 Distance = 10.0
 
             };
@@ -1000,7 +1000,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             picture2.Longtitude = "-118.2437";
 
             context.PicturesDb.AddRange(picture1, picture2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -1015,7 +1015,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             NearByPhotosRequest request = new()
             {
                 ProgenyId = 1,
-                Progenies = new List<int> { 1 },
+                Progenies = [1],
                 LocationItem = new Location { Latitude = 40.7128, Longitude = -74.0060 },
                 Distance = 10.0,
                 SortOrder = 0
@@ -1050,7 +1050,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             picture2.PictureTime = DateTime.UtcNow;
 
             context.PicturesDb.AddRange(picture1, picture2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Photo, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -1065,7 +1065,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             NearByPhotosRequest request = new()
             {
                 ProgenyId = 1,
-                Progenies = new List<int> { 1 },
+                Progenies = [1],
                 LocationItem = new Location { Latitude = 40.7128, Longitude = -74.0060 },
                 Distance = 10.0,
                 SortOrder = 1
@@ -1171,8 +1171,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             string fileName = "test.jpg";
             MemoryStream ms = new();
             StreamWriter writer = new(ms);
-            writer.Write(content);
-            writer.Flush();
+            await writer.WriteAsync(content);
+            await writer.FlushAsync(TestContext.Current.CancellationToken);
             ms.Position = 0;
 
             mockFile.Setup(f => f.OpenReadStream()).Returns(ms);
@@ -1211,7 +1211,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             MemoryStream ms = new();
             StreamWriter writer = new(ms);
             await writer.WriteAsync(content);
-            await writer.FlushAsync();
+            await writer.FlushAsync(TestContext.Current.CancellationToken);
             ms.Position = 0;
 
             mockFile.Setup(f => f.OpenReadStream()).Returns(ms);
@@ -1249,8 +1249,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             string fileName = "test.jpg";
             MemoryStream ms = new();
             StreamWriter writer = new(ms);
-            writer.Write(content);
-            writer.Flush();
+            await writer.WriteAsync(content);
+            await writer.FlushAsync(TestContext.Current.CancellationToken);
             ms.Position = 0;
 
             mockFile.Setup(f => f.OpenReadStream()).Returns(ms);
@@ -1288,8 +1288,8 @@ namespace KinaUnaProgenyApi.Tests.Services
             string fileName = "test.jpg";
             MemoryStream ms = new();
             StreamWriter writer = new(ms);
-            writer.Write(content);
-            writer.Flush();
+            await writer.WriteAsync(content);
+            await writer.FlushAsync(TestContext.Current.CancellationToken);
             ms.Position = 0;
 
             mockFile.Setup(f => f.OpenReadStream()).Returns(ms);
@@ -1324,7 +1324,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             picture.PictureRotation = null;
 
             context.PicturesDb.Add(picture);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             PicturesService service = new(context, progenyContext, cache, mockImageStore.Object, mockAccessManagementService.Object, mockKinaUnaCacheService.Object);
 
@@ -1332,7 +1332,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await service.CheckPicturePropertiesForNull();
 
             // Assert
-            Picture? updatedPicture = await context.PicturesDb.FindAsync(1);
+            Picture? updatedPicture = await context.PicturesDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(updatedPicture);
             Assert.Equal("", updatedPicture.Altitude);
             Assert.Equal("", updatedPicture.Latitude);
@@ -1363,7 +1363,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
 
             context.PicturesDb.Add(picture);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockImageStore
                 .Setup(x => x.DeleteImage(It.IsAny<string>(), It.IsAny<string>()))
@@ -1375,7 +1375,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await service.CheckPictureLinks();
 
             // Assert
-            Picture? deletedPicture = await context.PicturesDb.FindAsync(1);
+            Picture? deletedPicture = await context.PicturesDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.Null(deletedPicture);
         }
 
@@ -1392,7 +1392,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Picture picture = CreateTestPicture();
 
             context.PicturesDb.Add(picture);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockImageStore
                 .Setup(x => x.ImageExists(It.IsAny<string>(), It.IsAny<string>()))
@@ -1408,7 +1408,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await service.CheckPictureLinks();
 
             // Assert
-            Picture? deletedPicture = await context.PicturesDb.FindAsync(1);
+            Picture? deletedPicture = await context.PicturesDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.Null(deletedPicture);
             mockImageStore.Verify(x => x.ImageExists(It.IsAny<string>(), It.IsAny<string>()), Times.AtLeastOnce);
         }

@@ -196,7 +196,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             List<Video> videosList =
             [
                 _testVideo,
-                new Video { VideoId = 2, ProgenyId = TestProgenyId, Tags = "vacation", VideoTime = DateTime.UtcNow }
+                new() { VideoId = 2, ProgenyId = TestProgenyId, Tags = "vacation", VideoTime = DateTime.UtcNow }
             ];
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
                 .ReturnsAsync(_testUser);
@@ -274,7 +274,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             // Arrange
             List<Comment> comments =
             [
-                new Comment { CommentId = 1, CommentText = "Great video!" }
+                new() { CommentId = 1, CommentText = "Great video!" }
             ];
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
                 .ReturnsAsync(_testUser);
@@ -880,8 +880,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             // Arrange
             List<Comment> comments =
             [
-                new Comment { CommentId = 1, CommentThreadNumber = 1 },
-                new Comment { CommentId = 2, CommentThreadNumber = 1 }
+                new() { CommentId = 1, CommentThreadNumber = 1 },
+                new() { CommentId = 2, CommentThreadNumber = 1 }
             ];
 
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))

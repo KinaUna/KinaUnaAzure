@@ -112,7 +112,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Measurement measurement = CreateTestMeasurement();
 
             context.MeasurementsDb.Add(measurement);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 1, userInfo, PermissionLevel.View))
@@ -158,7 +158,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Measurement measurement = CreateTestMeasurement();
 
             context.MeasurementsDb.Add(measurement);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 1, userInfo, PermissionLevel.View))
@@ -228,7 +228,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal(105.0, result.Height);
             Assert.Equal(16.0, result.Weight);
 
-            Measurement? dbMeasurement = await context.MeasurementsDb.FindAsync(result.MeasurementId);
+            Measurement? dbMeasurement = await context.MeasurementsDb.FindAsync([result.MeasurementId], TestContext.Current.CancellationToken);
             Assert.NotNull(dbMeasurement);
             Assert.Equal(105.0, dbMeasurement.Height);
         }
@@ -323,7 +323,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Measurement measurement = CreateTestMeasurement();
             context.MeasurementsDb.Add(measurement);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.Entry(measurement).State = EntityState.Detached;
 
             Measurement updatedMeasurement = new()
@@ -360,7 +360,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal(120.0, result.Height);
             Assert.Equal(20.0, result.Weight);
 
-            Measurement? dbMeasurement = await context.MeasurementsDb.FindAsync(1);
+            Measurement? dbMeasurement = await context.MeasurementsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(dbMeasurement);
             Assert.Equal(120.0, dbMeasurement.Height);
         }
@@ -375,7 +375,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Measurement measurement = CreateTestMeasurement();
             context.MeasurementsDb.Add(measurement);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Measurement updatedMeasurement = new()
             {
@@ -435,7 +435,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Measurement measurement = CreateTestMeasurement();
             context.MeasurementsDb.Add(measurement);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.Entry(measurement).State = EntityState.Detached;
 
             Measurement updatedMeasurement = new()
@@ -483,7 +483,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Measurement measurement = CreateTestMeasurement();
             context.MeasurementsDb.Add(measurement);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 1, userInfo, PermissionLevel.Admin))
@@ -506,7 +506,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
             Assert.Equal(1, result.MeasurementId);
 
-            Measurement? dbMeasurement = await context.MeasurementsDb.FindAsync(1);
+            Measurement? dbMeasurement = await context.MeasurementsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.Null(dbMeasurement);
         }
 
@@ -520,7 +520,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Measurement measurement = CreateTestMeasurement();
             context.MeasurementsDb.Add(measurement);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 1, userInfo, PermissionLevel.Admin))
@@ -533,7 +533,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             // Assert
             Assert.Null(result);
-            Measurement? dbMeasurement = await context.MeasurementsDb.FindAsync(1);
+            Measurement? dbMeasurement = await context.MeasurementsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(dbMeasurement);
         }
 
@@ -574,7 +574,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Measurement measurement = CreateTestMeasurement();
             context.MeasurementsDb.Add(measurement);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 1, userInfo, PermissionLevel.Admin))
@@ -618,7 +618,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             ];
 
             context.MeasurementsDb.AddRange(measurements);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -666,7 +666,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             ];
 
             context.MeasurementsDb.AddRange(measurements);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 1, userInfo, PermissionLevel.View))
@@ -753,7 +753,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             ];
 
             context.MeasurementsDb.AddRange(measurements);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockKinaUnaCacheService
                 .Setup(x => x.GetMeasurementsListCache(It.IsAny<string>(), It.IsAny<int>()))
@@ -787,7 +787,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Measurement measurement = CreateTestMeasurement();
             context.MeasurementsDb.Add(measurement);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 1, userInfo, PermissionLevel.View))
@@ -832,7 +832,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Measurement measurement = CreateTestMeasurement();
             context.MeasurementsDb.Add(measurement);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Measurement, 1, userInfo, PermissionLevel.View))

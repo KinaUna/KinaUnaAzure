@@ -29,7 +29,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(text2);
             context.Add(text3);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             KinaUnaTextService kinaUnaTextService = new(context);
 
@@ -96,7 +96,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(text2);
             context.Add(text3);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             KinaUnaTextService kinaUnaTextService = new(context);
 
@@ -127,7 +127,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(text2);
             context.Add(text3);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             KinaUnaTextService kinaUnaTextService = new(context);
 
@@ -158,7 +158,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(text2);
             context.Add(text3);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             KinaUnaTextService kinaUnaTextService = new(context);
 
@@ -194,7 +194,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(text2);
             context.Add(text3);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             KinaUnaTextService kinaUnaTextService = new(context);
 
@@ -225,7 +225,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(text2);
             context.Add(text3);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             KinaUnaTextService kinaUnaTextService = new(context);
 
@@ -261,7 +261,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(text2);
             context.Add(text3);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             KinaUnaTextService kinaUnaTextService = new(context);
 
@@ -292,7 +292,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(text2);
             context.Add(text3);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             KinaUnaTextService kinaUnaTextService = new(context);
 
@@ -346,7 +346,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(text8);
             context.Add(text9);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             KinaUnaTextService kinaUnaTextService = new(context);
 
@@ -403,7 +403,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(text8);
             context.Add(text9);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             KinaUnaTextService kinaUnaTextService = new(context);
 
@@ -459,7 +459,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(text8);
             context.Add(text9);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             KinaUnaTextService kinaUnaTextService = new(context);
 
@@ -515,7 +515,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(text8);
             context.Add(text9);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             KinaUnaTextService kinaUnaTextService = new(context);
 
@@ -572,7 +572,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(text8);
             context.Add(text9);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             KinaUnaTextService kinaUnaTextService = new(context);
 
@@ -628,14 +628,14 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(text8);
             //context.Add(text9);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             KinaUnaTextService kinaUnaTextService = new(context);
             int kinaUnaTextsCountBefore = context.KinaUnaTexts.Count();
             await kinaUnaTextService.CheckLanguages();
             int kinaUnaTextsCountAfter = context.KinaUnaTexts.Count();
-            List<KinaUnaText> kinUnaTextsWithTextId2 = await context.KinaUnaTexts.Where(kt => kt.TextId == 2).ToListAsync();
-            List<KinaUnaText> kinUnaTextsWithTextId3 = await context.KinaUnaTexts.Where(kt => kt.TextId == 3).ToListAsync();
+            List<KinaUnaText> kinUnaTextsWithTextId2 = await context.KinaUnaTexts.Where(kt => kt.TextId == 2).ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
+            List<KinaUnaText> kinUnaTextsWithTextId3 = await context.KinaUnaTexts.Where(kt => kt.TextId == 3).ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.NotEqual(kinaUnaTextsCountBefore, kinaUnaTextsCountAfter);
             Assert.Equal(7, kinaUnaTextsCountBefore);
@@ -691,7 +691,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(text8);
             context.Add(text9);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             KinaUnaTextService kinaUnaTextService = new(context);
             int kinaUnaTextsCountBefore = context.KinaUnaTexts.Count();
@@ -729,14 +729,14 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(text2);
             context.Add(text3);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             KinaUnaTextService kinaUnaTextService = new(context);
 
             KinaUnaText kinaUnaTextToAdd = new() { LanguageId = 1, Title="Title2", Page = "Page2", Text = "Text2.1", Created = DateTime.UtcNow, Updated = DateTime.UtcNow};
 
             KinaUnaText addedKinaUnaText = await kinaUnaTextService.AddText(kinaUnaTextToAdd);
-            KinaUnaText? dbKinaUnaText = await context.KinaUnaTexts.AsNoTracking().SingleOrDefaultAsync(kt => kt.Id == addedKinaUnaText.Id);
+            KinaUnaText? dbKinaUnaText = await context.KinaUnaTexts.AsNoTracking().SingleOrDefaultAsync(kt => kt.Id == addedKinaUnaText.Id, cancellationToken: TestContext.Current.CancellationToken);
             KinaUnaText savedKinaUnaText = await kinaUnaTextService.GetTextById(addedKinaUnaText.Id);
 
             Assert.NotNull(addedKinaUnaText);
@@ -788,14 +788,14 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(text2);
             context.Add(text3);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             KinaUnaTextService kinaUnaTextService = new(context);
 
             KinaUnaText kinaUnaTextToAdd = new() { LanguageId = 1, Title = "Title2", Page = "Page2", Text = "Text2.1", Created = DateTime.UtcNow, Updated = DateTime.UtcNow };
 
             await kinaUnaTextService.AddText(kinaUnaTextToAdd);
-            List<KinaUnaText> allLanguageVersionsOfAddedKinaUnaText = await context.KinaUnaTexts.Where(kt => kt.Page == kinaUnaTextToAdd.Page && kt.Title == kinaUnaTextToAdd.Title).ToListAsync();
+            List<KinaUnaText> allLanguageVersionsOfAddedKinaUnaText = await context.KinaUnaTexts.Where(kt => kt.Page == kinaUnaTextToAdd.Page && kt.Title == kinaUnaTextToAdd.Title).ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.NotEmpty(allLanguageVersionsOfAddedKinaUnaText);
             Assert.Equal(3, allLanguageVersionsOfAddedKinaUnaText.Count);
@@ -827,14 +827,14 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(text2);
             context.Add(text3);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             KinaUnaTextService kinaUnaTextService = new(context);
 
             KinaUnaText kinaUnaTextToUpdate = await kinaUnaTextService.GetTextById(1);
             kinaUnaTextToUpdate.Text = "Text1.1 Updated";
             KinaUnaText updatedKinaUnaText = await kinaUnaTextService.UpdateText(1, kinaUnaTextToUpdate);
-            KinaUnaText? dbKinaUnaText = await context.KinaUnaTexts.AsNoTracking().SingleOrDefaultAsync(kt => kt.Id == 1);
+            KinaUnaText? dbKinaUnaText = await context.KinaUnaTexts.AsNoTracking().SingleOrDefaultAsync(kt => kt.Id == 1, cancellationToken: TestContext.Current.CancellationToken);
             KinaUnaText savedKinaUnaText = await kinaUnaTextService.GetTextById(1);
 
             Assert.NotNull(updatedKinaUnaText);
@@ -906,17 +906,17 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(text8);
             context.Add(text9);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             KinaUnaTextService kinaUnaTextService = new(context);
 
             KinaUnaText kinaUnaTextToDelete = await kinaUnaTextService.GetTextById(1);
-            List<KinaUnaText> kinaUnaTextsListBeforeDelete = await context.KinaUnaTexts.Where(kt => kt.Page == kinaUnaTextToDelete.Page && kt.Title == kinaUnaTextToDelete.Title).ToListAsync();
+            List<KinaUnaText> kinaUnaTextsListBeforeDelete = await context.KinaUnaTexts.Where(kt => kt.Page == kinaUnaTextToDelete.Page && kt.Title == kinaUnaTextToDelete.Title).ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
             int allKinaUnaTextsCountBeforeDelete = context.KinaUnaTexts.Count();
             await kinaUnaTextService.DeleteText(1);
-            List<KinaUnaText> textTranslationListAfterDelete = await context.KinaUnaTexts.Where(kt => kt.Page == kinaUnaTextToDelete.Page && kt.Title == kinaUnaTextToDelete.Title).ToListAsync();
+            List<KinaUnaText> textTranslationListAfterDelete = await context.KinaUnaTexts.Where(kt => kt.Page == kinaUnaTextToDelete.Page && kt.Title == kinaUnaTextToDelete.Title).ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
             int allKinaUnaTextsCountAfterDelete = context.KinaUnaTexts.Count();
-            KinaUnaText? deletedKinaUnaText = await context.KinaUnaTexts.SingleOrDefaultAsync(kt => kt.Id == 1);
+            KinaUnaText? deletedKinaUnaText = await context.KinaUnaTexts.SingleOrDefaultAsync(kt => kt.Id == 1, cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Null(deletedKinaUnaText);
             Assert.Equal(3, kinaUnaTextsListBeforeDelete.Count);
@@ -970,17 +970,17 @@ namespace KinaUnaProgenyApi.Tests.Services
             context.Add(text8);
             context.Add(text9);
 
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             KinaUnaTextService kinaUnaTextService = new(context);
 
             KinaUnaText kinaUnaTextToDelete = await kinaUnaTextService.GetTextById(1);
-            List<KinaUnaText> kinaUnaTextsListBeforeDelete = await context.KinaUnaTexts.Where(kt => kt.Page == kinaUnaTextToDelete.Page && kt.Title == kinaUnaTextToDelete.Title).ToListAsync();
+            List<KinaUnaText> kinaUnaTextsListBeforeDelete = await context.KinaUnaTexts.Where(kt => kt.Page == kinaUnaTextToDelete.Page && kt.Title == kinaUnaTextToDelete.Title).ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
             int allKinaUnaTextsCountBeforeDelete = context.KinaUnaTexts.Count();
             await kinaUnaTextService.DeleteSingleText(1);
-            List<KinaUnaText> kinaUnaTextsListAfterDelete = await context.KinaUnaTexts.Where(kt => kt.Page == kinaUnaTextToDelete.Page && kt.Title == kinaUnaTextToDelete.Title).ToListAsync();
+            List<KinaUnaText> kinaUnaTextsListAfterDelete = await context.KinaUnaTexts.Where(kt => kt.Page == kinaUnaTextToDelete.Page && kt.Title == kinaUnaTextToDelete.Title).ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
             int allKinaUnaTextsCountAfterDelete = context.KinaUnaTexts.Count();
-            KinaUnaText? deletedKinaUnaText = await context.KinaUnaTexts.SingleOrDefaultAsync(tt => tt.Id == 1);
+            KinaUnaText? deletedKinaUnaText = await context.KinaUnaTexts.SingleOrDefaultAsync(tt => tt.Id == 1, cancellationToken: TestContext.Current.CancellationToken);
 
             Assert.Null(deletedKinaUnaText);
             Assert.Equal(3, kinaUnaTextsListBeforeDelete.Count);

@@ -134,7 +134,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Skill skill = CreateTestSkill();
 
             context.SkillsDb.Add(skill);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.View))
@@ -184,7 +184,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Skill skill = CreateTestSkill();
 
             context.SkillsDb.Add(skill);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.View))
@@ -252,7 +252,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal("Test Category", result.Category);
             Assert.Equal(1, result.ProgenyId);
 
-            Skill? dbSkill = await context.SkillsDb.FindAsync(result.SkillId);
+            Skill? dbSkill = await context.SkillsDb.FindAsync([result.SkillId], TestContext.Current.CancellationToken);
             Assert.NotNull(dbSkill);
             Assert.Equal(result.SkillId, dbSkill.SkillId);
         }
@@ -290,7 +290,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
             Skill skillToAdd = CreateTestSkill(0);
-            skillToAdd.ItemPermissionsDtoList = new List<ItemPermissionDto>();
+            skillToAdd.ItemPermissionsDtoList = [];
             DateTime beforeAdd = DateTime.UtcNow;
 
             _mockAccessManagementService
@@ -335,14 +335,14 @@ namespace KinaUnaProgenyApi.Tests.Services
             Skill skill = CreateTestSkill();
 
             context.SkillsDb.Add(skill);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.Entry(skill).State = EntityState.Detached;
 
             Skill updatedSkill = CreateTestSkill();
             updatedSkill.Name = "Updated Name";
             updatedSkill.Description = "Updated Description";
             updatedSkill.Category = "Updated Category";
-            updatedSkill.ItemPermissionsDtoList = new List<ItemPermissionDto>();
+            updatedSkill.ItemPermissionsDtoList = [];
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.Edit))
@@ -356,7 +356,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                     0,
                     It.IsAny<List<ItemPermissionDto>>(),
                     userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             SetupKinaUnaCacheServiceMocks();
 
@@ -371,7 +371,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal("Updated Description", result.Description);
             Assert.Equal("Updated Category", result.Category);
 
-            Skill? dbSkill = await context.SkillsDb.FindAsync(1);
+            Skill? dbSkill = await context.SkillsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(dbSkill);
             Assert.Equal("Updated Name", dbSkill.Name);
         }
@@ -386,7 +386,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Skill skill = CreateTestSkill();
 
             context.SkillsDb.Add(skill);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Skill updatedSkill = CreateTestSkill();
             updatedSkill.Name = "Updated Name";
@@ -405,7 +405,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             // Assert
             Assert.Null(result);
 
-            Skill? dbSkill = await context.SkillsDb.FindAsync(1);
+            Skill? dbSkill = await context.SkillsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.Equal("Test Skill", dbSkill!.Name); // Name should not be updated
         }
 
@@ -444,14 +444,14 @@ namespace KinaUnaProgenyApi.Tests.Services
             DateTime originalModifiedTime = skill.ModifiedTime;
 
             context.SkillsDb.Add(skill);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.Entry(skill).State = EntityState.Detached;
 
-            await Task.Delay(10); // Ensure time difference
+            await Task.Delay(10, TestContext.Current.CancellationToken); // Ensure time difference
 
             Skill updatedSkill = CreateTestSkill();
             updatedSkill.Name = "Updated Name";
-            updatedSkill.ItemPermissionsDtoList = new List<ItemPermissionDto>();
+            updatedSkill.ItemPermissionsDtoList = [];
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.Edit))
@@ -465,7 +465,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                     0,
                     It.IsAny<List<ItemPermissionDto>>(),
                     userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             SetupKinaUnaCacheServiceMocks();
 
@@ -493,7 +493,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Skill skill = CreateTestSkill();
 
             context.SkillsDb.Add(skill);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.Admin))
@@ -501,7 +501,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, 1, userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             SetupKinaUnaCacheServiceMocks();
 
@@ -514,7 +514,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
             Assert.Equal(1, result.SkillId);
 
-            Skill? dbSkill = await context.SkillsDb.FindAsync(1);
+            Skill? dbSkill = await context.SkillsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.Null(dbSkill);
         }
 
@@ -528,7 +528,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Skill skill = CreateTestSkill();
 
             context.SkillsDb.Add(skill);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.Admin))
@@ -544,7 +544,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             // Assert
             Assert.Null(result);
 
-            Skill? dbSkill = await context.SkillsDb.FindAsync(1);
+            Skill? dbSkill = await context.SkillsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(dbSkill); // Skill should still exist
         }
 
@@ -582,7 +582,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Skill skill = CreateTestSkill();
 
             context.SkillsDb.Add(skill);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.View))
@@ -598,7 +598,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, 1, userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             SetupKinaUnaCacheServiceMocks();
 
@@ -611,7 +611,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await service.DeleteSkill(skill, userInfo);
 
             // Assert
-            string? cachedValue = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "skill" + 1);
+            string? cachedValue = await cache.GetStringAsync(Constants.AppName + Constants.ApiVersion + "skill" + 1, token: TestContext.Current.CancellationToken);
             Assert.Null(cachedValue);
         }
 
@@ -632,7 +632,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             skill2.Name = "Second Skill";
 
             context.SkillsDb.AddRange(skill1, skill2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -688,7 +688,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Skill skill2 = CreateTestSkill(2, 2);
 
             context.SkillsDb.AddRange(skill1, skill2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.View))
@@ -723,7 +723,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Skill skill2 = CreateTestSkill(2);
 
             context.SkillsDb.AddRange(skill1, skill2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.View))
@@ -760,7 +760,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             Skill skill1 = CreateTestSkill();
             context.SkillsDb.Add(skill1);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.View))
@@ -780,7 +780,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             // Add another skill after first call
             Skill skill2 = CreateTestSkill(2);
             context.SkillsDb.Add(skill2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             List<Skill>? result2 = await service.GetSkillsList(1, userInfo);
 
@@ -809,7 +809,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             skill3.Category = "Physical Development";
 
             context.SkillsDb.AddRange(skill1, skill2, skill3);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, It.IsAny<int>(), userInfo, PermissionLevel.View))
@@ -844,7 +844,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             skill1.Category = "Physical";
 
             context.SkillsDb.Add(skill1);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.View))
@@ -878,7 +878,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             skill1.Category = "Physical";
 
             context.SkillsDb.Add(skill1);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.View))
@@ -913,7 +913,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             skill1.Category = null;
 
             context.SkillsDb.Add(skill1);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.Skill, 1, userInfo, PermissionLevel.View))

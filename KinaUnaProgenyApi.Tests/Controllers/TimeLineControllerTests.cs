@@ -176,12 +176,12 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Progeny_ReturnsOk_WithTimeLineItems()
         {
             // Arrange
-            List<TimeLineItem> timeLineItems = new() { _testTimeLineItem };
+            List<TimeLineItem> timeLineItems = [_testTimeLineItem];
             _mockTimelineService.Setup(x => x.GetTimeLineList(TestProgenyId, 0, _testUser))
                 .ReturnsAsync(timeLineItems);
 
             _mockCalendarService.Setup(x => x.GetRecurringCalendarItemsLatestPosts(TestProgenyId, 0, _testUser))
-                .ReturnsAsync(new List<CalendarItem>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult? result = await _controller.Progeny(TestProgenyId);
@@ -205,12 +205,12 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 ProgenyTime = DateTime.UtcNow.AddDays(10)
             };
 
-            List<TimeLineItem> timeLineItems = new() { _testTimeLineItem, futureItem };
+            List<TimeLineItem> timeLineItems = [_testTimeLineItem, futureItem];
             _mockTimelineService.Setup(x => x.GetTimeLineList(TestProgenyId, 0, _testUser))
                 .ReturnsAsync(timeLineItems);
 
             _mockCalendarService.Setup(x => x.GetRecurringCalendarItemsLatestPosts(TestProgenyId, 0, _testUser))
-                .ReturnsAsync(new List<CalendarItem>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult? result = await _controller.Progeny(TestProgenyId);
@@ -226,7 +226,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Progeny_IncludesRecurringCalendarItems()
         {
             // Arrange
-            List<TimeLineItem> timeLineItems = new() { _testTimeLineItem };
+            List<TimeLineItem> timeLineItems = [_testTimeLineItem];
             _mockTimelineService.Setup(x => x.GetTimeLineList(TestProgenyId, 0, _testUser))
                 .ReturnsAsync(timeLineItems);
 
@@ -240,7 +240,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             };
 
             _mockCalendarService.Setup(x => x.GetRecurringCalendarItemsLatestPosts(TestProgenyId, 0, _testUser))
-                .ReturnsAsync(new List<CalendarItem> { recurringItem });
+                .ReturnsAsync([recurringItem]);
 
             _mockCalendarService.Setup(x => x.GetCalendarItem(10, _testUser))
                 .ReturnsAsync(recurringItem);
@@ -258,7 +258,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Progeny_SkipsRecurringItemsWithoutOriginal()
         {
             // Arrange
-            List<TimeLineItem> timeLineItems = new() { _testTimeLineItem };
+            List<TimeLineItem> timeLineItems = [_testTimeLineItem];
             _mockTimelineService.Setup(x => x.GetTimeLineList(TestProgenyId, 0, _testUser))
                 .ReturnsAsync(timeLineItems);
 
@@ -270,7 +270,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             };
 
             _mockCalendarService.Setup(x => x.GetRecurringCalendarItemsLatestPosts(TestProgenyId, 0, _testUser))
-                .ReturnsAsync(new List<CalendarItem> { recurringItem });
+                .ReturnsAsync([recurringItem]);
 
             _mockCalendarService.Setup(x => x.GetCalendarItem(10, _testUser))
                 .ReturnsAsync((CalendarItem)null!);
@@ -289,10 +289,10 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         {
             // Arrange
             _mockTimelineService.Setup(x => x.GetTimeLineList(TestProgenyId, 0, _testUser))
-                .ReturnsAsync(new List<TimeLineItem>());
+                .ReturnsAsync([]);
 
             _mockCalendarService.Setup(x => x.GetRecurringCalendarItemsLatestPosts(TestProgenyId, 0, _testUser))
-                .ReturnsAsync(new List<CalendarItem>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult? result = await _controller.Progeny(TestProgenyId);
@@ -322,10 +322,10 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             };
 
             _mockTimelineService.Setup(x => x.GetTimeLineList(0, TestFamilyId, _testUser))
-                .ReturnsAsync(new List<TimeLineItem> { familyTimeLineItem });
+                .ReturnsAsync([familyTimeLineItem]);
 
             _mockCalendarService.Setup(x => x.GetRecurringCalendarItemsLatestPosts(0, TestFamilyId, _testUser))
-                .ReturnsAsync(new List<CalendarItem>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult? result = await _controller.Family(TestFamilyId);
@@ -356,10 +356,10 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             };
 
             _mockTimelineService.Setup(x => x.GetTimeLineList(0, TestFamilyId, _testUser))
-                .ReturnsAsync(new List<TimeLineItem> { pastItem, futureItem });
+                .ReturnsAsync([pastItem, futureItem]);
 
             _mockCalendarService.Setup(x => x.GetRecurringCalendarItemsLatestPosts(0, TestFamilyId, _testUser))
-                .ReturnsAsync(new List<CalendarItem>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult? result = await _controller.Family(TestFamilyId);
@@ -379,17 +379,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Progenies_ReturnsOk_WithCombinedTimeLineItems()
         {
             // Arrange
-            List<int> progenies = new() { TestProgenyId, TestProgenyId + 1 };
+            List<int> progenies = [TestProgenyId, TestProgenyId + 1];
             
-            List<TimeLineItem> progeny1Items = new()
-            {
-                new() { TimeLineId = 1, ProgenyId = TestProgenyId, ProgenyTime = DateTime.UtcNow.AddDays(-1) }
-            };
+            List<TimeLineItem> progeny1Items = [new() { TimeLineId = 1, ProgenyId = TestProgenyId, ProgenyTime = DateTime.UtcNow.AddDays(-1) }];
 
-            List<TimeLineItem> progeny2Items = new()
-            {
-                new() { TimeLineId = 2, ProgenyId = TestProgenyId + 1, ProgenyTime = DateTime.UtcNow.AddDays(-2) }
-            };
+            List<TimeLineItem> progeny2Items = [new() { TimeLineId = 2, ProgenyId = TestProgenyId + 1, ProgenyTime = DateTime.UtcNow.AddDays(-2) }];
 
             _mockTimelineService.Setup(x => x.GetTimeLineList(TestProgenyId, 0, _testUser))
                 .ReturnsAsync(progeny1Items);
@@ -398,7 +392,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(progeny2Items);
 
             _mockCalendarService.Setup(x => x.GetRecurringCalendarItemsLatestPosts(It.IsAny<int>(), 0, _testUser))
-                .ReturnsAsync(new List<CalendarItem>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult? result = await _controller.Progenies(progenies);
@@ -413,7 +407,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Progenies_ReturnsEmptyList_WhenNoProgeniesProvided()
         {
             // Arrange
-            List<int> progenies = new();
+            List<int> progenies = [];
 
             // Act
             IActionResult? result = await _controller.Progenies(progenies);
@@ -432,17 +426,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Families_ReturnsOk_WithCombinedTimeLineItems()
         {
             // Arrange
-            List<int> families = new() { TestFamilyId, TestFamilyId + 1 };
+            List<int> families = [TestFamilyId, TestFamilyId + 1];
             
-            List<TimeLineItem> family1Items = new()
-            {
-                new() { TimeLineId = 1, FamilyId = TestFamilyId, ProgenyTime = DateTime.UtcNow.AddDays(-1) }
-            };
+            List<TimeLineItem> family1Items = [new() { TimeLineId = 1, FamilyId = TestFamilyId, ProgenyTime = DateTime.UtcNow.AddDays(-1) }];
 
-            List<TimeLineItem> family2Items = new()
-            {
-                new() { TimeLineId = 2, FamilyId = TestFamilyId + 1, ProgenyTime = DateTime.UtcNow.AddDays(-2) }
-            };
+            List<TimeLineItem> family2Items = [new() { TimeLineId = 2, FamilyId = TestFamilyId + 1, ProgenyTime = DateTime.UtcNow.AddDays(-2) }];
 
             _mockTimelineService.Setup(x => x.GetTimeLineList(0, TestFamilyId, _testUser))
                 .ReturnsAsync(family1Items);
@@ -451,7 +439,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(family2Items);
 
             _mockCalendarService.Setup(x => x.GetRecurringCalendarItemsLatestPosts(0, It.IsAny<int>(), _testUser))
-                .ReturnsAsync(new List<CalendarItem>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult? result = await _controller.Families(families);
@@ -470,7 +458,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task ProgenyLatest_ReturnsOk_WithLimitedItems()
         {
             // Arrange
-            List<TimeLineItem> items = new();
+            List<TimeLineItem> items = [];
             for (int i = 0; i < 10; i++)
             {
                 items.Add(new TimeLineItem
@@ -485,7 +473,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(items);
 
             _mockCalendarService.Setup(x => x.GetRecurringCalendarItemsLatestPosts(TestProgenyId, 0, _testUser))
-                .ReturnsAsync(new List<CalendarItem>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult? result = await _controller.ProgenyLatest(TestProgenyId, count: 5, start: 0);
@@ -500,7 +488,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task ProgenyLatest_RespectsSkipParameter()
         {
             // Arrange
-            List<TimeLineItem> items = new();
+            List<TimeLineItem> items = [];
             for (int i = 0; i < 10; i++)
             {
                 items.Add(new TimeLineItem
@@ -515,7 +503,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(items);
 
             _mockCalendarService.Setup(x => x.GetRecurringCalendarItemsLatestPosts(TestProgenyId, 0, _testUser))
-                .ReturnsAsync(new List<CalendarItem>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult? result = await _controller.ProgenyLatest(TestProgenyId, count: 3, start: 2);
@@ -530,18 +518,18 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task ProgenyLatest_ReturnsReversedOrder()
         {
             // Arrange
-            List<TimeLineItem> items = new()
-            {
+            List<TimeLineItem> items =
+            [
                 new() { TimeLineId = 1, ProgenyId = TestProgenyId, ProgenyTime = DateTime.UtcNow.AddDays(-10) },
                 new() { TimeLineId = 2, ProgenyId = TestProgenyId, ProgenyTime = DateTime.UtcNow.AddDays(-5) },
                 new() { TimeLineId = 3, ProgenyId = TestProgenyId, ProgenyTime = DateTime.UtcNow.AddDays(-1) }
-            };
+            ];
 
             _mockTimelineService.Setup(x => x.GetTimeLineList(TestProgenyId, 0, _testUser))
                 .ReturnsAsync(items);
 
             _mockCalendarService.Setup(x => x.GetRecurringCalendarItemsLatestPosts(TestProgenyId, 0, _testUser))
-                .ReturnsAsync(new List<CalendarItem>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult? result = await _controller.ProgenyLatest(TestProgenyId, count: 5, start: 0);
@@ -557,10 +545,10 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         {
             // Arrange
             _mockTimelineService.Setup(x => x.GetTimeLineList(TestProgenyId, 0, _testUser))
-                .ReturnsAsync(new List<TimeLineItem>());
+                .ReturnsAsync([]);
 
             _mockCalendarService.Setup(x => x.GetRecurringCalendarItemsLatestPosts(TestProgenyId, 0, _testUser))
-                .ReturnsAsync(new List<CalendarItem>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult? result = await _controller.ProgenyLatest(TestProgenyId, count: 5, start: 0);
@@ -580,12 +568,12 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         {
             // Arrange
             DateTime today = DateTime.UtcNow;
-            List<TimeLineItem> items = new()
-            {
+            List<TimeLineItem> items =
+            [
                 new() { TimeLineId = 1, ProgenyId = TestProgenyId, ProgenyTime = new DateTime(today.Year - 1, today.Month, today.Day, 10, 0, 0) },
                 new() { TimeLineId = 2, ProgenyId = TestProgenyId, ProgenyTime = new DateTime(today.Year - 2, today.Month, today.Day, 14, 0, 0) },
-                new() { TimeLineId = 3, ProgenyId = TestProgenyId, ProgenyTime = new DateTime(today.Year - 1, today.Month, today.Day + 1, 10, 0, 0) } // Different day
-            };
+                new() { TimeLineId = 3, ProgenyId = TestProgenyId, ProgenyTime = new DateTime(today.Year - 1, today.Month, today.Day + 1, 10, 0, 0) }
+            ];
 
             _mockTimelineService.Setup(x => x.GetTimeLineList(TestProgenyId, 0, _testUser))
                 .ReturnsAsync(items);
@@ -605,7 +593,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         {
             // Arrange
             _mockTimelineService.Setup(x => x.GetTimeLineList(TestProgenyId, 0, _testUser))
-                .ReturnsAsync(new List<TimeLineItem>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult? result = await _controller.ProgenyYearAgo(TestProgenyId);
@@ -621,11 +609,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         {
             // Arrange
             DateTime today = DateTime.UtcNow;
-            List<TimeLineItem> items = new()
-            {
+            List<TimeLineItem> items =
+            [
                 new() { TimeLineId = 1, ProgenyId = TestProgenyId, ProgenyTime = new DateTime(today.Year - 3, today.Month, today.Day, 10, 0, 0) },
                 new() { TimeLineId = 2, ProgenyId = TestProgenyId, ProgenyTime = new DateTime(today.Year - 1, today.Month, today.Day, 14, 0, 0) }
-            };
+            ];
 
             _mockTimelineService.Setup(x => x.GetTimeLineList(TestProgenyId, 0, _testUser))
                 .ReturnsAsync(items);
@@ -648,17 +636,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         {
             // Arrange
             DateTime today = DateTime.UtcNow;
-            List<int> progenies = new() { TestProgenyId, TestProgenyId + 1 };
+            List<int> progenies = [TestProgenyId, TestProgenyId + 1];
             
-            List<TimeLineItem> progeny1Items = new()
-            {
-                new() { TimeLineId = 1, ProgenyId = TestProgenyId, ProgenyTime = new DateTime(today.Year - 1, today.Month, today.Day, 10, 0, 0) }
-            };
+            List<TimeLineItem> progeny1Items = [new() { TimeLineId = 1, ProgenyId = TestProgenyId, ProgenyTime = new DateTime(today.Year - 1, today.Month, today.Day, 10, 0, 0) }];
 
-            List<TimeLineItem> progeny2Items = new()
-            {
-                new() { TimeLineId = 2, ProgenyId = TestProgenyId + 1, ProgenyTime = new DateTime(today.Year - 2, today.Month, today.Day, 14, 0, 0) }
-            };
+            List<TimeLineItem> progeny2Items = [new() { TimeLineId = 2, ProgenyId = TestProgenyId + 1, ProgenyTime = new DateTime(today.Year - 2, today.Month, today.Day, 14, 0, 0) }];
 
             _mockTimelineService.Setup(x => x.GetYearAgoList(TestProgenyId, 0, _testUser))
                 .ReturnsAsync(progeny1Items);
@@ -667,7 +649,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(progeny2Items);
 
             _mockCalendarService.Setup(x => x.GetRecurringCalendarItemsOnThisDay(It.IsAny<int>(), 0, _testUser))
-                .ReturnsAsync(new List<CalendarItem>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult? result = await _controller.ProgeniesYearAgo(progenies);
@@ -683,12 +665,9 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         {
             // Arrange
             DateTime today = DateTime.UtcNow;
-            List<int> progenies = new() { TestProgenyId };
+            List<int> progenies = [TestProgenyId];
             
-            List<TimeLineItem> progenyItems = new()
-            {
-                new() { TimeLineId = 1, ProgenyId = TestProgenyId, ProgenyTime = new DateTime(today.Year - 1, today.Month, today.Day, 10, 0, 0) }
-            };
+            List<TimeLineItem> progenyItems = [new() { TimeLineId = 1, ProgenyId = TestProgenyId, ProgenyTime = new DateTime(today.Year - 1, today.Month, today.Day, 10, 0, 0) }];
 
             _mockTimelineService.Setup(x => x.GetYearAgoList(TestProgenyId, 0, _testUser))
                 .ReturnsAsync(progenyItems);
@@ -702,7 +681,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             };
 
             _mockCalendarService.Setup(x => x.GetRecurringCalendarItemsOnThisDay(TestProgenyId, 0, _testUser))
-                .ReturnsAsync(new List<CalendarItem> { recurringItem });
+                .ReturnsAsync([recurringItem]);
 
             _mockCalendarService.Setup(x => x.GetCalendarItem(10, _testUser))
                 .ReturnsAsync(recurringItem);
@@ -721,19 +700,19 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         {
             // Arrange
             DateTime today = DateTime.UtcNow;
-            List<int> progenies = new() { TestProgenyId };
+            List<int> progenies = [TestProgenyId];
             
-            List<TimeLineItem> items = new()
-            {
+            List<TimeLineItem> items =
+            [
                 new() { TimeLineId = 1, ProgenyId = TestProgenyId, ProgenyTime = new DateTime(today.Year - 3, today.Month, today.Day, 10, 0, 0) },
                 new() { TimeLineId = 2, ProgenyId = TestProgenyId, ProgenyTime = new DateTime(today.Year - 1, today.Month, today.Day, 14, 0, 0) }
-            };
+            ];
 
             _mockTimelineService.Setup(x => x.GetYearAgoList(TestProgenyId, 0, _testUser))
                 .ReturnsAsync(items);
 
             _mockCalendarService.Setup(x => x.GetRecurringCalendarItemsOnThisDay(TestProgenyId, 0, _testUser))
-                .ReturnsAsync(new List<CalendarItem>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult? result = await _controller.ProgeniesYearAgo(progenies);

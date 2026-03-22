@@ -134,11 +134,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
         private void SetupControllerContext(string email, string userId)
         {
-            List<Claim> claims = new()
-            {
+            List<Claim> claims =
+            [
                 new(ClaimTypes.Email, email),
                 new("sub", userId)
-            };
+            ];
             ClaimsIdentity identity = new(claims, "TestAuthType");
             ClaimsPrincipal claimsPrincipal = new(identity);
 
@@ -253,7 +253,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task ProgeniesUserCanAccessList_Should_Return_Ok_With_Progenies_List()
         {
             // Arrange
-            List<int> progenyIds = new() { TestProgenyId, OtherProgenyId };
+            List<int> progenyIds = [TestProgenyId, OtherProgenyId];
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
                 .ReturnsAsync(_testUser);
             _mockAccessManagementService.Setup(x => x.ProgeniesUserCanAccess(_testUser, PermissionLevel.View))
@@ -281,7 +281,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
                 .ReturnsAsync(_testUser);
             _mockAccessManagementService.Setup(x => x.ProgeniesUserCanAccess(_testUser, PermissionLevel.View))
-                .ReturnsAsync(new List<int>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult? result = await _controller.ProgeniesUserCanAccessList((int)PermissionLevel.View);
@@ -296,7 +296,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task ProgeniesUserCanAccessList_Should_Skip_Null_Progenies()
         {
             // Arrange
-            List<int> progenyIds = new() { TestProgenyId, OtherProgenyId };
+            List<int> progenyIds = [TestProgenyId, OtherProgenyId];
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
                 .ReturnsAsync(_testUser);
             _mockAccessManagementService.Setup(x => x.ProgeniesUserCanAccess(_testUser, PermissionLevel.View))
@@ -324,7 +324,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task FamiliesUserCanAccessList_Should_Return_Ok_With_Families_List()
         {
             // Arrange
-            List<int> familyIds = new() { TestFamilyId, OtherFamilyId };
+            List<int> familyIds = [TestFamilyId, OtherFamilyId];
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
                 .ReturnsAsync(_testUser);
             _mockAccessManagementService.Setup(x => x.FamiliesUserCanAccess(_testUser, PermissionLevel.View))
@@ -352,7 +352,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
                 .ReturnsAsync(_testUser);
             _mockAccessManagementService.Setup(x => x.FamiliesUserCanAccess(_testUser, PermissionLevel.View))
-                .ReturnsAsync(new List<int>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult? result = await _controller.FamiliesUserCanAccessList((int)PermissionLevel.View);
@@ -367,7 +367,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task FamiliesUserCanAccessList_Should_Skip_Null_Families()
         {
             // Arrange
-            List<int> familyIds = new() { TestFamilyId, OtherFamilyId };
+            List<int> familyIds = [TestFamilyId, OtherFamilyId];
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
                 .ReturnsAsync(_testUser);
             _mockAccessManagementService.Setup(x => x.FamiliesUserCanAccess(_testUser, PermissionLevel.View))
@@ -446,10 +446,10 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task GetTimelineItemPermissionsList_Should_Return_Ok_With_Permissions_List()
         {
             // Arrange
-            List<TimelineItemPermission> permissions = new()
-            {
+            List<TimelineItemPermission> permissions =
+            [
                 _testTimelineItemPermission,
-                new TimelineItemPermission
+                new()
                 {
                     TimelineType = KinaUnaTypes.TimeLineType.Note,
                     ItemId = TestItemId,
@@ -457,7 +457,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                     UserId = OtherUserId,
                     PermissionLevel = PermissionLevel.Edit
                 }
-            };
+            ];
 
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
                 .ReturnsAsync(_testUser);
@@ -482,7 +482,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 .ReturnsAsync(_testUser);
             _mockAccessManagementService.Setup(x => x.GetTimelineItemPermissionsList(
                 KinaUnaTypes.TimeLineType.Note, TestItemId, _testUser))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult? result = await _controller.GetTimelineItemPermissionsList((int)KinaUnaTypes.TimeLineType.Note, TestItemId);
@@ -504,7 +504,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
                 .ReturnsAsync(_testUser);
             _mockAccessManagementService.Setup(x => x.GetProgenyPermissionsList(TestProgenyId, _testUser))
-                .ReturnsAsync(new List<ProgenyPermission>());
+                .ReturnsAsync([]);
 
             // Act
             List<ProgenyPermission>? result = await _controller.GetProgenyPermissionsList(TestProgenyId);

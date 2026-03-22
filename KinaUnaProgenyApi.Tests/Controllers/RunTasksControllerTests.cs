@@ -73,7 +73,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
         private void SetupControllerContext(string userEmail)
         {
-            List<Claim> claims = [new Claim(ClaimTypes.Email, userEmail)];
+            List<Claim> claims = [new(ClaimTypes.Email, userEmail)];
             ClaimsIdentity identity = new(claims, "TestAuthType");
             ClaimsPrincipal claimsPrincipal = new(identity);
 

@@ -111,11 +111,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
         private void SetupControllerContext(string email, string userId)
         {
-            List<Claim> claims = new()
-            {
+            List<Claim> claims =
+            [
                 new(ClaimTypes.Email, email),
                 new("sub", userId)
-            };
+            ];
             ClaimsIdentity identity = new(claims, "TestAuthType");
             ClaimsPrincipal claimsPrincipal = new(identity);
 
@@ -136,11 +136,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Progeny_Should_Return_Ok_With_Friends_List()
         {
             // Arrange
-            List<Friend> friendsList = new()
-            {
+            List<Friend> friendsList =
+            [
                 _testFriend,
-                new Friend { FriendId = TestFriendId + 1, ProgenyId = TestProgenyId, Name = "Another Friend" }
-            };
+                new() { FriendId = TestFriendId + 1, ProgenyId = TestProgenyId, Name = "Another Friend" }
+            ];
 
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
                 .ReturnsAsync(_testUser);
@@ -167,7 +167,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
                 .ReturnsAsync(_testUser);
             _mockFriendService.Setup(x => x.GetFriendsList(TestProgenyId, _testUser))
-                .ReturnsAsync(new List<Friend>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult result = await _controller.Progeny(TestProgenyId);

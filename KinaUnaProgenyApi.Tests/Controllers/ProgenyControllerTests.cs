@@ -115,11 +115,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
         private static void SetupControllerUser(ControllerBase controller, string userId, string userEmail)
         {
-            List<Claim> claims = new()
-            {
-                new Claim(ClaimTypes.NameIdentifier, userId),
-                new Claim(ClaimTypes.Email, userEmail)
-            };
+            List<Claim> claims =
+            [
+                new(ClaimTypes.NameIdentifier, userId),
+                new(ClaimTypes.Email, userEmail)
+            ];
             ClaimsIdentity identity = new(claims, "TestAuthType");
             ClaimsPrincipal claimsPrincipal = new(identity);
 

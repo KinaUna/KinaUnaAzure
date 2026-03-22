@@ -344,7 +344,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockKanbanBoardsService.Setup(x => x.GetKanbanBoardById(TestKanbanBoardId, _testUser))
                 .ReturnsAsync(_testKanbanBoard);
             _mockKanbanItemsService.Setup(x => x.GetKanbanItemsForBoard(TestKanbanBoardId, _testUser, false))
-                .ReturnsAsync(new List<KanbanItem>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult result = await _controller.GetKanbanItemsForBoard(TestKanbanBoardId);
@@ -435,7 +435,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockTodosService.Setup(x => x.GetTodoItem(TestTodoItemId, _testUser))
                 .ReturnsAsync(_testTodoItem);
             _mockKanbanItemsService.Setup(x => x.GetKanbanItemsForTodoItem(TestTodoItemId, _testUser, false))
-                .ReturnsAsync(new List<KanbanItem>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult result = await _controller.GetKanbanItemsForTodoItem(TestTodoItemId);
@@ -915,7 +915,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockKanbanBoardsService.Setup(x => x.GetKanbanBoardById(TestKanbanBoardId, _testUser))
                 .ReturnsAsync(_testKanbanBoard);
             _mockKanbanItemsService.Setup(x => x.GetKanbanItemsForBoard(TestKanbanBoardId, _testUser, false))
-                .ReturnsAsync(new List<KanbanItem>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult result = await _controller.GetKanbanItemsForBoard(TestKanbanBoardId);
@@ -932,7 +932,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockTodosService.Setup(x => x.GetTodoItem(TestTodoItemId, _testUser))
                 .ReturnsAsync(_testTodoItem);
             _mockKanbanItemsService.Setup(x => x.GetKanbanItemsForTodoItem(TestTodoItemId, _testUser, false))
-                .ReturnsAsync(new List<KanbanItem>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult result = await _controller.GetKanbanItemsForTodoItem(TestTodoItemId);

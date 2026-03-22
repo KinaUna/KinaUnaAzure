@@ -66,7 +66,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.ProgenyDb.Add(progeny);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.View))
@@ -114,7 +114,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.ProgenyDb.Add(progeny);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.View))
@@ -155,7 +155,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.ProgenyDb.Add(progeny);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.View))
@@ -258,7 +258,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal(DateTime.UtcNow.Date, result.CreatedTime.Date);
             Assert.Equal(DateTime.UtcNow.Date, result.ModifiedTime.Date);
 
-            Progeny? dbProgeny = await context.ProgenyDb.FindAsync(result.Id);
+            Progeny? dbProgeny = await context.ProgenyDb.FindAsync([result.Id], TestContext.Current.CancellationToken);
             Assert.NotNull(dbProgeny);
             Assert.Equal("New Child", dbProgeny.Name);
         }
@@ -282,7 +282,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 UserEmail = "child@test.com"
             };
             context.UserInfoDb.Add(existingUser);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Progeny progeny = new()
             {
@@ -338,7 +338,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 UserEmail = "admin@test.com"
             };
             context.UserInfoDb.Add(adminUser);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Progeny progeny = new()
             {
@@ -396,7 +396,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 UserEmail = "child@test.com"
             };
             context.UserInfoDb.Add(childUser);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Progeny progeny = new()
             {
@@ -465,7 +465,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.ProgenyDb.Add(progeny);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.Entry(progeny).State = EntityState.Detached;
 
             Progeny updatedProgeny = new()
@@ -525,7 +525,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.ProgenyDb.Add(progeny);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Admin))
@@ -604,7 +604,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.ProgenyDb.Add(progeny);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.Entry(progeny).State = EntityState.Detached;
 
             Progeny updatedProgeny = new()
@@ -666,7 +666,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.ProgenyDb.Add(progeny);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.Entry(progeny).State = EntityState.Detached;
 
             Progeny updatedProgeny = new()
@@ -731,7 +731,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.ProgenyDb.Add(progeny);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Admin))
@@ -739,11 +739,11 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             mockAccessManagementService
                 .Setup(x => x.GetProgenyPermissionsList(1, userInfo))
-                .ReturnsAsync(new List<ProgenyPermission>());
+                .ReturnsAsync([]);
 
             mockUserGroupsService
                 .Setup(x => x.GetUserGroupsForProgeny(1, userInfo))
-                .ReturnsAsync(new List<UserGroup>());
+                .ReturnsAsync([]);
 
             mockImageStore
                 .Setup(x => x.DeleteImage(It.IsAny<string>(), It.IsAny<string>()))
@@ -763,7 +763,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
             Assert.Equal(1, result.Id);
 
-            Progeny? dbProgeny = await context.ProgenyDb.FindAsync(1);
+            Progeny? dbProgeny = await context.ProgenyDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.Null(dbProgeny);
         }
 
@@ -792,7 +792,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.ProgenyDb.Add(progeny);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Admin))
@@ -838,11 +838,11 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             mockUserGroupsService
                 .Setup(x => x.GetUserGroupsForProgeny(999, userInfo))
-                .ReturnsAsync(new List<UserGroup>());
+                .ReturnsAsync([]);
 
             mockAccessManagementService
                 .Setup(x => x.GetProgenyPermissionsList(999, userInfo))
-                .ReturnsAsync(new List<ProgenyPermission>());
+                .ReturnsAsync([]);
 
             ProgenyService service = new(context, cache, mockImageStore.Object, mockLocationService.Object,
                 mockAccessManagementService.Object, mockUserGroupsService.Object, mockKinaUnaCacheService.Object);
@@ -879,7 +879,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.ProgenyDb.Add(progeny);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Admin))
@@ -887,11 +887,11 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             mockAccessManagementService
                 .Setup(x => x.GetProgenyPermissionsList(1, userInfo))
-                .ReturnsAsync(new List<ProgenyPermission>());
+                .ReturnsAsync([]);
 
             mockUserGroupsService
                 .Setup(x => x.GetUserGroupsForProgeny(1, userInfo))
-                .ReturnsAsync(new List<UserGroup>());
+                .ReturnsAsync([]);
 
             mockImageStore
                 .Setup(x => x.DeleteImage("custom-picture.jpg", "progeny"))
@@ -952,7 +952,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             context.ProgenyDb.Add(progeny);
             context.ProgenyInfoDb.Add(progenyInfo);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.View))
@@ -1005,7 +1005,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.ProgenyDb.Add(progeny);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             Address address = new() { AddressId = 1 };
 
@@ -1218,7 +1218,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.ProgenyInfoDb.Add(progenyInfo);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.Entry(progenyInfo).State = EntityState.Detached;
 
             Address updatedAddress = new() { AddressId = 1, City = "New City" };
@@ -1350,7 +1350,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.ProgenyInfoDb.Add(progenyInfo);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Admin))
@@ -1370,7 +1370,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
             Assert.Equal(1, result.ProgenyId);
 
-            ProgenyInfo? dbProgenyInfo = await context.ProgenyInfoDb.FindAsync(1);
+            ProgenyInfo? dbProgenyInfo = await context.ProgenyInfoDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.Null(dbProgenyInfo);
         }
 
@@ -1463,7 +1463,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             };
 
             context.ProgenyInfoDb.Add(progenyInfo);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Admin))
@@ -1514,7 +1514,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             context.UserInfoDb.Add(userInfo);
             context.ProgenyDb.Add(progeny);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, It.IsAny<UserInfo>(), PermissionLevel.Admin))
@@ -1527,7 +1527,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await service.ChangeUsersEmailForProgenies(userInfo, "new@test.com");
 
             // Assert
-            Progeny? updatedProgeny = await context.ProgenyDb.FindAsync(1);
+            Progeny? updatedProgeny = await context.ProgenyDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(updatedProgeny);
             Assert.Equal("new@test.com", updatedProgeny.Email);
         }
@@ -1558,7 +1558,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             context.UserInfoDb.Add(userInfo);
             context.ProgenyDb.Add(progeny);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Admin))
@@ -1571,7 +1571,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await service.ChangeUsersEmailForProgenies(userInfo, "new@test.com");
 
             // Assert
-            Progeny? updatedProgeny = await context.ProgenyDb.FindAsync(1);
+            Progeny? updatedProgeny = await context.ProgenyDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(updatedProgeny);
             Assert.Contains("new@test.com", updatedProgeny.Admins);
             Assert.DoesNotContain("old@test.com", updatedProgeny.Admins);
@@ -1608,7 +1608,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             context.UserInfoDb.Add(userInfo);
             context.ProgenyDb.Add(progeny);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             mockAccessManagementService
                 .Setup(x => x.HasProgenyPermission(1, userInfo, PermissionLevel.Admin))
@@ -1621,7 +1621,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await service.UpdateProgeniesForNewUser(userInfo);
 
             // Assert
-            Progeny? updatedProgeny = await context.ProgenyDb.FindAsync(1);
+            Progeny? updatedProgeny = await context.ProgenyDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(updatedProgeny);
             Assert.Equal("new-user-id", updatedProgeny.UserId);
         }
@@ -1653,7 +1653,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             context.UserInfoDb.Add(userInfo);
             context.ProgenyDb.Add(progeny);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             ProgenyService service = new(context, cache, mockImageStore.Object, mockLocationService.Object,
                 mockAccessManagementService.Object, mockUserGroupsService.Object, mockKinaUnaCacheService.Object);
@@ -1662,7 +1662,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             await service.UpdateProgeniesForNewUser(userInfo);
 
             // Assert
-            Progeny? updatedProgeny = await context.ProgenyDb.FindAsync(1);
+            Progeny? updatedProgeny = await context.ProgenyDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(updatedProgeny);
             Assert.Equal("existing-user-id", updatedProgeny.UserId);
         }

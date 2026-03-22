@@ -76,7 +76,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
             // Default behavior for ISubtasksService - return empty list
             _mockSubtasksService
                 .Setup(x => x.GetSubtasksForTodoItem(It.IsAny<int>(), It.IsAny<UserInfo>()))
-                .ReturnsAsync(new List<TodoItem>());
+                .ReturnsAsync([]);
 
             // Default behavior for IKinaUnaCacheService - return null (cache miss)
             _mockKinaUnaCacheService
@@ -421,7 +421,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
             // Assert
             Assert.True(result);
 
-            TodoItem? deletedTodo = await _progenyDbContext.TodoItemsDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
+            TodoItem? deletedTodo = await _progenyDbContext.TodoItemsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(deletedTodo);
             Assert.True(deletedTodo.IsDeleted);
             Assert.Equal("admin1", deletedTodo.ModifiedBy);
@@ -447,7 +447,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
             // Assert
             Assert.True(result);
 
-            TodoItem? deletedTodo = await _progenyDbContext.TodoItemsDb.FindAsync(2);
+            TodoItem? deletedTodo = await _progenyDbContext.TodoItemsDb.FindAsync([2], TestContext.Current.CancellationToken);
             Assert.Null(deletedTodo);
         }
 
@@ -524,8 +524,8 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
             };
 
             List<TodoItem> subtasks = [
-                new TodoItem { TodoItemId = 5, Status = (int)KinaUnaTypes.TodoStatusType.NotStarted },
-                new TodoItem { TodoItemId = 6, Status = (int)KinaUnaTypes.TodoStatusType.Completed }
+                new() { TodoItemId = 5, Status = (int)KinaUnaTypes.TodoStatusType.NotStarted },
+                new() { TodoItemId = 6, Status = (int)KinaUnaTypes.TodoStatusType.Completed }
             ];
 
             _mockAccessManagementService
@@ -834,8 +834,8 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
         {
             // Arrange
             List<TodoItem> todos = [
-                new TodoItem { TodoItemId = 1, Title = "Test 1", DueDate = DateTime.UtcNow.AddDays(1), Tags = "tag1,tag2", Context = "home" },
-                new TodoItem { TodoItemId = 2, Title = "Test 2", DueDate = DateTime.UtcNow.AddDays(2), Tags = "tag2,tag3", Context = "work" }
+                new() { TodoItemId = 1, Title = "Test 1", DueDate = DateTime.UtcNow.AddDays(1), Tags = "tag1,tag2", Context = "home" },
+                new() { TodoItemId = 2, Title = "Test 2", DueDate = DateTime.UtcNow.AddDays(2), Tags = "tag2,tag3", Context = "work" }
             ];
             TodoItemsRequest request = new()
             {
@@ -864,9 +864,9 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
         {
             // Arrange
             List<TodoItem> todos = [
-                new TodoItem { TodoItemId = 1, DueDate = DateTime.UtcNow.AddDays(1) },
-                new TodoItem { TodoItemId = 2, DueDate = DateTime.UtcNow.AddDays(2) },
-                new TodoItem { TodoItemId = 3, DueDate = DateTime.UtcNow.AddDays(3) }
+                new() { TodoItemId = 1, DueDate = DateTime.UtcNow.AddDays(1) },
+                new() { TodoItemId = 2, DueDate = DateTime.UtcNow.AddDays(2) },
+                new() { TodoItemId = 3, DueDate = DateTime.UtcNow.AddDays(3) }
             ];
             TodoItemsRequest request = new()
             {
@@ -889,9 +889,9 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
         {
             // Arrange
             List<TodoItem> todos = [
-                new TodoItem { TodoItemId = 1, DueDate = DateTime.UtcNow.AddDays(3), CreatedTime = DateTime.UtcNow },
-                new TodoItem { TodoItemId = 2, DueDate = DateTime.UtcNow.AddDays(1), CreatedTime = DateTime.UtcNow },
-                new TodoItem { TodoItemId = 3, DueDate = DateTime.UtcNow.AddDays(2), CreatedTime = DateTime.UtcNow }
+                new() { TodoItemId = 1, DueDate = DateTime.UtcNow.AddDays(3), CreatedTime = DateTime.UtcNow },
+                new() { TodoItemId = 2, DueDate = DateTime.UtcNow.AddDays(1), CreatedTime = DateTime.UtcNow },
+                new() { TodoItemId = 3, DueDate = DateTime.UtcNow.AddDays(2), CreatedTime = DateTime.UtcNow }
             ];
             TodoItemsRequest request = new()
             {
@@ -914,9 +914,9 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
         {
             // Arrange
             List<TodoItem> todos = [
-                new TodoItem { TodoItemId = 1, DueDate = DateTime.UtcNow.AddDays(3), CreatedTime = DateTime.UtcNow },
-                new TodoItem { TodoItemId = 2, DueDate = DateTime.UtcNow.AddDays(1), CreatedTime = DateTime.UtcNow },
-                new TodoItem { TodoItemId = 3, DueDate = DateTime.UtcNow.AddDays(2), CreatedTime = DateTime.UtcNow }
+                new() { TodoItemId = 1, DueDate = DateTime.UtcNow.AddDays(3), CreatedTime = DateTime.UtcNow },
+                new() { TodoItemId = 2, DueDate = DateTime.UtcNow.AddDays(1), CreatedTime = DateTime.UtcNow },
+                new() { TodoItemId = 3, DueDate = DateTime.UtcNow.AddDays(2), CreatedTime = DateTime.UtcNow }
             ];
             TodoItemsRequest request = new()
             {
@@ -939,9 +939,9 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
         {
             // Arrange
             List<TodoItem> todos = [
-                new TodoItem { TodoItemId = 1, Status = 2, DueDate = DateTime.UtcNow.AddDays(1), CreatedTime = DateTime.UtcNow },
-                new TodoItem { TodoItemId = 2, Status = 0, DueDate = DateTime.UtcNow.AddDays(2), CreatedTime = DateTime.UtcNow },
-                new TodoItem { TodoItemId = 3, Status = 1, DueDate = DateTime.UtcNow.AddDays(3), CreatedTime = DateTime.UtcNow }
+                new() { TodoItemId = 1, Status = 2, DueDate = DateTime.UtcNow.AddDays(1), CreatedTime = DateTime.UtcNow },
+                new() { TodoItemId = 2, Status = 0, DueDate = DateTime.UtcNow.AddDays(2), CreatedTime = DateTime.UtcNow },
+                new() { TodoItemId = 3, Status = 1, DueDate = DateTime.UtcNow.AddDays(3), CreatedTime = DateTime.UtcNow }
             ];
             TodoItemsRequest request = new()
             {
@@ -963,9 +963,9 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
         {
             // Arrange
             List<TodoItem> todos = [
-                new TodoItem { TodoItemId = 1 },
-                new TodoItem { TodoItemId = 2 },
-                new TodoItem { TodoItemId = 3 }
+                new() { TodoItemId = 1 },
+                new() { TodoItemId = 2 },
+                new() { TodoItemId = 3 }
             ];
             TodoItemsRequest request = new()
             {
@@ -1147,7 +1147,7 @@ namespace KinaUnaProgenyApi.Tests.Services.TodosServices
                 Name = "Test Progeny"
             };
             _progenyDbContext.ProgenyDb.Add(progeny);
-            await _progenyDbContext.SaveChangesAsync();
+            await _progenyDbContext.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockAccessManagementService
                 .Setup(x => x.HasItemPermission(KinaUnaTypes.TimeLineType.TodoItem, 1, _otherUser, PermissionLevel.Edit))

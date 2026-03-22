@@ -53,7 +53,7 @@ public class UserGroupsControllerTests
             ModifiedBy = TestUserId,
             CreatedTime = DateTime.UtcNow.AddDays(-10),
             ModifiedTime = DateTime.UtcNow,
-            Members = new List<UserGroupMember>()
+            Members = []
         };
 
         _testUserGroupMember = new UserGroupMember
@@ -202,7 +202,7 @@ public class UserGroupsControllerTests
             .ReturnsAsync(_testUser);
         _mockUserGroupsService
             .Setup(s => s.GetUsersUserGroupsByUserId(_testUser.UserId, _testUser))
-            .ReturnsAsync(new List<UserGroup>());
+            .ReturnsAsync([]);
 
         // Act
         IActionResult result = await _controller.GetCurrentUsersUserGroups();
@@ -251,7 +251,7 @@ public class UserGroupsControllerTests
             .ReturnsAsync(_testUser);
         _mockUserGroupsService
             .Setup(s => s.GetUserGroupsForProgeny(TestProgenyId, _testUser))
-            .ReturnsAsync(new List<UserGroup>());
+            .ReturnsAsync([]);
 
         // Act
         IActionResult result = await _controller.GetUserGroupsForProgeny(TestProgenyId);
@@ -300,7 +300,7 @@ public class UserGroupsControllerTests
             .ReturnsAsync(_testUser);
         _mockUserGroupsService
             .Setup(s => s.GetUserGroupsForFamily(TestFamilyId, _testUser))
-            .ReturnsAsync(new List<UserGroup>());
+            .ReturnsAsync([]);
 
         // Act
         IActionResult result = await _controller.GetUserGroupsForFamily(TestFamilyId);

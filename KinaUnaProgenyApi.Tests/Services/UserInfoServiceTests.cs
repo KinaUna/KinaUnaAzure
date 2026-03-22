@@ -75,7 +75,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo user3 = CreateTestUserInfo(3, "user3@test.com", "userId3");
 
             context.UserInfoDb.AddRange(user1, user2, user3);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             List<UserInfo>? result = await service.GetAllUserInfos();
@@ -171,7 +171,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo testUser = CreateTestUserInfo();
 
             context.UserInfoDb.Add(testUser);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockCache.Setup(c => c.GetAsync(
                 It.IsAny<string>(),
@@ -233,7 +233,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             // Assert
             Assert.NotNull(result);
             Assert.Equal(newUser.UserEmail, result.UserEmail);
-            UserInfo? savedUser = await context.UserInfoDb.FirstOrDefaultAsync(u => u.UserEmail == newUser.UserEmail);
+            UserInfo? savedUser = await context.UserInfoDb.FirstOrDefaultAsync(u => u.UserEmail == newUser.UserEmail, cancellationToken: TestContext.Current.CancellationToken);
             Assert.NotNull(savedUser);
 
             // Verify all dependent services were called
@@ -308,7 +308,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo existingUser = CreateTestUserInfo();
 
             context.UserInfoDb.Add(existingUser);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.ChangeTracker.Clear();
 
             UserInfo updatedUser = CreateTestUserInfo();
@@ -336,7 +336,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             existingUser.ProfilePicture = "old-picture.jpg";
 
             context.UserInfoDb.Add(existingUser);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.ChangeTracker.Clear();
 
             UserInfo updatedUser = CreateTestUserInfo();
@@ -361,7 +361,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             existingUser.ProfilePicture = "same-picture.jpg";
 
             context.UserInfoDb.Add(existingUser);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.ChangeTracker.Clear();
 
             UserInfo updatedUser = CreateTestUserInfo();
@@ -399,7 +399,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo existingUser = CreateTestUserInfo();
 
             context.UserInfoDb.Add(existingUser);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.ChangeTracker.Clear();
 
             UserInfo updatedUser = CreateTestUserInfo();
@@ -426,14 +426,14 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo userToDelete = CreateTestUserInfo();
 
             context.UserInfoDb.Add(userToDelete);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             UserInfo? result = await service.DeleteUserInfo(userToDelete);
 
             // Assert
             Assert.NotNull(result);
-            UserInfo? deletedUser = await context.UserInfoDb.FirstOrDefaultAsync(u => u.Id == userToDelete.Id);
+            UserInfo? deletedUser = await context.UserInfoDb.FirstOrDefaultAsync(u => u.Id == userToDelete.Id, cancellationToken: TestContext.Current.CancellationToken);
             Assert.Null(deletedUser);
             _mockImageStore.Verify(i => i.DeleteImage(userToDelete.ProfilePicture, BlobContainers.Profiles), Times.Once);
         }
@@ -447,7 +447,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo userToDelete = CreateTestUserInfo();
 
             context.UserInfoDb.Add(userToDelete);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             await service.DeleteUserInfo(userToDelete);
@@ -515,7 +515,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo testUser = CreateTestUserInfo();
 
             context.UserInfoDb.Add(testUser);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockCache.Setup(c => c.GetAsync(
                 It.IsAny<string>(),
@@ -584,7 +584,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo testUser = CreateTestUserInfo();
 
             context.UserInfoDb.Add(testUser);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             _mockCache.Setup(c => c.GetAsync(
                 It.IsAny<string>(),
@@ -639,7 +639,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             deletedUser2.Deleted = true;
 
             context.UserInfoDb.AddRange(activeUser, deletedUser1, deletedUser2);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             List<UserInfo>? result = await service.GetDeletedUserInfos();
@@ -662,7 +662,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             activeUser.Deleted = false;
 
             context.UserInfoDb.Add(activeUser);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             List<UserInfo>? result = await service.GetDeletedUserInfos();
@@ -694,7 +694,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal(userInfo.UserEmail, result.UserEmail);
             Assert.False(result.Deleted);
             
-            UserInfo? deletedUser = await context.DeletedUsers.FirstOrDefaultAsync(u => u.UserId == userInfo.UserId);
+            UserInfo? deletedUser = await context.DeletedUsers.FirstOrDefaultAsync(u => u.UserId == userInfo.UserId, cancellationToken: TestContext.Current.CancellationToken);
             Assert.NotNull(deletedUser);
         }
 
@@ -708,7 +708,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             existingDeleted.UserName = "Old Name";
 
             context.DeletedUsers.Add(existingDeleted);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.ChangeTracker.Clear();
 
             UserInfo updatedInfo = CreateTestUserInfo();
@@ -721,7 +721,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
             Assert.Equal("New Name", result.UserName);
 
-            UserInfo? deletedUser = await context.DeletedUsers.FirstOrDefaultAsync(u => u.UserId == updatedInfo.UserId);
+            UserInfo? deletedUser = await context.DeletedUsers.FirstOrDefaultAsync(u => u.UserId == updatedInfo.UserId, cancellationToken: TestContext.Current.CancellationToken);
             Assert.NotNull(deletedUser);
             Assert.Equal("New Name", deletedUser.UserName);
         }
@@ -757,7 +757,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo deletedUser = CreateTestUserInfo();
 
             context.DeletedUsers.Add(deletedUser);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             UserInfo? result = await service.RemoveUserInfoFromDeletedUserInfos(deletedUser);
@@ -766,7 +766,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
             Assert.Equal(deletedUser.UserId, result.UserId);
 
-            UserInfo? stillExists = await context.DeletedUsers.FirstOrDefaultAsync(u => u.UserId == deletedUser.UserId);
+            UserInfo? stillExists = await context.DeletedUsers.FirstOrDefaultAsync(u => u.UserId == deletedUser.UserId, cancellationToken: TestContext.Current.CancellationToken);
             Assert.Null(stillExists);
         }
 
@@ -800,7 +800,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             deletedUser.DeletedTime = DateTime.UtcNow.AddDays(-1);
 
             context.DeletedUsers.Add(deletedUser);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
             context.ChangeTracker.Clear();
 
             UserInfo updatedInfo = CreateTestUserInfo();
@@ -846,7 +846,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             adminUser.IsKinaUnaAdmin = true;
 
             context.UserInfoDb.Add(adminUser);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             bool result = await service.IsAdminUserId("user123");
@@ -865,7 +865,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             regularUser.IsKinaUnaAdmin = false;
 
             context.UserInfoDb.Add(regularUser);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             bool result = await service.IsAdminUserId("user123");
@@ -901,7 +901,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             UserInfo testUser = CreateTestUserInfo();
 
             context.UserInfoDb.Add(testUser);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             UserInfo? result = await service.SetUserInfoByEmail("test@test.com");
@@ -954,7 +954,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             testUser.UserEmail = "Test@Test.com";
 
             context.UserInfoDb.Add(testUser);
-            await context.SaveChangesAsync();
+            await context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
             // Act
             UserInfo? result = await service.SetUserInfoByEmail("test@test.com");

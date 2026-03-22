@@ -155,11 +155,11 @@ namespace KinaUnaProgenyApi.Tests.Controllers
 
         private void SetupControllerContext(string email, string userId)
         {
-            List<Claim> claims = new()
-            {
+            List<Claim> claims =
+            [
                 new(ClaimTypes.Email, email),
                 new("sub", userId)
-            };
+            ];
             ClaimsIdentity identity = new(claims, "TestAuthType");
             ClaimsPrincipal claimsPrincipal = new(identity);
 
@@ -180,7 +180,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Progeny_Should_Return_Ok_With_Contacts_When_User_Has_Access()
         {
             // Arrange
-            List<Contact> contacts = new() { _testContactProgeny };
+            List<Contact> contacts = [_testContactProgeny];
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
                 .ReturnsAsync(_testUser);
             _mockContactService.Setup(x => x.GetContactsList(TestProgenyId, 0, _testUser))
@@ -203,7 +203,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
                 .ReturnsAsync(_testUser);
             _mockContactService.Setup(x => x.GetContactsList(TestProgenyId, 0, _testUser))
-                .ReturnsAsync(new List<Contact>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult result = await _controller.Progeny(TestProgenyId);
@@ -220,7 +220,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         public async Task Family_Should_Return_Ok_With_Contacts_When_User_Has_Access()
         {
             // Arrange
-            List<Contact> contacts = new() { _testContactFamily };
+            List<Contact> contacts = [_testContactFamily];
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
                 .ReturnsAsync(_testUser);
             _mockContactService.Setup(x => x.GetContactsList(0, TestFamilyId, _testUser))
@@ -243,7 +243,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             _mockUserInfoService.Setup(x => x.GetUserInfoByUserId(TestUserId))
                 .ReturnsAsync(_testUser);
             _mockContactService.Setup(x => x.GetContactsList(0, TestFamilyId, _testUser))
-                .ReturnsAsync(new List<Contact>());
+                .ReturnsAsync([]);
 
             // Act
             IActionResult result = await _controller.Family(TestFamilyId);

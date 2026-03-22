@@ -93,7 +93,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             List<TextTranslation> translations =
             [
                 _testTranslation,
-                new TextTranslation { Id = 2, Word = "Goodbye", Page = TestPage, LanguageId = TestLanguageId, Translation = "Farvel" }
+                new() { Id = 2, Word = "Goodbye", Page = TestPage, LanguageId = TestLanguageId, Translation = "Farvel" }
             ];
 
             _mockTextTranslationService.Setup(x => x.GetAllTranslations(TestLanguageId))
@@ -263,7 +263,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             List<TextTranslation> pageTranslations =
             [
                 _testTranslation,
-                new TextTranslation { Id = 2, Word = "Welcome", Page = TestPage, LanguageId = TestLanguageId, Translation = "Velkommen" }
+                new() { Id = 2, Word = "Welcome", Page = TestPage, LanguageId = TestLanguageId, Translation = "Velkommen" }
             ];
 
             _mockTextTranslationService.Setup(x => x.GetPageTranslations(TestLanguageId, TestPage))

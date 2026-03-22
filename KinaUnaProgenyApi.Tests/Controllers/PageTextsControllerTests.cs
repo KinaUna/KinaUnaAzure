@@ -52,8 +52,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         {
             List<Claim> claims =
             [
-                new Claim(ClaimTypes.Email, email),
-                new Claim("sub", userId)
+                new(ClaimTypes.Email, email),
+                new("sub", userId)
             ];
             ClaimsIdentity identity = new(claims, "TestAuthType");
             ClaimsPrincipal claimsPrincipal = new(identity);
@@ -231,7 +231,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             List<KinaUnaText> textsList =
             [
                 _testKinaUnaText,
-                new KinaUnaText
+                new()
                 {
                     Id = TestKinaUnaTextId + 1,
                     TextId = TestTextId + 1,
@@ -284,7 +284,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
             List<KinaUnaText> allTextsList =
             [
                 _testKinaUnaText,
-                new KinaUnaText
+                new()
                 {
                     Id = TestKinaUnaTextId + 1,
                     TextId = TestTextId + 1,
@@ -293,7 +293,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                     Page = "Different Page",
                     Text = "Different Text"
                 },
-                new KinaUnaText
+                new()
                 {
                     Id = TestKinaUnaTextId + 2,
                     TextId = TestTextId + 2,

@@ -433,7 +433,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal("Tag1, Tag2", result.Tags);
 
             // Verify the database was updated
-            Video? dbVideo = await context.VideoDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
+            Video? dbVideo = await context.VideoDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.Equal("Tag1, Tag2", dbVideo!.Tags);
         }
 
@@ -460,7 +460,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 Author = "testuser@test.com",
                 VideoType = 1,
                 Duration = TimeSpan.FromSeconds(120),
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockAccessManagementService
@@ -486,7 +486,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal("https://example.com/new-video.mp4", result.VideoLink);
             Assert.Equal("NewTag1, NewTag2", result.Tags);
 
-            Video? dbVideo = await context.VideoDb.FindAsync(new object?[] { result.VideoId }, TestContext.Current.CancellationToken);
+            Video? dbVideo = await context.VideoDb.FindAsync([result.VideoId], TestContext.Current.CancellationToken);
             Assert.NotNull(dbVideo);
             Assert.Equal("https://example.com/new-video.mp4", dbVideo.VideoLink);
         }
@@ -533,7 +533,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 VideoLink = "https://example.com/video.mp4",
                 Tags = null,
                 Location = null,
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockAccessManagementService
@@ -591,7 +591,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 VideoLink = "https://example.com/updated.mp4",
                 Tags = "UpdatedTag",
                 Location = "Updated Location",
-                ItemPermissionsDtoList = new List<ItemPermissionDto>()
+                ItemPermissionsDtoList = []
             };
 
             _mockAccessManagementService
@@ -600,7 +600,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockAccessManagementService
                 .Setup(x => x.UpdateItemPermissions(It.IsAny<KinaUnaTypes.TimeLineType>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<List<ItemPermissionDto>>(), userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             _mockKinaUnaCacheService
                 .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Video))
@@ -617,7 +617,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal("UpdatedTag", result.Tags);
             Assert.Equal("Updated Location", result.Location);
 
-            Video? dbVideo = await context.VideoDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
+            Video? dbVideo = await context.VideoDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(dbVideo);
             Assert.Equal("https://example.com/updated.mp4", dbVideo.VideoLink);
         }
@@ -660,7 +660,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Null(result);
 
             // Verify original video unchanged
-            Video? dbVideo = await context.VideoDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
+            Video? dbVideo = await context.VideoDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.Equal("https://example.com/original.mp4", dbVideo!.VideoLink);
         }
 
@@ -720,7 +720,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, 1, userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             _mockKinaUnaCacheService
                 .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Video))
@@ -735,7 +735,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
             Assert.Equal(1, result.VideoId);
 
-            Video? dbVideo = await context.VideoDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
+            Video? dbVideo = await context.VideoDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.Null(dbVideo);
         }
 
@@ -770,7 +770,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Null(result);
 
             // Verify video still exists
-            Video? dbVideo = await context.VideoDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
+            Video? dbVideo = await context.VideoDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(dbVideo);
         }
 
@@ -795,7 +795,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, 999, userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             _mockKinaUnaCacheService
                 .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Video))
@@ -849,7 +849,7 @@ namespace KinaUnaProgenyApi.Tests.Services
 
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, 1, userInfo))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
 
             _mockKinaUnaCacheService
                 .Setup(x => x.GetVideosListCache(userInfo.UserId, 1))
@@ -929,12 +929,12 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            List<Video> videos = new()
-            {
-                new Video { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video1.mp4" },
-                new Video { VideoId = 2, ProgenyId = 1, VideoLink = "https://example.com/video2.mp4" },
-                new Video { VideoId = 3, ProgenyId = 1, VideoLink = "https://example.com/video3.mp4" }
-            };
+            List<Video> videos =
+            [
+                new() { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video1.mp4" },
+                new() { VideoId = 2, ProgenyId = 1, VideoLink = "https://example.com/video2.mp4" },
+                new() { VideoId = 3, ProgenyId = 1, VideoLink = "https://example.com/video3.mp4" }
+            ];
 
             context.VideoDb.AddRange(videos);
             await context.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -977,12 +977,12 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            List<Video> videos = new()
-            {
-                new Video { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video1.mp4" },
-                new Video { VideoId = 2, ProgenyId = 1, VideoLink = "https://example.com/video2.mp4" },
-                new Video { VideoId = 3, ProgenyId = 1, VideoLink = "https://example.com/video3.mp4" }
-            };
+            List<Video> videos =
+            [
+                new() { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video1.mp4" },
+                new() { VideoId = 2, ProgenyId = 1, VideoLink = "https://example.com/video2.mp4" },
+                new() { VideoId = 3, ProgenyId = 1, VideoLink = "https://example.com/video3.mp4" }
+            ];
 
             context.VideoDb.AddRange(videos);
             await context.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -1111,12 +1111,12 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            List<Video> videos = new()
-            {
-                new Video { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video1.mp4" },
-                new Video { VideoId = 2, ProgenyId = 2, VideoLink = "https://example.com/video2.mp4" },
-                new Video { VideoId = 3, ProgenyId = 1, VideoLink = "https://example.com/video3.mp4" }
-            };
+            List<Video> videos =
+            [
+                new() { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video1.mp4" },
+                new() { VideoId = 2, ProgenyId = 2, VideoLink = "https://example.com/video2.mp4" },
+                new() { VideoId = 3, ProgenyId = 1, VideoLink = "https://example.com/video3.mp4" }
+            ];
 
             context.VideoDb.AddRange(videos);
             await context.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -1164,12 +1164,12 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            List<Video> videos = new()
-            {
-                new Video { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video1.mp4", Tags = "Family, Vacation" },
-                new Video { VideoId = 2, ProgenyId = 1, VideoLink = "https://example.com/video2.mp4", Tags = "Birthday" },
-                new Video { VideoId = 3, ProgenyId = 1, VideoLink = "https://example.com/video3.mp4", Tags = "Family, Birthday" }
-            };
+            List<Video> videos =
+            [
+                new() { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video1.mp4", Tags = "Family, Vacation" },
+                new() { VideoId = 2, ProgenyId = 1, VideoLink = "https://example.com/video2.mp4", Tags = "Birthday" },
+                new() { VideoId = 3, ProgenyId = 1, VideoLink = "https://example.com/video3.mp4", Tags = "Family, Birthday" }
+            ];
 
             context.VideoDb.AddRange(videos);
             await context.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -1214,11 +1214,11 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            List<Video> videos = new()
-            {
-                new Video { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video1.mp4", Tags = "Family" },
-                new Video { VideoId = 2, ProgenyId = 1, VideoLink = "https://example.com/video2.mp4", Tags = "Birthday" }
-            };
+            List<Video> videos =
+            [
+                new() { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video1.mp4", Tags = "Family" },
+                new() { VideoId = 2, ProgenyId = 1, VideoLink = "https://example.com/video2.mp4", Tags = "Birthday" }
+            ];
 
             context.VideoDb.AddRange(videos);
             await context.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -1261,11 +1261,11 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            List<Video> videos = new()
-            {
-                new Video { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video1.mp4", Tags = "Family" },
-                new Video { VideoId = 2, ProgenyId = 1, VideoLink = "https://example.com/video2.mp4", Tags = "Birthday" }
-            };
+            List<Video> videos =
+            [
+                new() { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video1.mp4", Tags = "Family" },
+                new() { VideoId = 2, ProgenyId = 1, VideoLink = "https://example.com/video2.mp4", Tags = "Birthday" }
+            ];
 
             context.VideoDb.AddRange(videos);
             await context.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -1392,12 +1392,12 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            List<Video> videos = new()
-            {
-                new Video { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video1.mp4", Tags = "Family" },
-                new Video { VideoId = 2, ProgenyId = 1, VideoLink = "https://example.com/video2.mp4", Tags = null },
-                new Video { VideoId = 3, ProgenyId = 1, VideoLink = "https://example.com/video3.mp4", Tags = "Birthday" }
-            };
+            List<Video> videos =
+            [
+                new() { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video1.mp4", Tags = "Family" },
+                new() { VideoId = 2, ProgenyId = 1, VideoLink = "https://example.com/video2.mp4", Tags = null },
+                new() { VideoId = 3, ProgenyId = 1, VideoLink = "https://example.com/video3.mp4", Tags = "Birthday" }
+            ];
 
             context.VideoDb.AddRange(videos);
             await context.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -1429,11 +1429,11 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            List<Video> videos = new()
-            {
-                new Video { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video1.mp4", Tags = "Birthday" },
-                new Video { VideoId = 2, ProgenyId = 1, VideoLink = "https://example.com/video2.mp4", Tags = "Party" }
-            };
+            List<Video> videos =
+            [
+                new() { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video1.mp4", Tags = "Birthday" },
+                new() { VideoId = 2, ProgenyId = 1, VideoLink = "https://example.com/video2.mp4", Tags = "Party" }
+            ];
 
             context.VideoDb.AddRange(videos);
             await context.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -1464,12 +1464,12 @@ namespace KinaUnaProgenyApi.Tests.Services
             IDistributedCache cache = GetMemoryCache();
             UserInfo userInfo = CreateTestUserInfo();
 
-            List<Video> videos = new()
-            {
-                new Video { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video1.mp4", Tags = "Family" },
-                new Video { VideoId = 2, ProgenyId = 1, VideoLink = "https://example.com/video2.mp4", Tags = "Family" },
-                new Video { VideoId = 3, ProgenyId = 1, VideoLink = "https://example.com/video3.mp4", Tags = "Family" }
-            };
+            List<Video> videos =
+            [
+                new() { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video1.mp4", Tags = "Family" },
+                new() { VideoId = 2, ProgenyId = 1, VideoLink = "https://example.com/video2.mp4", Tags = "Family" },
+                new() { VideoId = 3, ProgenyId = 1, VideoLink = "https://example.com/video3.mp4", Tags = "Family" }
+            ];
 
             context.VideoDb.AddRange(videos);
             await context.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -1513,11 +1513,11 @@ namespace KinaUnaProgenyApi.Tests.Services
             await using MediaDbContext context = GetInMemoryDbContext("SetVideosListInCache_Valid");
             IDistributedCache cache = GetMemoryCache();
 
-            List<Video> videos = new()
-            {
-                new Video { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video1.mp4" },
-                new Video { VideoId = 2, ProgenyId = 1, VideoLink = "https://example.com/video2.mp4" }
-            };
+            List<Video> videos =
+            [
+                new() { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video1.mp4" },
+                new() { VideoId = 2, ProgenyId = 1, VideoLink = "https://example.com/video2.mp4" }
+            ];
 
             context.VideoDb.AddRange(videos);
             await context.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -1560,12 +1560,12 @@ namespace KinaUnaProgenyApi.Tests.Services
             await using MediaDbContext context = GetInMemoryDbContext("SetVideosListInCache_FilterByProgeny");
             IDistributedCache cache = GetMemoryCache();
 
-            List<Video> videos = new()
-            {
-                new Video { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video1.mp4" },
-                new Video { VideoId = 2, ProgenyId = 2, VideoLink = "https://example.com/video2.mp4" },
-                new Video { VideoId = 3, ProgenyId = 1, VideoLink = "https://example.com/video3.mp4" }
-            };
+            List<Video> videos =
+            [
+                new() { VideoId = 1, ProgenyId = 1, VideoLink = "https://example.com/video1.mp4" },
+                new() { VideoId = 2, ProgenyId = 2, VideoLink = "https://example.com/video2.mp4" },
+                new() { VideoId = 3, ProgenyId = 1, VideoLink = "https://example.com/video3.mp4" }
+            ];
 
             context.VideoDb.AddRange(videos);
             await context.SaveChangesAsync(TestContext.Current.CancellationToken);

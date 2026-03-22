@@ -229,7 +229,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal(1, result.ProgenyId);
 
             // Verify it was added to the database
-            Vaccination? dbVaccination = await _progenyDbContext.VaccinationsDb.FindAsync(new object?[] { result.VaccinationId }, TestContext.Current.CancellationToken);
+            Vaccination? dbVaccination = await _progenyDbContext.VaccinationsDb.FindAsync([result.VaccinationId], TestContext.Current.CancellationToken);
             Assert.NotNull(dbVaccination);
             Assert.Equal(result.VaccinationName, dbVaccination.VaccinationName);
 
@@ -356,7 +356,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
             _mockAccessManagementService
                 .Setup(x => x.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Vaccination, 1, 1, 0, It.IsAny<List<ItemPermissionDto>>(), _testUser))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
             _mockKinaUnaCacheService
                 .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Vaccination))
                 .Returns(Task.CompletedTask);
@@ -371,7 +371,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Equal("Updated description", result.VaccinationDescription);
 
             // Verify database was updated
-            Vaccination? dbVaccination = await _progenyDbContext.VaccinationsDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
+            Vaccination? dbVaccination = await _progenyDbContext.VaccinationsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(dbVaccination);
             Assert.Equal("MMR Vaccine - Updated", dbVaccination.VaccinationName);
 
@@ -443,7 +443,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
             _mockAccessManagementService
                 .Setup(x => x.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Vaccination, 2, 1, 0, It.IsAny<List<ItemPermissionDto>>(), _testUser))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
             _mockKinaUnaCacheService
                 .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Vaccination))
                 .Returns(Task.CompletedTask);
@@ -473,7 +473,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
             _mockAccessManagementService
                 .Setup(x => x.UpdateItemPermissions(KinaUnaTypes.TimeLineType.Vaccination, 1, 1, 0, It.IsAny<List<ItemPermissionDto>>(), _testUser))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
             _mockKinaUnaCacheService
                 .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Vaccination))
                 .Returns(Task.CompletedTask);
@@ -507,7 +507,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, 1, _adminUser))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
             _mockKinaUnaCacheService
                 .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Vaccination))
                 .Returns(Task.CompletedTask);
@@ -524,7 +524,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             int countAfter = await _progenyDbContext.VaccinationsDb.CountAsync(cancellationToken: TestContext.Current.CancellationToken);
             Assert.Equal(countBefore - 1, countAfter);
 
-            Vaccination? deletedVaccination = await _progenyDbContext.VaccinationsDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
+            Vaccination? deletedVaccination = await _progenyDbContext.VaccinationsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.Null(deletedVaccination);
 
             // Verify cache was updated
@@ -553,7 +553,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.Null(result);
 
             // Verify vaccination still exists
-            Vaccination? vaccination = await _progenyDbContext.VaccinationsDb.FindAsync(new object?[] { 1 }, TestContext.Current.CancellationToken);
+            Vaccination? vaccination = await _progenyDbContext.VaccinationsDb.FindAsync([1], TestContext.Current.CancellationToken);
             Assert.NotNull(vaccination);
         }
 
@@ -592,7 +592,7 @@ namespace KinaUnaProgenyApi.Tests.Services
                 .ReturnsAsync(true);
             _mockAccessManagementService
                 .Setup(x => x.GetTimelineItemPermissionsList(KinaUnaTypes.TimeLineType.Contact, 2, _adminUser))
-                .ReturnsAsync(new List<TimelineItemPermission>());
+                .ReturnsAsync([]);
             _mockKinaUnaCacheService
                 .Setup(x => x.SetProgenyOrFamilyTimelineUpdatedCache(1, 0, KinaUnaTypes.TimeLineType.Vaccination))
                 .Returns(Task.CompletedTask);
@@ -604,7 +604,7 @@ namespace KinaUnaProgenyApi.Tests.Services
             Assert.NotNull(result);
 
             // Verify it's removed from database
-            Vaccination? deletedVaccination = await _progenyDbContext.VaccinationsDb.FindAsync(new object?[] { 2 }, TestContext.Current.CancellationToken);
+            Vaccination? deletedVaccination = await _progenyDbContext.VaccinationsDb.FindAsync([2], TestContext.Current.CancellationToken);
             Assert.Null(deletedVaccination);
         }
 
