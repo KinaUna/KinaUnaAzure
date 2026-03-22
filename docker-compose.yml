@@ -37,8 +37,6 @@ services:
       ProgenyDefaultConnection: "${PROGENY_DB_CONNECTION}"
       MediaDefaultConnection: "${MEDIA_DB_CONNECTION}"
       AuthDefaultConnection: "${AUTH_DB_CONNECTION}"
-      # Blob storage (Azurite or Azure Storage)
-      BlobStorageConnectionString: "${BLOB_STORAGE_CONNECTION_STRING}"
       # OpenIddict signing/encryption certificate PFX files (mounted via volume)
       EncryptionCertificatePfxPath: "/app/certs/encryption.pfx"
       EncryptionCertificatePfxPassword: "${ENCRYPTION_CERT_PASSWORD}"
@@ -79,8 +77,6 @@ services:
       SmtpUserName: "${SMTP_USERNAME}"
       SmtpFrom: "${SMTP_FROM}"
       SupportMailPassword: "${SUPPORT_MAIL_PASSWORD}"
-      # Application Insights (optional)
-      APPINSIGHTS_CONNECTIONSTRING: "${APPINSIGHTS_CONNECTIONSTRING}"
     volumes:
       - ./certs:/app/certs:ro
       - H:\kinauna-storage:/app/storage
@@ -106,8 +102,6 @@ services:
       ProgenyDefaultConnection: "${PROGENY_DB_CONNECTION}"
       MediaDefaultConnection: "${MEDIA_DB_CONNECTION}"
       DataProtectionConnection: "${AUTH_DB_CONNECTION}"
-      # Blob storage (Azurite or Azure Storage)
-      BlobStorageConnectionString: "${BLOB_STORAGE_CONNECTION_STRING}"
       # OpenIddict encryption certificate PFX file (mounted via volume)
       CertificatePfxPath: "/app/certs/encryption.pfx"
       CertificatePfxPassword: "${ENCRYPTION_CERT_PASSWORD}"
@@ -133,17 +127,9 @@ services:
       SmtpUserName: "${SMTP_USERNAME}"
       SmtpFrom: "${SMTP_FROM}"
       SupportMailPassword: "${SUPPORT_MAIL_PASSWORD}"
-      # Blob storage details
-      CloudBlobBase: "${CLOUD_BLOB_BASE}"
-      CloudBlobUserName: "${CLOUD_BLOB_USERNAME}"
-      BlobStorageKey: "${BLOB_STORAGE_KEY}"
       # VAPID keys (Web Push)
       VapidPublicKey: "${VAPID_PUBLIC_KEY}"
       VapidPrivateKey: "${VAPID_PRIVATE_KEY}"
-      # Azure Notification Hubs (optional)
-      NotificationHubConnection: "${NOTIFICATION_HUB_CONNECTION}"
-      # Application Insights (optional)
-      APPINSIGHTS_CONNECTIONSTRING: "${APPINSIGHTS_CONNECTIONSTRING}"
     volumes:
       - ./certs:/app/certs:ro
       - H:\kinauna-storage:/app/storage
@@ -167,8 +153,6 @@ services:
       ASPNETCORE_URLS: "https://+:8443"
       ASPNETCORE_Kestrel__Certificates__Default__Path: "/app/certs/aspnetapp.pfx"
       ASPNETCORE_Kestrel__Certificates__Default__Password: "${KESTREL_CERT_PASSWORD}"
-      # Blob storage
-      BlobStorageConnectionString: "${BLOB_STORAGE_CONNECTION_STRING}"
       # Auth server URL — browser-accessible for OIDC redirects, also reachable inside the container
       AuthServerUrl: "${AUTH_SERVER_URL:-https://host.docker.internal:5000}"
       WebServerUrl: "${WEB_SERVER_URL:-https://host.docker.internal:5002}"
@@ -191,10 +175,6 @@ services:
       SmtpUserName: "${SMTP_USERNAME}"
       SmtpFrom: "${SMTP_FROM}"
       SupportMailPassword: "${SUPPORT_MAIL_PASSWORD}"
-      # Blob storage details
-      CloudBlobBase: "${CLOUD_BLOB_BASE}"
-      CloudBlobUserName: "${CLOUD_BLOB_USERNAME}"
-      BlobStorageKey: "${BLOB_STORAGE_KEY}"
       # VAPID keys (Web Push)
       VapidPublicKey: "${VAPID_PUBLIC_KEY}"
       VapidPrivateKey: "${VAPID_PRIVATE_KEY}"
@@ -203,8 +183,6 @@ services:
       HereMapsKey: "${HERE_MAPS_KEY}"
       # Syncfusion
       SyncfusionKey: "${SYNCFUSION_KEY}"
-      # Application Insights (optional)
-      APPINSIGHTS_CONNECTIONSTRING: "${APPINSIGHTS_CONNECTIONSTRING}"
     volumes:
       - ./certs:/app/certs:ro
       - H:\kinauna-storage:/app/storage
