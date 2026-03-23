@@ -43,11 +43,15 @@ FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 RUN apt-get update && apt-get install -y --no-install-recommends openssl && rm -rf /var/lib/apt/lists/*
 
 RUN apt-get update && apt-get install -y libgssapi-krb5-2
+RUN apt-get install -y curl
 
 WORKDIR /app
 COPY --from=build /app/publish .
 COPY docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN sed -i 's/\r$//' /app/docker-entrypoint.sh && chmod +x /app/docker-entrypoint.sh
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
 
 EXPOSE 8080
 ENV ASPNETCORE_URLS=http://+:8080
