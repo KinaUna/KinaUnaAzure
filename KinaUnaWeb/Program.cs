@@ -27,6 +27,7 @@ namespace KinaUnaWeb
             catch (Exception ex)
             {
                 Log.Fatal(ex, "Host terminated unexpectedly.");
+                throw;
             }
             finally
             {
