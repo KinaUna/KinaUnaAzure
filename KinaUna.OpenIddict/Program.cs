@@ -39,6 +39,7 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
+AppDomain.CurrentDomain.ProcessExit += (_, _) => Log.CloseAndFlush();
 // Add database context and other services.
 
 string progenyDefaultConnection = builder.Configuration["ProgenyDefaultConnection"] 
