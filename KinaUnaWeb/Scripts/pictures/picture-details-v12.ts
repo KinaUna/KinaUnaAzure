@@ -260,7 +260,7 @@ function addCloseButtonEventListener(): void {
                     itemDetailsPopupDiv.innerHTML = '';
                     itemDetailsPopupDiv.classList.add('d-none');
                     showBodyScrollbars();
-                    history.back();
+                    // history.back();
                 }
             }
             button.removeEventListener('click', closeButtonAction);
