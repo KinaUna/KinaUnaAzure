@@ -77,6 +77,8 @@ services:
       SmtpUserName: "${SMTP_USERNAME}"
       SmtpFrom: "${SMTP_FROM}"
       SupportMailPassword: "${SUPPORT_MAIL_PASSWORD}"
+      # Seq logging
+      SeqUrl: "${SEQ_URL:-http://seq:5341}"
     volumes:
       - ./certs:/app/certs:ro
       - H:\kinauna-storage:/app/storage
@@ -130,6 +132,8 @@ services:
       # VAPID keys (Web Push)
       VapidPublicKey: "${VAPID_PUBLIC_KEY}"
       VapidPrivateKey: "${VAPID_PRIVATE_KEY}"
+      # Seq logging
+      SeqUrl: "${SEQ_URL:-http://seq:5341}"
     volumes:
       - ./certs:/app/certs:ro
       - H:\kinauna-storage:/app/storage
@@ -183,12 +187,28 @@ services:
       HereMapsKey: "${HERE_MAPS_KEY}"
       # Syncfusion
       SyncfusionKey: "${SYNCFUSION_KEY}"
+      # Seq logging
+      SeqUrl: "${SEQ_URL:-http://seq:5341}"
     volumes:
       - ./certs:/app/certs:ro
       - H:\kinauna-storage:/app/storage
     networks:
       - kinauna
 
+  seq:
+    image: datalust/seq:latest
+    environment:
+      ACCEPT_EULA: "Y"
+      SEQ_FIRSTRUN_ADMINPASSWORD: "${SEQ_ADMIN_PASSWORD}"
+    ports:
+      - "127.0.0.1:5341:5341"   # Ingestion API (bound to localhost)
+      - "127.0.0.1:8341:80"     # Web UI (bound to localhost)
+    volumes:
+      - H:\kinauna-storage\seqdata:/data
+    networks:
+      - kinauna
+
 networks:
   kinauna:
     driver: bridge
+
