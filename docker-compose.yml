@@ -193,10 +193,10 @@ services:
     image: datalust/seq:latest
     environment:
       ACCEPT_EULA: "Y"
-      SEQ_FIRSTRUN_NOAUTHENTICATION: "True"
+      SEQ_FIRSTRUN_ADMINPASSWORD: "${SEQ_ADMIN_PASSWORD}"
     ports:
-      - "5341:5341"   # Ingestion API
-      - "8341:80"     # Web UI
+      - "127.0.0.1:5341:5341"   # Ingestion API (bound to localhost)
+      - "127.0.0.1:8341:80"     # Web UI (bound to localhost)
     volumes:
       - H:\kinauna-storage\seqdata:/data
     networks:
