@@ -34,7 +34,7 @@ Log.Logger = new LoggerConfiguration()
     .Enrich.FromLogContext()
     .Enrich.WithProperty("Application", "KinaUna.OpenIddict")
     .WriteTo.Console()
-    .WriteTo.Seq(builder.Configuration["SeqUrl"] ?? "http://localhost:5341")
+    .WriteTo.Seq(builder.Configuration["SeqUrl"] ?? "http://seq:5341")
     .CreateLogger();
 
 builder.Host.UseSerilog();

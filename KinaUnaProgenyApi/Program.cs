@@ -9,15 +9,10 @@ namespace KinaUnaProgenyApi
     {
         public static void Main(string[] args)
         {
+            // Minimal bootstrap logger for early startup errors before full configuration is loaded.
             Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Information()
-                .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
-                .MinimumLevel.Override("Microsoft.EntityFrameworkCore", Serilog.Events.LogEventLevel.Warning)
-                .Enrich.FromLogContext()
-                .Enrich.WithProperty("Application", "KinaUnaProgenyApi")
                 .WriteTo.Console()
-                .WriteTo.Seq(Environment.GetEnvironmentVariable("SeqUrl") ?? "http://localhost:5341")
-                .CreateLogger();
+                .CreateBootstrapLogger();
 
             try
             {
@@ -37,7 +32,17 @@ namespace KinaUnaProgenyApi
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .UseSerilog()
+                .UseSerilog((context, services, loggerConfig) =>
+                {
+                    loggerConfig
+                        .MinimumLevel.Information()
+                        .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
+                        .MinimumLevel.Override("Microsoft.EntityFrameworkCore", Serilog.Events.LogEventLevel.Warning)
+                        .Enrich.FromLogContext()
+                        .Enrich.WithProperty("Application", "KinaUnaProgenyApi")
+                        .WriteTo.Console()
+                        .WriteTo.Seq(context.Configuration["SeqUrl"] ?? "http://seq:5341");
+                })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
