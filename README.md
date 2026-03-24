@@ -31,6 +31,7 @@ The solution contains four application projects and three test projects:
 | **Hosting** | VPS Linux server with Coolify, Docker containers, reverse proxy (Traefik/Caddy) |
 | **Storage** | Local file storage |
 | **Push Notifications** | VAPID web push |
+| **Bot Prevention** | Cloudflare Turnstile (registration page), honeypot field |
 | **Client-side** | TypeScript (ES2020, strict mode), vanilla DOM manipulation, jQuery (legacy) |
 | **CSS** | Custom `site.css` with light/dark theme support via `prefers-color-scheme` media queries |
 | **Testing** | xUnit, Moq |
@@ -96,6 +97,10 @@ TypeScript source files are in `KinaUnaWeb/Scripts/`, organized by feature subdi
 - Granular access control at progeny, family, and item levels
 - Personal data is never visible to unauthorized users
 
+### Bot Prevention
+- **Cloudflare Turnstile** – The registration page in `KinaUna.OpenIddict` includes a [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) widget that verifies the user is human before allowing account creation. The server-side token is validated by `TurnstileService` via the Turnstile siteverify API. If `TURNSTILE_SECRET_KEY` is not configured the check is skipped (fail-open).
+- **Honeypot field** – A hidden `Website` field on the registration form catches automated submissions. If the field is filled in, the request is silently redirected to the confirmation page without creating an account.
+
 ### Multilingual Support
 - Built-in localization system (`KinaUnaText` / `TextTranslation`) for UI strings
 - Integer-based language identifier stored in a cookie
@@ -113,6 +118,7 @@ Configuration values are provided via environment variables in production (set i
 
 ### External Services
 - **Email** – Required for account confirmation and password reset emails
+- **Cloudflare Turnstile** – Bot prevention on the registration page. Requires `TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` (optional — verification is skipped when not configured)
 - **Here Maps** – Map display for locations
 - **VAPID keys** – Web push notifications
 - **Login providers** (optional) – Apple, Google, Microsoft, etc. require credentials from each provider
