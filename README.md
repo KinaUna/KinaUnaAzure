@@ -98,7 +98,7 @@ TypeScript source files are in `KinaUnaWeb/Scripts/`, organized by feature subdi
 - Personal data is never visible to unauthorized users
 
 ### Bot Prevention
-- **Cloudflare Turnstile** – The registration page in `KinaUna.OpenIddict` includes a [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) widget that verifies the user is human before allowing account creation. The server-side token is validated by `TurnstileService` via the Turnstile siteverify API. If `TURNSTILE_SECRET_KEY` is not configured the check is skipped (fail-open).
+- **Cloudflare Turnstile** – The registration page in `KinaUna.OpenIddict` includes a [Cloudflare Turnstile](https://developers.cloudflare.com/turnstile/) widget that verifies the user is human before allowing account creation. The server-side token is validated by `TurnstileService` via the Turnstile siteverify API. If `TurnstileSecretKey` is not configured the check is skipped (fail-open).
 - **Honeypot field** – A hidden `Website` field on the registration form catches automated submissions. If the field is filled in, the request is silently redirected to the confirmation page without creating an account.
 
 ### Multilingual Support

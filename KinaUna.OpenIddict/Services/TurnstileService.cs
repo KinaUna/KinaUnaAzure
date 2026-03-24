@@ -15,10 +15,10 @@ namespace KinaUna.OpenIddict.Services
                 return false;
             }
 
-            string secretKey = configuration.GetValue<string>("TURNSTILE_SECRET_KEY") ?? string.Empty;
+            string secretKey = configuration.GetValue<string>("TurnstileSecretKey") ?? string.Empty;
             if (string.IsNullOrWhiteSpace(secretKey))
             {
-                logger.LogError("TURNSTILE_SECRET_KEY is not configured. Skipping Turnstile verification.");
+                logger.LogError("TurnstileSecretKey is not configured. Skipping Turnstile verification.");
                 // Fail open only if not configured — remove this return to fail closed instead.
                 return true;
             }
