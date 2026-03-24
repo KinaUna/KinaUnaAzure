@@ -10,18 +10,18 @@ namespace KinaUna.OpenIddict.Services
 
         public async Task<bool> VerifyTokenAsync(string token, string? remoteIp = null)
         {
+            string secretKey = configuration.GetValue<string>(AuthConstants.TurnstileSecretKeyConfigKey) ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(secretKey))
+            {
+                logger.LogWarning("TurnstileSecretKey is not configured. Skipping Turnstile verification.");
+                // Fail open only if not configured — remove this return to fail closed instead.
+                return true;
+            }
+
             if (string.IsNullOrWhiteSpace(token))
             {
                 logger.LogWarning("Turnstile token is empty or null.");
                 return false;
-            }
-
-            string secretKey = configuration.GetValue<string>(AuthConstants.TurnstileSecretKeyConfigKey) ?? string.Empty;
-            if (string.IsNullOrWhiteSpace(secretKey))
-            {
-                logger.LogError("TurnstileSecretKey is not configured. Skipping Turnstile verification.");
-                // Fail open only if not configured — remove this return to fail closed instead.
-                return true;
             }
 
             try
