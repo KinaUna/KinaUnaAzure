@@ -30,6 +30,17 @@ namespace KinaUna.OpenIddict.Models.AccountViewModels
         public string Language { get; set; } = "English";
         public int LanguageId { get; set; } = 1;
 
+        /// <summary>
+        /// Honeypot field. Must remain empty for legitimate submissions.
+        /// Bots tend to fill in fields that look like "website" or "url".
+        /// </summary>
+        public string? Website { get; set; }
+
+        /// <summary>
+        /// Cloudflare Turnstile site key, populated by the controller for use in the view.
+        /// </summary>
+        public string TurnstileSiteKey { get; set; } = string.Empty;
+
         public RegisterViewModel()
         {
             ReadOnlyCollection<TimeZoneInfo> tzs = TimeZoneInfo.GetSystemTimeZones();

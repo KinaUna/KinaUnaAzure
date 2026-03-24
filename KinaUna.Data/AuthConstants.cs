@@ -13,6 +13,10 @@ namespace KinaUna.Data
 
         public const string ResetOpenIddictDatabaseKey = "ResetOpenIddictDatabase";
 
+        // Cloudflare Turnstile Configuration Keys
+        public const string TurnstileSiteKeyConfigKey = "TurnstileSiteKey";
+        public const string TurnstileSecretKeyConfigKey = "TurnstileSecretKey";
+
         // Web App Constants
         public const string WebServerUrlKey = "WebServerUrl";
         public const string WebServerClientIdKey = "WebServerClientId";

@@ -59,6 +59,7 @@ builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(keyPath));
 
 builder.Services.AddHttpClient();
+builder.Services.AddScoped<ITurnstileService, TurnstileService>();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 builder.Services.AddTransient<ILocaleManager, LocaleManager>();
