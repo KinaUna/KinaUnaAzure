@@ -102,7 +102,7 @@ namespace KinaUna.OpenIddict.Controllers
             RegisterViewModel model = new()
             {
                 ReturnUrl = returnUrl,
-                TurnstileSiteKey = configuration.GetValue<string>("TurnstileSiteKey") ?? string.Empty
+                TurnstileSiteKey = configuration.GetValue<string>(AuthConstants.TurnstileSiteKeyConfigKey) ?? string.Empty
             };
 
             return View(model);
@@ -114,8 +114,9 @@ namespace KinaUna.OpenIddict.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            // Always repopulate the Turnstile site key for the view in case we need to redisplay the form.
-            model.TurnstileSiteKey = configuration.GetValue<string>("TurnstileSiteKey") ?? string.Empty;
+            // Always repopulate the Turnstile site key from server-side configuration for the view.
+            string turnstileSiteKey = configuration.GetValue<string>(AuthConstants.TurnstileSiteKeyConfigKey) ?? string.Empty;
+            model.TurnstileSiteKey = turnstileSiteKey;
 
             // --- Honeypot check ---
             if (!string.IsNullOrWhiteSpace(model.Website))
@@ -128,17 +129,22 @@ namespace KinaUna.OpenIddict.Controllers
             }
 
             // --- Cloudflare Turnstile verification ---
-            string turnstileToken = Request.Form["cf-turnstile-response"].ToString();
-            string? remoteIp = HttpContext.Connection.RemoteIpAddress?.ToString();
-
-            bool turnstileValid = await turnstileService.VerifyTokenAsync(turnstileToken, remoteIp);
-            if (!turnstileValid)
+            // Only verify when Turnstile is configured (site key present means the widget was rendered).
+            // Skip verification for local/dev deployments where keys are not set.
+            if (!string.IsNullOrWhiteSpace(turnstileSiteKey))
             {
-                logger.LogWarning("Bot registration blocked by Turnstile. Email: {Email}, IP: {IP}",
-                    model.Email, HttpContext.Connection.RemoteIpAddress);
+                string turnstileToken = Request.Form["cf-turnstile-response"].ToString();
+                string? remoteIp = HttpContext.Connection.RemoteIpAddress?.ToString();
 
-                ModelState.AddModelError(string.Empty, "Human verification failed. Please try again.");
-                return View(model);
+                bool turnstileValid = await turnstileService.VerifyTokenAsync(turnstileToken, remoteIp);
+                if (!turnstileValid)
+                {
+                    logger.LogWarning("Bot registration blocked by Turnstile. Email: {Email}, IP: {IP}",
+                        model.Email, HttpContext.Connection.RemoteIpAddress);
+
+                    ModelState.AddModelError(string.Empty, "Human verification failed. Please try again.");
+                    return View(model);
+                }
             }
 
             // --- Input sanitization ---
