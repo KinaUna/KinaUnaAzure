@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using KinaUna.Data;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace KinaUna.OpenIddict.Services
@@ -15,7 +16,7 @@ namespace KinaUna.OpenIddict.Services
                 return false;
             }
 
-            string secretKey = configuration.GetValue<string>("TurnstileSecretKey") ?? string.Empty;
+            string secretKey = configuration.GetValue<string>(AuthConstants.TurnstileSecretKeyConfigKey) ?? string.Empty;
             if (string.IsNullOrWhiteSpace(secretKey))
             {
                 logger.LogError("TurnstileSecretKey is not configured. Skipping Turnstile verification.");
