@@ -79,6 +79,8 @@ services:
       SupportMailPassword: "${SUPPORT_MAIL_PASSWORD}"
       # Seq logging
       SeqUrl: "${SEQ_URL:-http://seq:5341}"
+      TurnstileSiteKey: "${TURNSTILE_SITE_KEY}"
+      TurnstileSecretKey: "${TURNSTILE_SECRET_KEY}"
     volumes:
       - ./certs:/app/certs:ro
       - H:\kinauna-storage:/app/storage

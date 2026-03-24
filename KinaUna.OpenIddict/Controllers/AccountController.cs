@@ -19,7 +19,9 @@ namespace KinaUna.OpenIddict.Controllers
         IConfiguration configuration,
         ApplicationDbContext context,
         ILocaleManager localeManager,
-        IProgenyApiHttpClient progenyApiHttpClient) : Controller
+        IProgenyApiHttpClient progenyApiHttpClient,
+        ITurnstileService turnstileService,
+        ILogger<AccountController> logger) : Controller
     {
         [TempData] private string? StatusMessage { get; set; }
 
@@ -99,7 +101,8 @@ namespace KinaUna.OpenIddict.Controllers
 
             RegisterViewModel model = new()
             {
-                ReturnUrl = returnUrl
+                ReturnUrl = returnUrl,
+                TurnstileSiteKey = configuration.GetValue<string>("TurnstileSiteKey") ?? string.Empty
             };
 
             return View(model);
@@ -111,6 +114,39 @@ namespace KinaUna.OpenIddict.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
+            // Always repopulate the Turnstile site key for the view in case we need to redisplay the form.
+            model.TurnstileSiteKey = configuration.GetValue<string>("TurnstileSiteKey") ?? string.Empty;
+
+            // --- Honeypot check ---
+            if (!string.IsNullOrWhiteSpace(model.Website))
+            {
+                logger.LogWarning("Bot registration blocked by honeypot. Email: {Email}, IP: {IP}",
+                    model.Email, HttpContext.Connection.RemoteIpAddress);
+
+                // Return the same confirmation page as a successful registration to not reveal the check to bots.
+                return RedirectToAction("RegConfirm", "Account", new { model.ReturnUrl });
+            }
+
+            // --- Cloudflare Turnstile verification ---
+            string turnstileToken = Request.Form["cf-turnstile-response"].ToString();
+            string? remoteIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+
+            bool turnstileValid = await turnstileService.VerifyTokenAsync(turnstileToken, remoteIp);
+            if (!turnstileValid)
+            {
+                logger.LogWarning("Bot registration blocked by Turnstile. Email: {Email}, IP: {IP}",
+                    model.Email, HttpContext.Connection.RemoteIpAddress);
+
+                ModelState.AddModelError(string.Empty, "Human verification failed. Please try again.");
+                return View(model);
+            }
+
+            // --- Input sanitization ---
+            if (!IsReturnUrlSafe(model.ReturnUrl))
+            {
+                model.ReturnUrl = null;
+            }
+
             if (ModelState.IsValid)
             {
                 ApplicationUser user = new()
@@ -170,7 +206,9 @@ namespace KinaUna.OpenIddict.Controllers
             {
                 return RedirectToAction("Error", "Home", new { errorMessage = "Invalid or missing user ID or confirmation code." });
             }
+            
             ApplicationUser? user = await userManager.FindByIdAsync(userId) ?? throw new ApplicationException($"Unable to load user with ID '{userId}'.");
+            
             if (string.IsNullOrWhiteSpace(user.UserName))
             {
                 user.UserName = user.Email;
@@ -199,13 +237,13 @@ namespace KinaUna.OpenIddict.Controllers
                     // Update user access lists
                     bool updateAccessListsSucceeded = await progenyApiHttpClient.UpdateAccessListsWithNewUserEmail(user.Id, oldEmail, user.Email);
                     if (updateAccessListsSucceeded) return View();
-                    ModelState.AddModelError(string.Empty, "Error updating access lists with new email. Please try again later.");
+                    ModelState.AddModelError(string.Empty, "Error updating access lists with new email. Please try again later."); // Todo: Localize this error message
                 }
                 else
                 {
                     await emailSender.SendEmailAsync(configuration.GetValue<string>("AdminEmail") ?? throw new InvalidOperationException("Admin email not found in configuration data."),
                         "New User Confirmed Email",
-                        "A user confirmed the email with this email address: " + user?.Email);
+                        "A user confirmed the email with this email address: " + user?.Email); // Todo: Localize this email message
                 }
                 
                 return View();
@@ -219,10 +257,10 @@ namespace KinaUna.OpenIddict.Controllers
             string callbackUrl = Url.EmailConfirmationLink(user.Id, code1, Request.Scheme, kinaUnaLanguage.Id);
             if (string.IsNullOrWhiteSpace(callbackUrl))
             {
-                return RedirectToAction("Error", "Home", new { errorMessage = "An unexpected error occurred during email confirmation callback url generation." });
+                return RedirectToAction("Error", "Home", new { errorMessage = "An unexpected error occurred during email confirmation callback url generation." }); // Todo: Localize this error message
             }
 
-            if (user.Email == null) return RedirectToAction("Error", "Home", new { errorMessage = "An unexpected error occurred during email confirmation." });
+            if (user.Email == null) return RedirectToAction("Error", "Home", new { errorMessage = "An unexpected error occurred during email confirmation." }); // Todo: Localize this error message
             await emailSender.SendEmailConfirmationAsync(user.Email, callbackUrl, kinaUnaLanguage.Id);
 
             return RedirectToAction("VerificationMailSent");
@@ -264,8 +302,8 @@ namespace KinaUna.OpenIddict.Controllers
                 string callbackUrl = Url.ResetPasswordCallbackLink(user.Id, code, Request.Scheme);
                 if (!string.IsNullOrWhiteSpace(callbackUrl))
                 {
-                    string emailTitle = await localeManager.GetTranslation("Reset KinaUna Password", PageNames.Account, model.LanguageId);
-                    string emailText = await localeManager.GetTranslation("Please reset your KinaUna password by clicking here", PageNames.Account, model.LanguageId);
+                    string emailTitle = await localeManager.GetTranslation("Reset KinaUna Password", PageNames.Account, model.LanguageId); // Todo: Localize this email title
+                    string emailText = await localeManager.GetTranslation("Please reset your KinaUna password by clicking here", PageNames.Account, model.LanguageId); // Todo: Localize this email text
                     emailText += $": <a href='{callbackUrl}'>link</a>";
 
                     await emailSender.SendEmailAsync(model.Email, emailTitle,
@@ -275,7 +313,7 @@ namespace KinaUna.OpenIddict.Controllers
                 }
             }
 
-            ModelState.AddModelError(string.Empty, "Error generating reset password link. Please try again later.");
+            ModelState.AddModelError(string.Empty, "Error generating reset password link. Please try again later."); // Todo: Localize this error message
             return View(model);
         }
 
@@ -356,7 +394,7 @@ namespace KinaUna.OpenIddict.Controllers
 
             await signInManager.SignInAsync(user, isPersistent: false);
             
-            string statusMsg = await localeManager.GetTranslation("Your password has been changed.", PageNames.Account, model.LanguageId);
+            string statusMsg = await localeManager.GetTranslation("Your password has been changed.", PageNames.Account, model.LanguageId); // Todo: Localize this status message
 
             StatusMessage = statusMsg;
 
@@ -482,6 +520,21 @@ namespace KinaUna.OpenIddict.Controllers
             await signInManager.SignOutAsync();
 
             return View(model);
+        }
+
+        /// <summary>
+        /// Validates that a return URL is safe (local to the application).
+        /// Prevents open redirect attacks via crafted ReturnUrl values.
+        /// </summary>
+        private bool IsReturnUrlSafe(string? returnUrl)
+        {
+            if (string.IsNullOrWhiteSpace(returnUrl))
+            {
+                return true; // null/empty is fine, will default to "/"
+            }
+
+            // Url.IsLocalUrl rejects absolute URIs and protocol-relative URLs like "//evil.com"
+            return Url.IsLocalUrl(returnUrl);
         }
 
         private void AddErrors(IdentityResult result)
