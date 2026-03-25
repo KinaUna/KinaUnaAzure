@@ -38,19 +38,24 @@
                 </div>
 
                 <br/>
-                <div class="form-check">
-                    <label class="form-check-label">
-                        <input id="agreeCheck" name="agreeCheck" class="form-check-input form-control" type="checkbox" value="">
-                        @await LocaleManager.GetTranslation("I agree to the terms listed below.", PageNames.Account, languageId)
-                        <span class="form-check-sign">
-                            <span class="check"></span>
-                        </span>
-                    </label>
+                <div class="form-check col-sm-6 col-md-4 col-lg-3 pl-0">
+                    <label for="agreeCheck" class="form-check-label"></label>
+                    <input id="agreeCheck" name="agreeCheck" class="form-check-input form-control" style="width: 96px;" type="checkbox" value="">
+                    @await LocaleManager.GetTranslation("I agree to the terms listed below.", PageNames.Account, languageId)
+                    <span class="form-check-sign">
+                        <span class="check"></span>
+                    </span>
                 </div>
+                <div class="space-100"></div>
                 @* Cloudflare Turnstile widget *@
                 @if (!string.IsNullOrEmpty(Model.TurnstileSiteKey))
                 {
-                    <div class="cf-turnstile" data-sitekey="@Model.TurnstileSiteKey" data-theme="auto"></div>
+                    <div class="cf-turnstile"
+                         data-sitekey="@Model.TurnstileSiteKey"
+                         data-theme="auto"
+                         data-callback="onTurnstileVerified"
+                         data-expired-callback="onTurnstileExpired"
+                         data-error-callback="onTurnstileExpired"></div>
                 }
 
                 <div class="form-group">
@@ -61,7 +66,7 @@
         </div>
     </div>
 </div>
-@await LocaleManager.GetTranslation("Learn how we collect, process, and use data and cookies here:", PageNames.Account, languageId) <a asp-controller="Home" asp-action="Privacy">@await LocaleManager.GetTranslation("Privacy Policy", PageNames.Account, languageId)</a>.
+@await LocaleManager.GetTranslation("Learn how we collect, process, and use data and cookies here:", PageNames.Account, languageId) <a href="https://web.kinauna.com/Home/Privacy">@await LocaleManager.GetTranslation("Privacy Policy", PageNames.Account, languageId)</a>.
 <div class="card">
     <div class="card-body" style="background: lightyellow;">
         <div class="card-title">@await LocaleManager.GetTranslation("Terms and conditions", PageNames.Account, languageId)</div>
@@ -78,12 +83,33 @@
     }
 }
 <script>
-    $("#agreeCheck").on('change', function () {
-        if (this.checked) {
-            $('#registerBtn').attr('disabled', false);
+    const hasTurnstile = document.querySelector('.cf-turnstile') !== null;
+    let turnstileCompleted = false;
 
-        } else {
-            $("#registerBtn").attr('disabled', true);
-        }
-    });
+    function onTurnstileVerified() {
+        turnstileCompleted = true;
+        updateSubmitButton();
+    }
+
+    function onTurnstileExpired() {
+        turnstileCompleted = false;
+        updateSubmitButton();
+    }
+
+    function updateSubmitButton() {
+        const passwordInput = document.getElementById('Password');
+        const confirmPasswordInput = document.getElementById('ConfirmPassword');
+        const agreeCheckInput = document.getElementById('agreeCheck');
+
+        const passwordsMatch = passwordInput.value.length > 0 && passwordInput.value === confirmPasswordInput.value;
+        const agreeChecked = agreeCheckInput.checked;
+        const turnstileOk = !hasTurnstile || turnstileCompleted;
+
+        (document.getElementById('registerBtn')).disabled =
+            !(passwordsMatch && agreeChecked && turnstileOk);
+    }
+
+    document.getElementById('Password').addEventListener('input', updateSubmitButton);
+    document.getElementById('ConfirmPassword').addEventListener('input', updateSubmitButton);
+    document.getElementById('agreeCheck').addEventListener('change', updateSubmitButton);
 </script>
