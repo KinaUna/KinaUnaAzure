@@ -48,15 +48,29 @@ namespace KinaUna.OpenIddict.Controllers
                 CookieRequestCultureProvider.MakeCookieValue(new RequestCulture(culture)),
                 cookieOptions
             );
+            
+            // Ensure the returnUrl is local to prevent open redirect vulnerabilities
+            if (!IsReturnUrlSafe(returnUrl))
+            {
+                returnUrl = Url.Action("Index", "Home") ?? "/";
+            }
 
             return Redirect(returnUrl);
         }
+
+
 
         [AllowAnonymous]
         [HttpGet]
         public IActionResult SetLanguageId(string languageId, string returnUrl)
         {
             Response.SetLanguageCookie(languageId);
+            // Ensure the returnUrl is local to prevent open redirect vulnerabilities
+            if (!IsReturnUrlSafe(returnUrl))
+            {
+                returnUrl = Url.Action("Index", "Home") ?? "/";
+            }
+
             return Redirect(returnUrl);
         }
 
@@ -65,6 +79,21 @@ namespace KinaUna.OpenIddict.Controllers
         public IActionResult Error(string? errorMessage)
         {
             return View(new ErrorViewModel { ErrorMessage = errorMessage, RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        /// <summary>
+        /// Validates that a return URL is safe (local to the application).
+        /// Prevents open redirect attacks via crafted ReturnUrl values.
+        /// </summary>
+        private bool IsReturnUrlSafe(string? returnUrl)
+        {
+            if (string.IsNullOrWhiteSpace(returnUrl))
+            {
+                return false; // No return URL provided, default to home page
+            }
+
+            // Url.IsLocalUrl rejects absolute URIs and protocol-relative URLs like "//evil.com"
+            return Url.IsLocalUrl(returnUrl);
         }
     }
 }
