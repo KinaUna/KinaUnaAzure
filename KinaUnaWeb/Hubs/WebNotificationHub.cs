@@ -40,7 +40,7 @@ namespace KinaUnaWeb.Hubs
         {
             string userId = Context.GetHttpContext()?.User.FindFirst("sub")?.Value ?? "NoUser";
             string userTimeZone = Context.GetHttpContext()?.User.FindFirst("timezone")?.Value ?? Constants.DefaultTimezone;
-            if (userId != "NoUser")
+            if (userId != "NoUser" && userId != Constants.DefaultUserId) // Default user is used as a placeholder for unauthenticated users, so we don't want to send notifications to that user.
             {
                 List<WebNotification> notifications = await notificationsService.GetLatestNotifications(userId);
 

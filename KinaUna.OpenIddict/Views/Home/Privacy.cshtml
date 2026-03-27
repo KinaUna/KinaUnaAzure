@@ -4,7 +4,7 @@
 @{
     int languageId = LocaleManager.GetLanguageId(Context.Request);
     string pageTitle = await LocaleManager.GetTranslation("Privacy", PageNames.Account, languageId);
-    KinaUnaText privacyText = await LocaleManager.GetPageTextByTitle("__Privacy", "Privacy", Model.LanguageId);
+    KinaUnaText? privacyText = await LocaleManager.GetPageTextByTitle("__Privacy", "Privacy", languageId);
 }
 <h2 class="title">@pageTitle</h2>
 <div>
@@ -13,6 +13,6 @@
     </H4>
     <br/>
     <div style="max-width: 600px;" id="impressumTextDiv">
-        @Html.Raw(privacyText.Text ?? "")
+        @Html.Raw(privacyText?.Text ?? "Privacy text not available.")
     </div>
 </div>

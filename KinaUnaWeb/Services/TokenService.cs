@@ -247,6 +247,7 @@ namespace KinaUnaWeb.Services
             });
             if (refreshTokenResponse.IsError)
             {
+                // If the refresh token request fails, throw an AuthenticationException to trigger a logout in the global exception handler
                 throw new AuthenticationException($"Status code: {refreshTokenResponse.IsError}, Error: {refreshTokenResponse.Error}");
             }
 
