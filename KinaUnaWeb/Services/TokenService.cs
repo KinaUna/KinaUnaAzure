@@ -247,8 +247,13 @@ namespace KinaUnaWeb.Services
             });
             if (refreshTokenResponse.IsError)
             {
-                // If the refresh token request fails, throw an AuthenticationException to trigger a logout in the global exception handler
-                throw new AuthenticationException($"Status code: {refreshTokenResponse.IsError}, Error: {refreshTokenResponse.Error}");
+                if(refreshTokenResponse.Error == "invalid_grant")
+                {
+                    // If the refresh token request fails due to an invalid grant, throw an AuthenticationException to trigger a logout in the global exception handler
+                    throw new AuthenticationException($"Error: {refreshTokenResponse.Error}");
+                }
+                // If the refresh token request fails for other reasons, throw an AuthenticationException to trigger a logout in the global exception handler
+                throw new AuthenticationException($"RefreshToken Is Error: {refreshTokenResponse.IsError}, Error: {refreshTokenResponse.Error}");
             }
 
             // Set the new access token and refresh token

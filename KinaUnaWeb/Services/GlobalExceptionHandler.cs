@@ -39,13 +39,17 @@ namespace KinaUnaWeb.Services
             Exception exception,
             CancellationToken cancellationToken)
         {
-            logger.LogError(
-                exception, "Exception occurred: {Message}", exception.Message);
-
-            logger.LogError(
-                exception, "Exception occurred: {Message}", exception.Message);
-
-
+            // Log the exception with a warning level if it's an authentication exception, otherwise log it as an error
+            if (exception.Message.EndsWith("invalid_grant"))
+            {
+                logger.LogInformation("Authentication invalid grant exception occurred: {Message}", exception.Message);
+            }
+            else
+            {
+                logger.LogError(
+                    exception, "Exception occurred: {Message}", exception.Message);
+            }
+            
             // Redirect to the login page if an authentication exception occurs
             httpContext.Response.Redirect("/login");
             return ValueTask.FromResult(true);
