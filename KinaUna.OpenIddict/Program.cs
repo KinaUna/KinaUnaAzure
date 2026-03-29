@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.EntityFrameworkCore;
 using Quartz;
 using Serilog;
 using System.Globalization;
@@ -50,7 +51,6 @@ string authDefaultConnection = builder.Configuration["AuthDefaultConnection"]
                                ?? throw new InvalidOperationException("AuthDefaultConnection was not found in the configuration data.");
 
 builder.Services.ConfigureDatabases(progenyDefaultConnection, mediaDefaultConnection, authDefaultConnection);
-
 
 string keyPath = builder.Configuration.GetValue<string>("DataProtectionKeyPath") ?? "/app/storage/dataprotection";
 Directory.CreateDirectory(keyPath);
@@ -309,5 +309,17 @@ app.UseEndpoints(options =>
     _ = options.MapDefaultControllerRoute();
     _ = options.MapHealthChecks("/health").AllowAnonymous();
 });
+
+using (var scope = app.Services.CreateScope())
+{
+    var progenyContext = scope.ServiceProvider.GetRequiredService<ProgenyDbContext>();
+    await progenyContext.Database.MigrateAsync();
+
+    var mediaContext = scope.ServiceProvider.GetRequiredService<MediaDbContext>();
+    await mediaContext.Database.MigrateAsync();
+
+    var authContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    await authContext.Database.MigrateAsync();
+}
 
 app.Run();
