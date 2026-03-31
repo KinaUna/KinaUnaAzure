@@ -1,19 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using System.Threading.Tasks;
-using KinaUna.Data;
+﻿using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace KinaUnaWeb.Hubs
 {
     [AllowAnonymous]
-    public class WebNotificationHub(IUserInfosHttpClient userInfosHttpClient, IWebNotificationsService notificationsService) : Hub
+    public class WebNotificationHub(IUserInfosHttpClient userInfosHttpClient, IWebNotificationsService notificationsService, ILogger<WebNotificationHub> logger) : Hub
     {
         readonly JsonSerializerOptions _serializeOptions = new()
         {
@@ -42,9 +43,27 @@ namespace KinaUnaWeb.Hubs
             string userTimeZone = Context.GetHttpContext()?.User.FindFirst("timezone")?.Value ?? Constants.DefaultTimezone;
             if (userId != "NoUser" && userId != Constants.DefaultUserId) // Default user is used as a placeholder for unauthenticated users, so we don't want to send notifications to that user.
             {
-                List<WebNotification> notifications = await notificationsService.GetLatestNotifications(userId);
+                List<WebNotification> notifications = [];
+                try
+                {
+                    notifications = await notificationsService.GetLatestNotifications(userId);
 
-                notifications = [.. notifications.OrderByDescending(n => n.DateTime).Skip(start).Take(count)];
+                    notifications = [.. notifications.OrderByDescending(n => n.DateTime).Skip(start).Take(count)];
+                }
+                catch (Exception ex)
+                {
+                    logger.LogWarning(ex, "Error getting notifications for user {UserId}", userId);
+                    WebNotification errorNotification = new()
+                    {
+                        Title = "Error getting notifications",
+                        Message = "An error occurred while getting your notifications. Please try again later. If it still doesn't work, try logging out and in again.",
+                        From = "KinaUna.com",
+                        Type = "Error",
+                        DateTime = DateTime.UtcNow
+                    };
+                    string sendError = JsonSerializer.Serialize(errorNotification, _serializeOptions);
+                    await Clients.Caller.SendAsync("ReceiveMessage", sendError);
+                }
 
                 if (notifications.Count != 0)
                 {
