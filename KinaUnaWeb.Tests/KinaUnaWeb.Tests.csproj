@@ -39,9 +39,9 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="10.0.5" />
-    <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.83.1" />
-    <PackageReference Include="Microsoft.IdentityModel.Abstractions" Version="8.16.0" />
-    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.16.0" />
+    <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.83.3" />
+    <PackageReference Include="Microsoft.IdentityModel.Abstractions" Version="8.17.0" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.17.0" />
     <PackageReference Include="Microsoft.NET.StringTools" Version="18.4.0" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.3.0" />
     <PackageReference Include="Microsoft.NETCore.Platforms" Version="7.0.4" />
