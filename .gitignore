@@ -264,3 +264,4 @@ __pycache__/
 # Docker
 .env
 certs/
+/.claude/settings.local.json
