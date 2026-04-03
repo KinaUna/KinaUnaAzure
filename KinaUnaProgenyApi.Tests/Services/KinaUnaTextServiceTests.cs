@@ -361,7 +361,7 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task GetPageTextsList_Should_Return_Empty_List_Of_KinaUnaText_When_Page_Is_Invalid()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetPageTextsList_Should_Return_List_Of_KinaUnaText_When_TextId_Is_Valid").Options;
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("GetPageTextsList_Should_Return_Empty_List_Of_KinaUnaText_When_Page_Is_Invalid").Options;
             await using ProgenyDbContext context = new(dbOptions);
 
             KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };

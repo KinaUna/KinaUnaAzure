@@ -284,7 +284,7 @@ namespace KinaUnaProgenyApi.Tests.Services
         [Fact]
         public async Task AddTranslation_Should_Add_TextTranslation_For_All_Languages()
         {
-            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddTranslation_Should_Save_TextTranslation").Options;
+            DbContextOptions<ProgenyDbContext> dbOptions = new DbContextOptionsBuilder<ProgenyDbContext>().UseInMemoryDatabase("AddTranslation_Should_Add_TextTranslation_For_All_Languages").Options;
             await using ProgenyDbContext context = new(dbOptions);
 
             KinaUnaLanguage language1 = new() { Name = "Language1", Code = "Code1", Icon = "Icon1", IconLink = "IconLink1" };
