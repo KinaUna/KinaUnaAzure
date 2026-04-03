@@ -1,5 +1,6 @@
 ﻿using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Middleware;
 using KinaUna.Data.Utilities;
 using KinaUnaProgenyApi.AuthorizationHandlers;
 using KinaUnaProgenyApi.Services;
@@ -225,6 +226,7 @@ namespace KinaUnaProgenyApi
 
             app.UseCors();
             app.UseHttpsRedirection();
+            app.UseSecurityHeaders();
             app.UseRouting();
 
             app.UseAuthentication();

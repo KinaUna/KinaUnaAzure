@@ -1,4 +1,5 @@
 ﻿using KinaUna.Data;
+using KinaUna.Data.Middleware;
 using KinaUnaWeb.Hubs;
 using KinaUnaWeb.Services;
 using KinaUnaWeb.Services.HttpClients;
@@ -179,7 +180,7 @@ namespace KinaUnaWeb
 
                         // Make the cookie persistent
                         authProperties.IsPersistent = true;
-                        authProperties.ExpiresUtc = DateTimeOffset.UtcNow.AddDays(180);
+                        authProperties.ExpiresUtc = DateTimeOffset.UtcNow.AddDays(30);
 
                         // Manually sign in using the OIDC principal and the same properties
                         if (claimsPrincipal != null)
@@ -205,7 +206,7 @@ namespace KinaUnaWeb
                 options.Cookie.SameSite = SameSiteMode.None;
                 options.Cookie.Name = ".KinaUna.Auth";
                 options.Cookie.HttpOnly = true;
-                options.ExpireTimeSpan = TimeSpan.FromDays(180);
+                options.ExpireTimeSpan = TimeSpan.FromDays(30);
                 options.SlidingExpiration = true;
                 options.LoginPath = "/login";
                 options.AccessDeniedPath = "/Account/AccessDenied";
@@ -327,6 +328,7 @@ namespace KinaUnaWeb
 
             app.UseCors();
             app.UseHttpsRedirection();
+            app.UseSecurityHeaders();
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseExceptionHandler();

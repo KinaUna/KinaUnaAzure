@@ -1,5 +1,6 @@
 using KinaUna.Data;
 using KinaUna.Data.Contexts;
+using KinaUna.Data.Middleware;
 using KinaUna.Data.Models;
 using KinaUna.Data.Utilities;
 using KinaUna.OpenIddict.AuthorizationHandlers;
@@ -9,6 +10,7 @@ using KinaUna.OpenIddict.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
@@ -59,6 +61,37 @@ builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(keyPath));
 
 builder.Services.AddHttpClient();
+builder.Services.AddRateLimiter(rateLimiterOptions =>
+{
+    rateLimiterOptions.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    rateLimiterOptions.AddFixedWindowLimiter("AuthEndpoint", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 10;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 0;
+    });
+
+    rateLimiterOptions.AddFixedWindowLimiter("PasswordReset", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 3;
+        limiterOptions.Window = TimeSpan.FromMinutes(5);
+        limiterOptions.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 0;
+    });
+
+    rateLimiterOptions.OnRejected = async (context, cancellationToken) =>
+    {
+        context.HttpContext.Response.StatusCode = StatusCodes.Status429TooManyRequests;
+        if (context.Lease.TryGetMetadata(System.Threading.RateLimiting.MetadataName.RetryAfter, out TimeSpan retryAfter))
+        {
+            context.HttpContext.Response.Headers.RetryAfter = ((int)retryAfter.TotalSeconds).ToString();
+        }
+
+        await context.HttpContext.Response.WriteAsync("Too many requests. Please try again later.", cancellationToken);
+    };
+});
 builder.Services.AddScoped<ITurnstileService, TurnstileService>();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddTransient<IEmailSender, EmailSender>();
@@ -101,8 +134,10 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
         options.Password.RequireNonAlphanumeric = false;
         options.Password.RequireUppercase = false;
-        options.Password.RequireLowercase = false;
-        options.Password.RequireDigit = false;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireDigit = true;
+        options.Password.RequiredLength = 8;
+        options.Password.RequiredUniqueChars = 3;
         options.SignIn.RequireConfirmedEmail = true;
         options.User.RequireUniqueEmail = true;
         options.ClaimsIdentity.UserNameClaimType = Claims.Name;
@@ -110,6 +145,9 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
         options.ClaimsIdentity.RoleClaimType = Claims.Role;
         options.ClaimsIdentity.EmailClaimType = Claims.Email;
         options.SignIn.RequireConfirmedAccount = true;
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+        options.Lockout.MaxFailedAccessAttempts = 5;
+        options.Lockout.AllowedForNewUsers = true;
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
@@ -273,7 +311,9 @@ else
 app.UseStatusCodePagesWithReExecute("/error");
 
 app.UseCors();
+app.UseRateLimiter();
 app.UseHttpsRedirection();
+app.UseSecurityHeaders();
 app.UseRouting();
 
 CultureInfo[] supportedCultures =

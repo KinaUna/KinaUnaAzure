@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 
 namespace KinaUna.OpenIddict.Controllers
@@ -29,6 +30,11 @@ namespace KinaUna.OpenIddict.Controllers
         [AllowAnonymous]
         public IActionResult Login(string? returnUrl = null)
         {
+            if (!IsReturnUrlSafe(returnUrl))
+            {
+                returnUrl = null;
+            }
+
             LoginViewModel model = new()
             {
                 Email = string.Empty,
@@ -42,6 +48,7 @@ namespace KinaUna.OpenIddict.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
+        [EnableRateLimiting("AuthEndpoint")]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             // Attempt to log in user
@@ -64,25 +71,35 @@ namespace KinaUna.OpenIddict.Controllers
                 return View(model);
             }
 
+            if (await userManager.IsLockedOutAsync(user))
+            {
+                ModelState.AddModelError(string.Empty, "Your account is locked. Please try again later.");
+                return View(model);
+            }
+
             bool signInResult = await userManager.CheckPasswordAsync(user, model.Password);
             if (!signInResult)
             {
+                await userManager.AccessFailedAsync(user);
                 ModelState.AddModelError(string.Empty, "Invalid login attempt.");
                 return View(model);
             }
+
             if (!user.EmailConfirmed)
             {
                 ModelState.AddModelError(string.Empty, "You must confirm your email before logging in.");
                 return View(model);
             }
-            if (user.LockoutEnabled && user.LockoutEnd != null && user.LockoutEnd > DateTimeOffset.UtcNow)
-            {
-                ModelState.AddModelError(string.Empty, "Your account is locked. Please try again later.");
-                return View(model);
-            }
-            
+
+            await userManager.ResetAccessFailedCountAsync(user);
             await signInManager.SignInAsync(user, true);
-            return Redirect(model.ReturnUrl?? "/");
+
+            if (!IsReturnUrlSafe(model.ReturnUrl))
+            {
+                model.ReturnUrl = null;
+            }
+
+            return Redirect(model.ReturnUrl ?? "/");
 
         }
 
@@ -112,6 +129,7 @@ namespace KinaUna.OpenIddict.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
+        [EnableRateLimiting("AuthEndpoint")]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             // Always repopulate the Turnstile site key from server-side configuration for the view.
@@ -289,11 +307,12 @@ namespace KinaUna.OpenIddict.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
+        [EnableRateLimiting("PasswordReset")]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
         {
             if (!ModelState.IsValid) return View(model);
 
-            if (string.IsNullOrWhiteSpace(model.Email))
+            if (!string.IsNullOrWhiteSpace(model.Email))
             {
                 ApplicationUser? user = await userManager.FindByEmailAsync(model.Email);
                 if (user == null || !(await userManager.IsEmailConfirmedAsync(user)))
@@ -344,6 +363,7 @@ namespace KinaUna.OpenIddict.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
+        [EnableRateLimiting("PasswordReset")]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
             if (!ModelState.IsValid)
