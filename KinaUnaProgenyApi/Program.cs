@@ -32,7 +32,7 @@ namespace KinaUnaProgenyApi
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
-                .UseSerilog((context, services, loggerConfig) =>
+                .UseSerilog((context, _, loggerConfig) =>
                 {
                     loggerConfig
                         .MinimumLevel.Information()

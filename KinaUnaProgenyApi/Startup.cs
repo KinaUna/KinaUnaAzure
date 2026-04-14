@@ -74,7 +74,7 @@ namespace KinaUnaProgenyApi
             services.AddDataProtection()
                 .SetApplicationName("KinaUnaWebApp")
                 .PersistKeysToFileSystem(new DirectoryInfo(keyPath));
-
+            services.AddHttpClient();
             services.AddScoped<IImageStore, LocalImageStore>();
             services.AddScoped<INotificationsService, NotificationsService>();
             services.AddScoped<IProgenyService, ProgenyService>();

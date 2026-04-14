@@ -33,7 +33,8 @@ namespace KinaUnaProgenyApi.Controllers
         ITimelineService timelineService,
         IProgenyService progenyService,
         IWebNotificationsService webNotificationsService,
-        IAccessManagementService accessManagementService)
+        IAccessManagementService accessManagementService,
+        HttpClient httpClient)
         : ControllerBase
     {
         /// <summary>
@@ -254,10 +255,9 @@ namespace KinaUnaProgenyApi.Controllers
         /// </summary>
         /// <param name="url">The url to get the stream for.</param>
         /// <returns>The stream object for the URL.</returns>
-        private static async Task<Stream> GetStreamFromUrl(string url)
+        private async Task<Stream> GetStreamFromUrl(string url)
         {
-            using HttpClient client = new();
-            using HttpResponseMessage response = await client.GetAsync(url);
+            using HttpResponseMessage response = await httpClient.GetAsync(url);
             
             return await response.Content.ReadAsStreamAsync();
         }

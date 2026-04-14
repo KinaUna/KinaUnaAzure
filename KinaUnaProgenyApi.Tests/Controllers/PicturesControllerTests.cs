@@ -38,6 +38,7 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         private const int TestProgenyId = 5;
         private const int TestPictureId = 100;
         private const int TestCommentThreadNumber = 50;
+        private readonly HttpClient _httpClient = new();
 
         public PicturesControllerTests()
         {
@@ -119,7 +120,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 _mockUserInfoService.Object,
                 mockWebNotificationsService.Object,
                 _mockTimelineService.Object,
-                _mockAccessManagementService.Object
+                _mockAccessManagementService.Object,
+                _httpClient
             );
 
             // Setup controller context with claims

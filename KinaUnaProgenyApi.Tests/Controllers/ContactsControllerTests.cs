@@ -45,6 +45,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
         private const int TestAddressId = 200;
         private const int TestTimelineItemId = 300;
 
+        private readonly HttpClient _httpClient = new();
+
         public ContactsControllerTests()
         {
             // Setup in-memory DbContext
@@ -146,7 +148,8 @@ namespace KinaUnaProgenyApi.Tests.Controllers
                 _mockProgenyService.Object,
                 _mockFamiliesService.Object,
                 _mockWebNotificationsService.Object,
-                _mockAccessManagementService.Object
+                _mockAccessManagementService.Object,
+                _httpClient
             );
 
             // Setup controller context with claims
