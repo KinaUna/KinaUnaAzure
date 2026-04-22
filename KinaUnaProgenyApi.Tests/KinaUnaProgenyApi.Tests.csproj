@@ -14,20 +14,20 @@
 
   <ItemGroup>
     <PackageReference Include="Castle.Core" Version="5.2.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.6" />
-    <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="10.0.6" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.7" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="10.0.7" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.3.9" />
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="10.0.6" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.6" />
-    <PackageReference Include="Microsoft.Bcl.Cryptography" Version="10.0.6" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Bcl.Cryptography" Version="10.0.7" />
     <PackageReference Include="Microsoft.Build" Version="18.4.0" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Build.Framework" Version="18.4.0" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="18.4.0" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="18.4.0" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.6" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.6" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.6" />
-    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="10.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.ObjectPool" Version="10.0.7" />
     <PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.83.3" />
     <PackageReference Include="Microsoft.IdentityModel.Abstractions" Version="8.17.0" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.17.0" />
@@ -38,19 +38,19 @@
     <PackageReference Include="Moq.EntityFrameworkCore" Version="10.0.0.2" />
     <PackageReference Include="Newtonsoft.Json.Bson" Version="1.0.3" />
     <PackageReference Include="Portable.BouncyCastle" Version="1.9.0" />
-    <PackageReference Include="System.CodeDom" Version="10.0.6" />
-    <PackageReference Include="System.Composition" Version="10.0.6" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.6" />
-    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="10.0.6" />
-    <PackageReference Include="System.Formats.Nrbf" Version="10.0.6" />
+    <PackageReference Include="System.CodeDom" Version="10.0.7" />
+    <PackageReference Include="System.Composition" Version="10.0.7" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="10.0.7" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="10.0.7" />
+    <PackageReference Include="System.Formats.Nrbf" Version="10.0.7" />
     <PackageReference Include="System.IO.FileSystem.AccessControl" Version="5.0.0" />
-    <PackageReference Include="System.IO.Hashing" Version="10.0.6" />
-    <PackageReference Include="System.Memory.Data" Version="10.0.6" />
-    <PackageReference Include="System.Reflection.MetadataLoadContext" Version="10.0.6" />
-    <PackageReference Include="System.Resources.Extensions" Version="10.0.6" />
-    <PackageReference Include="System.Security.Permissions" Version="10.0.6" />
+    <PackageReference Include="System.IO.Hashing" Version="10.0.7" />
+    <PackageReference Include="System.Memory.Data" Version="10.0.7" />
+    <PackageReference Include="System.Reflection.MetadataLoadContext" Version="10.0.7" />
+    <PackageReference Include="System.Resources.Extensions" Version="10.0.7" />
+    <PackageReference Include="System.Security.Permissions" Version="10.0.7" />
     <PackageReference Include="System.ValueTuple" Version="4.6.2" />
-    <PackageReference Include="System.Windows.Extensions" Version="10.0.6" />
+    <PackageReference Include="System.Windows.Extensions" Version="10.0.7" />
     <PackageReference Include="xunit.analyzers" Version="1.27.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
