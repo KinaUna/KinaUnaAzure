@@ -1,4 +1,5 @@
-﻿using KinaUna.Data;
+﻿#nullable enable
+using KinaUna.Data;
 using KinaUna.Data.Extensions;
 using KinaUnaWeb.Models;
 using KinaUnaWeb.Models.HomeViewModels;
@@ -305,7 +306,7 @@ namespace KinaUnaWeb.Controllers
         /// <returns>Redirects to returnUrl.</returns>
         [AllowAnonymous]
         [HttpGet]
-        public async Task<IActionResult> SetLanguageId(string languageId, string returnUrl)
+        public async Task<IActionResult> SetLanguageId(string languageId, string? returnUrl)
         {
             bool languageIdParsed = int.TryParse(languageId, out int languageIdAsInt);
             if (string.IsNullOrWhiteSpace(returnUrl))
