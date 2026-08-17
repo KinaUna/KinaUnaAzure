@@ -123,6 +123,11 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
                     return null;
                 }
             }
+            else
+            {
+                // Progeny does not exist.
+                return null;
+            }
 
             if (string.IsNullOrEmpty(familyMember.Email))
             {
@@ -202,6 +207,11 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
                 {
                     return null;
                 }
+            }
+            else
+            {
+                // Progeny does not exist.
+                return null;
             }
 
             FamilyMember existingFamilyMember = await progenyDbContext.FamilyMembersDb.SingleOrDefaultAsync(fm => fm.FamilyMemberId == familyMember.FamilyMemberId);
@@ -333,21 +343,15 @@ namespace KinaUnaProgenyApi.Services.FamiliesServices
                     // Todo: Permission Check for UserInfo.
                     familyMember.UserInfo = await progenyDbContext.UserInfoDb.AsNoTracking().SingleOrDefaultAsync(ui => ui.UserId == familyMember.UserId);
                 }
-                if (familyMember.ProgenyId > 0)
-                {
-                    familyMember.Progeny = await progenyService.GetProgeny(familyMember.ProgenyId, currentUserInfo);
-                    if (familyMember.Progeny == null || familyMember.Progeny.Id == 0)
-                    {
-                        continue;
-                    }
 
-                    accessibleFamilyMembers.Add(familyMember);
-                }
-                else
+                if (familyMember.ProgenyId <= 0) continue;
+                familyMember.Progeny = await progenyService.GetProgeny(familyMember.ProgenyId, currentUserInfo);
+                if (familyMember.Progeny == null || familyMember.Progeny.Id == 0)
                 {
-                    // The family member is not associated with a specific progeny, so we include them as no data is available anyway.
-                    accessibleFamilyMembers.Add(familyMember);
+                    continue;
                 }
+
+                accessibleFamilyMembers.Add(familyMember);
             }
 
             return accessibleFamilyMembers;
