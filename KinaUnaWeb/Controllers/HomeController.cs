@@ -308,6 +308,11 @@ namespace KinaUnaWeb.Controllers
         public async Task<IActionResult> SetLanguageId(string languageId, string returnUrl)
         {
             bool languageIdParsed = int.TryParse(languageId, out int languageIdAsInt);
+            if (string.IsNullOrWhiteSpace(returnUrl))
+            {
+                returnUrl = "/";
+            }
+
             if (languageIdParsed)
             {
                 KinaUnaLanguage language = await languagesHttpClient.GetLanguage(languageIdAsInt);

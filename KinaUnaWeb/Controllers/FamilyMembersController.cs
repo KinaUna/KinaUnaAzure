@@ -1,4 +1,5 @@
-﻿using KinaUna.Data.Extensions;
+﻿using System;
+using KinaUna.Data.Extensions;
 using KinaUna.Data.Models.AccessManagement;
 using KinaUna.Data.Models.Family;
 using KinaUnaWeb.Models;
@@ -170,7 +171,13 @@ namespace KinaUnaWeb.Controllers
             else
             {
                 progeny = await progenyHttpClient.GetProgeny(model.CurrentProgenyId);
-            } 
+            }
+
+            if (model.CurrentProgenyId == 0)
+            {
+                // Failed to create new progeny, therefore we cannot add a family member.
+                throw new Exception("Failed to create new progeny, cannot add as a family member.");
+            }
 
             FamilyMember familyMember = new()
             {

@@ -97,6 +97,18 @@ namespace KinaUnaProgenyApi.Services
                 }
             }
 
+            // Check birthdate, and set to UTC if it's not already in UTC.
+            if (progeny.BirthDay.HasValue)
+            {
+                DateTime birthDay = progeny.BirthDay.Value;
+                progeny.BirthDay = birthDay.Kind switch
+                {
+                    DateTimeKind.Utc => birthDay,
+                    DateTimeKind.Local => birthDay.ToUniversalTime(),
+                    _ => DateTime.SpecifyKind(birthDay, DateTimeKind.Utc)
+                };
+            }
+
             // Ensure the current user is in the admin list.
             if (!progeny.IsInAdminList(currentUserInfo.UserEmail))
             {
