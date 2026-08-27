@@ -52,11 +52,10 @@ namespace KinaUnaProgenyApi.Controllers
                 userInfo.CanUserAddItems = false;
                 userInfo.ProgenyList = [];
                 userInfo.FamilyList = [];
-                List<int> progeniesWithAddPermission = await accessManagementService.ProgeniesUserCanAccess(currentUserInfo, PermissionLevel.Add);
-                if (progeniesWithAddPermission.Count > 0)
+                List<int> progeniesWithViewPermission = await accessManagementService.ProgeniesUserCanAccess(currentUserInfo, PermissionLevel.View);
+                if (progeniesWithViewPermission.Count > 0)
                 {
-                    userInfo.CanUserAddItems = true;
-                    foreach (int progenyId in progeniesWithAddPermission)
+                    foreach (int progenyId in progeniesWithViewPermission)
                     {
                         Progeny progeny = await progenyService.GetProgeny(progenyId, currentUserInfo);
                         if (progeny != null && progeny.Id != 0)
@@ -66,17 +65,31 @@ namespace KinaUnaProgenyApi.Controllers
                     }
                 }
 
-                List<int> familiesWithAddPermission = await accessManagementService.FamiliesUserCanAccess(currentUserInfo, PermissionLevel.Add);
-                if (familiesWithAddPermission.Count > 0)
+                List<int> familiesWithViewPermission = await accessManagementService.FamiliesUserCanAccess(currentUserInfo, PermissionLevel.View);
+                if (familiesWithViewPermission.Count > 0)
                 {
                     userInfo.CanUserAddItems = true;
-                    foreach (int familyId in familiesWithAddPermission)
+                    foreach (int familyId in familiesWithViewPermission)
                     {
                         Family family = await familiesService.GetFamilyById(familyId, currentUserInfo);
                         if (family != null && family.FamilyId != 0)
                         {
                             userInfo.FamilyList.Add(family);
                         }
+                    }
+                }
+
+                List<int> progeniesWithAddPermission = await accessManagementService.ProgeniesUserCanAccess(currentUserInfo, PermissionLevel.Add);
+                if (progeniesWithAddPermission.Count > 0)
+                {
+                    userInfo.CanUserAddItems = true;
+                }
+                else
+                {
+                    List<int> familiesWithAddPermission = await accessManagementService.FamiliesUserCanAccess(currentUserInfo, PermissionLevel.Add);
+                    if (familiesWithAddPermission.Count > 0)
+                    {
+                        userInfo.CanUserAddItems = true;
                     }
                 }
             }
